@@ -39,10 +39,10 @@ var up    = true,
 
 var carX1 = 100,
     carX2 = 100,
-    carY1 = 315;
-    carY2 = 215;
     carX3 = 100;
-    carY3 = 100;
+    carY1 = randomIntFromInterval(20, 450);
+    carY2 = randomIntFromInterval(20, 450);
+    carY3 = randomIntFromInterval(20, 450);
     carWidth = 60;
     carHeight = 35;
 
@@ -211,15 +211,11 @@ function runOver(){
         carsY[i] + carHeight >= y &&
         carsY[i] <y +height){
             y=488;
+            score = 0;
+            document.getElementById("score").innerHTML = score;
         }
     }
 
-    // if(carX1 <= x +width && carX1 +carWidth>=x && carY1 + carHeight>= y && carY1 <= y+height){
-    //         y=488;
-    //     }
-    // if (carX2 <= x + width && carX2 + carWidth >= x && carY2 + carHeight >= y && carY2 <= y + height) {
-    //     y = 488;
-    // }
 }
     
 function checkForWinner() 
@@ -228,11 +224,18 @@ function checkForWinner()
     if(y<10)
     {
         score++;
-        console.log(score);
         document.getElementById("score").innerHTML = score;
+        carY1 = randomIntFromInterval(20, 450);
+        carY2 = randomIntFromInterval(20, 450);
+        carY3 = randomIntFromInterval(20, 450);
         y=488;
     }
-}    
+}  
+
+function randomIntFromInterval(min, max) // min and max included
+{
+    return Math.floor(Math.random() * (max - min + 1) + min);
+}
 
 
 draw();
