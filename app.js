@@ -26,18 +26,18 @@ var rightPressed = false,
     upPressed = false,
     downPressed = false;
 
-var up = true,
+var up   = true,
     down = true;
-right = true;
-left = true;
+   right = true;
+    left = true;
 
 var carX1 = 100,
     carX2 = 100,
     carX3 = 100,
     carY1 = randomIntFromInterval(20, 450);
-carY2 = randomIntFromInterval(20, 450);
-carY3 = randomIntFromInterval(20, 450);
-carWidth = 60;
+    carY2 = randomIntFromInterval(20, 450);
+    carY3 = randomIntFromInterval(20, 450);
+ carWidth = 60;
 carHeight = 35;
 
 document.addEventListener("keydown", keyDownHandler, false);
@@ -106,14 +106,6 @@ function drawSqaure() {
     ctx.fillStyle = "white";
     ctx.fill();
 }
-
-
-
-
-
-
-
-
 
 function drawRectangles() {
     ctx.beginPath();
