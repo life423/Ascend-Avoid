@@ -2,20 +2,6 @@ var canvas = document.getElementById('canvas'),
     ctx = canvas.getContext('2d');
 
 var score = 0;
-
-var speedRand1 = Math.floor(Math.random() * 7) + 1;
-var speedRand2 = Math.floor(Math.random() * 7) + 1;
-var speedRand3 = Math.floor(Math.random() * 7) + 1;
-
-while (speedRand1 !== 0 && speedRand1 === speedRand2 && speedRand2 && speedRand3 && speedRand1 === speedRand3) {
-    speedRand1 = Math.floor(Math.random() * 7) + 1;
-    speedRand2 = Math.floor(Math.random() * 7) + 1;
-    speedRand3 = Math.floor(Math.random() * 7) + 1;
-}
-
-
-var cars = 3;
-
 var x = canvas.width / 2,
     y = 488,
     width = 30,
@@ -26,19 +12,13 @@ var rightPressed = false,
     upPressed = false,
     downPressed = false;
 
-var up   = true,
-    down = true;
-   right = true;
+var up = true,
+    down = true,
+    right = true,
     left = true;
 
-var carX1 = 100,
-    carX2 = 100,
-    carX3 = 100,
-    carY1 = randomIntFromInterval(20, 450);
-    carY2 = randomIntFromInterval(20, 450);
-    carY3 = randomIntFromInterval(20, 450);
- carWidth = 60;
-carHeight = 35;
+var squareWidth = 20;
+var squareHeight = 20;
 
 document.addEventListener("keydown", keyDownHandler, false);
 document.addEventListener("keyup", keyUpHandler, false);
@@ -69,7 +49,7 @@ function moveFrong() {
     if (downPressed == true && down == true && y + height <= canvas.height - 10) {
         y = y + 40;
         down = false;
-        console.log(y)
+
     }
     if (downPressed == false) {
         down = true;
@@ -92,9 +72,9 @@ function moveFrong() {
 
 }
 
-
-
 function drawBackground() {
+
+
     console.log("background function")
 
 }
@@ -106,79 +86,56 @@ function drawSqaure() {
     ctx.fillStyle = "white";
     ctx.fill();
 }
+class Car {
 
-function drawRectangles() {
-    ctx.beginPath();
-    ctx.rect(carX1, carY1, carWidth, carHeight);
-    ctx.fillStyle = "#1FF2F2";
-    ctx.fill();
-    if (carX1 < canvas.width) {
-        carX1 += speedRand2;
+    constructor(x, y) {
+        this.x = x;
+        this.y = y;
     }
-    else {
-        carX1 = -100;
-    } screen
-    ctx.beginPath();
-    ctx.rect(carX2, carY2, carWidth, carHeight);
-    ctx.fillStyle = "#1FF2F2";
-    ctx.fill();
-    if (carX2 < canvas.width + 100) {
-        carX2 += speedRand1;
+
+    draw() {
+        ctx.beginPath();
+        ctx.rect(this.x, this.y, 60, 35);
+        ctx.fillStyle = "#1FF2F2";
+        ctx.fill();
     }
-    else {
-        carX2 = -100;
-    }
-    ctx.beginPath();
-    ctx.rect(carX3, carY3, carWidth, carHeight);
-    ctx.fillStyle = "#1FF2F2";
-    ctx.fill();
-    if (carX3 < canvas.width + 100) {
-        carX3 += speedRand3;
-    }
-    else {
-        carX3 = -100;
+
+    update() {
+        if (this.x < canvas.width) {
+            this.x += Math.floor(Math.random() * 7) + 1 + (score / 3);
+        }
+        else {
+            this.x = -100;
+        }
+        this.draw();
+
     }
 }
 
-function runOver() {
+var cars = [
+    new Car(100, randomIntFromInterval(20, 450)),
+];
 
-    var carsX = [carX1, carX2, carX3];
-    var carsY = [carY1, carY2, carY3];
 
-    for (i = 0; i < carsX.length; i++) {
-        if (carsX[i] <= x + width &&
-            carsX[i] <= x + width &&
-            carsX[i] + carWidth >= x &&
-            carsY[i] + carHeight >= y &&
-            carsY[i] < y + height) {
+function detectCollision() {
+    cars.forEach(function (car) {
+        if (car.x <= x + width && car.x <= x + squareWidth && car.x + squareWidth >= x && car.y + squareHeight >= y && car.y < y + squareHeight) {
             score = 0;
+            cars.length = 1;
             document.getElementById("score").innerHTML = score;
-            carY1 = randomIntFromInterval(20, 450);
-            carY2 = randomIntFromInterval(20, 450);
-            carY3 = randomIntFromInterval(20, 450);
-            speedRand1 = Math.floor(Math.random() * 7) + 1 + score;
-            speedRand2 = Math.floor(Math.random() * 7 + score) + 1 + score;
-            speedRand3 = Math.floor(Math.random() * 7 + score) + 1 + score;
             y = 488;
         }
-    }
 
+    });
 }
 
 function checkForWinner() {
 
     if (y < 10) {
         score++;
+        addCar();
 
         document.getElementById("score").innerHTML = score;
-        carY1 = randomIntFromInterval(20, 450);
-        carY2 = randomIntFromInterval(20, 450);
-        carY3 = randomIntFromInterval(20, 450);
-        if (score % 4 === 0) {
-            speedRand1 = Math.floor(Math.random() * 7) + 1 + (score / 4);
-            speedRand2 = Math.floor(Math.random() * 7) + 1 + (score / 4);
-            speedRand3 = Math.floor(Math.random() * 7) + 1 + (score / 4);
-        }
 
         y = 488;
 
@@ -190,18 +147,33 @@ function randomIntFromInterval(min, max) // min and max included
     return Math.floor(Math.random() * (max - min + 1) + min);
 }
 
+
+
+function displaySquares() {
+    for (i = 0; i < cars.length; i++) {
+        cars[i].update();
+    }
+}
+
+
+function addCar() {
+    if (score % 3 === 0) {
+        cars.push(new Car(100, randomIntFromInterval(20, 450)))
+    }
+}
+
 function animate() {
     requestAnimationFrame(animate);
     ctx.clearRect(0, 0, canvas.width, canvas.height);
-    //drawBackground();
     drawSqaure();
+    displaySquares();
     moveFrong();
-    drawRectangles();
-    runOver();
+    detectCollision();
     checkForWinner();
-}
+};
 
 animate();
+
 
 
 
