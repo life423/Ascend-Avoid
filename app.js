@@ -96,7 +96,8 @@ class Car {
         this.y = y;
         this.z = z;
     }
-        
+    
+    // method which draws the blue rectangles
     draw(){
     ctx.beginPath();
     ctx.rect(this.x, this.y, this.z, 25);
@@ -104,6 +105,7 @@ class Car {
     ctx.fill();
     }
 
+    //method which causes the rectanges to move across the screen to the right
     update(){
         if (this.x < canvas.width) {
             this.x += Math.floor(Math.random() * 7) + 1+ (score/5);
@@ -116,11 +118,12 @@ class Car {
     }
 }
 
+//an array all cars get pushed into from the addCar() function 
 var cars =[
     new Car(100, randomIntFromInterval(20, 450), randomIntFromInterval(40, 100)),
 ];
 
-
+//checks if a rectange and a square are overlapping on the canvas 
 function detectCollision() {
     cars.forEach(function (car) {
         if (car.x <= x + width && car.x <= x + squareWidth && car.x + squareWidth >= x && car.y + squareHeight >= y && car.y < y + squareHeight){
