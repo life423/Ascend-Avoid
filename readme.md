@@ -3,8 +3,7 @@
 This is a test of my github repo for my game
 
 This game is made to be an exciting short term experience for people who want a quick smile and a laugh.  The animations will be simple yet still charming.  The whole point of the build is to appeal to many peoples brighter side and encourage happy feelings and hope.  
-  The game will be about a penguin, who dress with style, in a tuxedo every day.  He will be walking across ice in order to find a pebble so he can bring it back in search of another penguin.  Since penguins mate for life, it will almost be like he is getting ready to get married.  Also he will be happy along his journey through obstacles that are sliding left and right across the screen.  
-  The game will be easy to accessible for people to figure out how to play.  I plan to make the sprites smiling throughout the whole game to give it a cartoonish feel.  If I can make the ice cubs that are sliding across smile that will be great.  
+ The game will be easy to accessible for people to figure out how to play. If I can make the ice cubs that are sliding across smile that will be great.  
   
   
   Possible players:

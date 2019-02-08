@@ -1,21 +1,25 @@
 var canvas = document.getElementById('canvas'),
-    ctx = canvas.getContext('2d');
+       ctx = canvas.getContext('2d');
 
-var score = 0;
-var x = canvas.width / 2,
-    y = 488,
-    width = 30,
+var score     = 0,
+    highScore = 0;
+
+var x      = canvas.width / 2,
+    y      = 488,
+    width  = 30,
     height = 30;
 
 var rightPressed = false,
-    leftPressed = false,
-    upPressed = false,
-    downPressed = false;
+     leftPressed = false,
+       upPressed = false,
+     downPressed = false;
 
-var up = true,
-    down = true,
+var up    = true,
+    down  = true,
     right = true,
-    left = true;
+     left = true;
+
+
 
 var squareWidth = 20;
 var squareHeight = 20;
@@ -39,45 +43,39 @@ function keyUpHandler(e) {
 }
 
 function moveFrong() {
-    if (upPressed == true && up == true && y > 20) {
+    if (upPressed === true && up === true && y > 20) {
         y = y - 40;
         up = false;
     }
-    if (upPressed == false) {
+    if (upPressed === false) {
         up = true;
     }
-    if (downPressed == true && down == true && y + height <= canvas.height - 10) {
+    if (downPressed === true && down === true && y + height <= canvas.height - 10) {
         y = y + 40;
         down = false;
-
+        
     }
-    if (downPressed == false) {
+    if (downPressed === false) {
         down = true;
     }
-    if (rightPressed == true && right == true && x < 520) {
+    if (rightPressed === true && right === true && x < 520) {
         x = x + 40;
         right = false;
     }
-    if (rightPressed == false) {
+    if (rightPressed === false) {
         right = true;
     }
-    if (leftPressed == true && left == true && x > 20) {
+    if (leftPressed === true && left === true && x > 20) {
         x = x - 40;
         left = false;
     }
-    if (leftPressed == false) {
+    if (leftPressed === false) {
         left = true;
     }
 
 
 }
 
-function drawBackground() {
-
-
-    console.log("background function")
-
-}
 
 function drawSqaure() {
 
@@ -86,23 +84,26 @@ function drawSqaure() {
     ctx.fillStyle = "white";
     ctx.fill();
 }
-class Car {
 
-    constructor(x, y) {
+class Car {
+    
+    constructor(x, y, z)
+    {
         this.x = x;
         this.y = y;
+        this.z = z;
+    }
+        
+    draw(){
+    ctx.beginPath();
+    ctx.rect(this.x, this.y, this.z, 25);
+    ctx.fillStyle = "#1FF2F2";
+    ctx.fill();
     }
 
-    draw() {
-        ctx.beginPath();
-        ctx.rect(this.x, this.y, 60, 35);
-        ctx.fillStyle = "#1FF2F2";
-        ctx.fill();
-    }
-
-    update() {
+    update(){
         if (this.x < canvas.width) {
-            this.x += Math.floor(Math.random() * 7) + 1 + (score / 3);
+            this.x += Math.floor(Math.random() * 7) + 1+ (score/5);
         }
         else {
             this.x = -100;
@@ -112,20 +113,20 @@ class Car {
     }
 }
 
-var cars = [
-    new Car(100, randomIntFromInterval(20, 450)),
+var cars =[
+    new Car(100, randomIntFromInterval(20, 450), randomIntFromInterval(40, 100)),
 ];
 
 
 function detectCollision() {
     cars.forEach(function (car) {
-        if (car.x <= x + width && car.x <= x + squareWidth && car.x + squareWidth >= x && car.y + squareHeight >= y && car.y < y + squareHeight) {
+        if (car.x <= x + width && car.x <= x + squareWidth && car.x + squareWidth >= x && car.y + squareHeight >= y && car.y < y + squareHeight){
             score = 0;
-            cars.length = 1;
+            cars.length =1;
             document.getElementById("score").innerHTML = score;
             y = 488;
         }
-
+        
     });
 }
 
@@ -149,19 +150,32 @@ function randomIntFromInterval(min, max) // min and max included
 
 
 
-function displaySquares() {
-    for (i = 0; i < cars.length; i++) {
-        cars[i].update();
-    }
+function displaySquares(){
+    cars.forEach(function (car) {
+        car.update();
+    });
 }
 
 
-function addCar() {
-    if (score % 3 === 0) {
-        cars.push(new Car(100, randomIntFromInterval(20, 450)))
+function addCar(){
+    if(score<=2){
+        cars.push(new Car(100, randomIntFromInterval(20, 450), randomIntFromInterval(40, 100)))
+    }
+    
+    
+    if(score%4===0){
+        cars.push(new Car(100, randomIntFromInterval(20, 450), randomIntFromInterval(40,100)))
     }
 }
 
+function getHighScore(){
+    if (score > highScore) {
+        highScore = score;
+        document.getElementById("highScore").innerHTML = highScore;
+    }
+}
+
+    
 function animate() {
     requestAnimationFrame(animate);
     ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -169,9 +183,9 @@ function animate() {
     displaySquares();
     moveFrong();
     detectCollision();
+    getHighScore();
     checkForWinner();
 };
-
 animate();
 
 
