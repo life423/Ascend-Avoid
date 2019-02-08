@@ -1,4 +1,4 @@
-#My Game#
+##My Game##
 
 
 This game is made to be an exciting short term experience for people who want a quick smile and a laugh.  The animations will be simple yet still charming.  The whole point of the build is to appeal to many peoples brighter side and encourage happy feelings and hope.  
@@ -10,7 +10,7 @@ This game is made to be an exciting short term experience for people who want a 
   is tired after a long day of work and wants to have some silly fun.  He does not want to start a complicated long game and only wants something simple to relax with
   
   female: age 35
-    Wants her own male penguin to come and give her a pebble.  Does not have experience playing complicated games and is only a casual gamer when something looks appealing.  
+    Does not have experience playing complicated games and is only a casual gamer when something looks appealing.  
     
    female: age 75
     Does not understand complicated games and is lucky whenever she finds a game that she can figure out how to play.  This game she could teach her grandchildren how to play.  
