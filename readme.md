@@ -1,6 +1,5 @@
-#My Game
+#My Game#
 
-This is a test of my github repo for my game
 
 This game is made to be an exciting short term experience for people who want a quick smile and a laugh.  The animations will be simple yet still charming.  The whole point of the build is to appeal to many peoples brighter side and encourage happy feelings and hope.  
  The game will be easy to accessible for people to figure out how to play. If I can make the ice cubs that are sliding across smile that will be great.  
