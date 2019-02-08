@@ -27,6 +27,7 @@ var squareHeight = 20;
 document.addEventListener("keydown", keyDownHandler, false);
 document.addEventListener("keyup", keyUpHandler, false);
 
+//controls which key is pussed down and sets their values of up and down on and off
 function keyDownHandler(e) {
     if (e.keyCode == 39) { rightPressed = true; }
     if (e.keyCode == 37) { leftPressed = true; }
@@ -42,6 +43,7 @@ function keyUpHandler(e) {
 
 }
 
+//makes the frog move with each tap of an arrow key instead of holding down an arrow key
 function moveFrong() {
     if (upPressed === true && up === true && y > 20) {
         y = y - 40;
@@ -76,7 +78,7 @@ function moveFrong() {
 
 }
 
-
+//draws the initial piece 
 function drawSqaure() {
 
     ctx.beginPath();
@@ -85,6 +87,7 @@ function drawSqaure() {
     ctx.fill();
 }
 
+//class to produce each square
 class Car {
     
     constructor(x, y, z)
@@ -130,6 +133,7 @@ function detectCollision() {
     });
 }
 
+//checks for a winner and calls the addCar() function and changes the score
 function checkForWinner() {
 
     if (y < 10) {
@@ -143,20 +147,21 @@ function checkForWinner() {
     }
 }
 
+//generates a random number between a range
 function randomIntFromInterval(min, max) // min and max included
 {
     return Math.floor(Math.random() * (max - min + 1) + min);
 }
 
 
-
+//displays the squares that it is told to create from the addCar() function
 function displaySquares(){
     cars.forEach(function (car) {
         car.update();
     });
 }
 
-
+//adds cars based on the players score
 function addCar(){
     if(score<=2){
         cars.push(new Car(100, randomIntFromInterval(20, 450), randomIntFromInterval(40, 100)))
@@ -168,6 +173,7 @@ function addCar(){
     }
 }
 
+//updates the high score on page
 function getHighScore(){
     if (score > highScore) {
         highScore = score;
@@ -175,7 +181,7 @@ function getHighScore(){
     }
 }
 
-    
+//calls essential functions in an infinite animation loop 
 function animate() {
     requestAnimationFrame(animate);
     ctx.clearRect(0, 0, canvas.width, canvas.height);
