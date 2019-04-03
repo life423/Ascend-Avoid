@@ -1,4 +1,4 @@
-#Little White Block
+#LittleWhiteBlock
 
 Enjoy the game at [drewcclark.com](http:www.drewcclark.com)
 
