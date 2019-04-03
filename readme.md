@@ -2,7 +2,7 @@
 
 Enjoy the game at [drewcclark.com](http:www.drewcclark.com)
 
-![](game_home.png)
+![](Game_Home.png)
 
 
 This game is made to be an exciting short term experience for people who want a quick smile and a laugh.  The animations will be simple yet still charming.  The whole point of the build is to appeal to many peoples brighter side and encourage happy feelings and hope.  
