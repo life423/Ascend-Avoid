@@ -1,12 +1,23 @@
 # Little White Block
 
+First project built at General Assembly, I built it there in my Web Development Immersive course.  
+
+
 Enjoy the game at [drewcclark.com](http:www.drewcclark.com)
 
 ![](Game_Home.png)
 
+This game is built using Javascript, HTML, specifically HTML Canvas, and CSS.  
 
-This game is made to be an exciting short term experience for people who want a quick smile and a laugh.  The animations will be simple yet still charming.  The whole point of the build is to appeal to many peoples brighter side and encourage happy feelings and hope.  
- The game will be easy to accessible for people to figure out how to play. If I can make the ice cubs that are sliding across smile that will be great.  
+The point of the game is to get the white block to the other side of the canvas.  The speed and the amount of blocks are based upon the score that is shown in the page.  
+
+# What I learned Building this Game
+
+I learned how to use classes and DOM manipulation.  I started out hard coding where the blue blocks would appear, the size of the blue blocks, and how many blue blocks would be rendered in the canvas.  This created a problem of WET code and the limited the scope of the project.  
+
+# Using Classes 
+
+Using classes unlocked a whole new potential.  I no longer hard to hard code in the size, position, or amount of blue blocks that would cross the canvas.  I could also base the speed, and amount of blocks, upon the score.  I was also able to randomize where the blue blocks would start along the y-axis of the canvas.  The app is made to where after the first two blocks appear on the page, each time the score mod four equals zero the speed increases of all the blocks.  
   
   
   Possible players:
