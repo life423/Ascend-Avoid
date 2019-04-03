@@ -1,6 +1,6 @@
 #Little White Block
 
-[drewcclark.com](https://drewcclark.com)
+[drewcclark.com](drewcclark.com)
 
 
 This game is made to be an exciting short term experience for people who want a quick smile and a laugh.  The animations will be simple yet still charming.  The whole point of the build is to appeal to many peoples brighter side and encourage happy feelings and hope.  
