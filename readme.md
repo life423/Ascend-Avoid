@@ -19,7 +19,8 @@ I learned how to use classes and DOM manipulation.  I started out hard coding wh
 
 Using classes unlocked a whole new potential.  I no longer hard to hard code in the size, position, or amount of blue blocks that would cross the canvas.  I could also base the speed, and amount of blocks, upon the score.  I was also able to randomize where the blue blocks would start along the y-axis of the canvas.  The app is made to where after the first two blocks appear on the page, each time the score mod four equals zero the speed increases of all the blocks.  
   
-  
+ # Possible Users 
+ 
   Possible players:
   male: age 27
   is tired after a long day of work and wants to have some silly fun.  He does not want to start a complicated long game and only wants something simple to relax with
