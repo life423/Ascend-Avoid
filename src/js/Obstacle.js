@@ -107,15 +107,57 @@ export default class Obstacle {
   
   // Collision detection with player
   detectCollision(player) {
+    // Debug output for collision detection
+    console.log(`Collision check: Obstacle(${this.x.toFixed(2)}, ${this.y.toFixed(2)}, ${this.width}x${this.height}) vs Player(${player.x.toFixed(2)}, ${player.y.toFixed(2)}, ${player.width}x${player.height})`);
+    
+    // Add a smaller hitbox for better gameplay experience (80% of visual size)
+    const hitboxReduction = 0.2; // 20% reduction
+    
+    // Player hitbox
+    const pLeft = player.x + player.width * hitboxReduction;
+    const pRight = player.x + player.width * (1 - hitboxReduction);
+    const pTop = player.y + player.height * hitboxReduction;
+    const pBottom = player.y + player.height * (1 - hitboxReduction);
+    
+    // Obstacle hitbox
+    const oLeft = this.x + this.width * hitboxReduction;
+    const oRight = this.x + this.width * (1 - hitboxReduction);
+    const oTop = this.y + this.height * hitboxReduction;
+    const oBottom = this.y + this.height * (1 - hitboxReduction);
+    
+    // Check if hitboxes overlap
     const colliding = (
-      this.x < player.x + player.width && 
-      this.x + this.width > player.x && 
-      this.y < player.y + player.height && 
-      this.y + this.height > player.y
+      oLeft < pRight && 
+      oRight > pLeft && 
+      oTop < pBottom && 
+      oBottom > pTop
     );
+    
+    // Visual feedback for debugging
+    if (window.DEBUG_COLLISIONS) {
+      // Draw hitboxes for debugging
+      const ctx = this.canvas.getContext('2d');
+      ctx.strokeStyle = colliding ? 'red' : 'lime';
+      ctx.lineWidth = 2;
+      
+      // Player hitbox
+      ctx.strokeRect(
+        pLeft, pTop, 
+        player.width * (1 - 2 * hitboxReduction), 
+        player.height * (1 - 2 * hitboxReduction)
+      );
+      
+      // Obstacle hitbox
+      ctx.strokeRect(
+        oLeft, oTop, 
+        this.width * (1 - 2 * hitboxReduction), 
+        this.height * (1 - 2 * hitboxReduction)
+      );
+    }
     
     // Set collision state (for explosion animation)
     if (colliding && !this.isColliding) {
+      console.log('Collision detected!');
       this.isColliding = true;
       this.explosionFrame = 0;
     }

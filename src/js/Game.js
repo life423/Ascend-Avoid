@@ -1,8 +1,13 @@
 import Player from './Player.js'
 import Obstacle from './Obstacle.js'
 import Background from './Background.js'
+import TouchControls from './TouchControls.js'
 import { GAME_SETTINGS, KEYS } from './constants.js'
 import { randomIntFromInterval, playSound, resizeCanvas } from './utils.js'
+
+// Enable debug mode with query parameter - e.g. ?debug=true
+window.DEBUG = new URLSearchParams(window.location.search).get('debug') === 'true';
+window.DEBUG_COLLISIONS = window.DEBUG;
 
 export default class Game {
     constructor() {
@@ -25,6 +30,8 @@ export default class Game {
     }
 
     init() {
+        console.log('Initializing game...')
+
         // Set up canvas
         resizeCanvas(this.canvas)
 
@@ -37,11 +44,16 @@ export default class Game {
         // Initialize obstacles
         this.initObstacles()
 
+        // Initialize touch controls (will only display on touch devices)
+        this.touchControls = new TouchControls(this)
+
         // Set up event listeners
         this.setupEventListeners()
 
         // Start game loop
         requestAnimationFrame(this.animate.bind(this))
+        
+        console.log('Game initialized successfully')
     }
 
     initObstacles() {
@@ -77,18 +89,29 @@ export default class Game {
 
     // Keyboard event handlers
     handleKeyDown(e) {
+        // Log the key press for debugging
+        console.log('Key down:', e.key, e.keyCode)
+        
+        // Right movement - Arrow Right or D
         if (KEYS.RIGHT.includes(e.key) || e.keyCode === 39) {
             this.player.setMovementKey('right', true)
         }
+        
+        // Left movement - Arrow Left or A
         if (KEYS.LEFT.includes(e.key) || e.keyCode === 37) {
             this.player.setMovementKey('left', true)
         }
+        
+        // Up movement - Arrow Up or W
         if (KEYS.UP.includes(e.key) || e.keyCode === 38) {
             this.player.setMovementKey('up', true)
         }
+        
+        // Down movement - Arrow Down or S
         if (KEYS.DOWN.includes(e.key) || e.keyCode === 40) {
             this.player.setMovementKey('down', true)
         }
+        
         // Add restart functionality with 'R' key
         if (KEYS.RESTART.includes(e.key)) {
             this.resetGame()
@@ -96,63 +119,81 @@ export default class Game {
     }
 
     handleKeyUp(e) {
+        // Log the key release for debugging
+        console.log('Key up:', e.key, e.keyCode)
+        
+        // Right movement - Arrow Right or D
         if (KEYS.RIGHT.includes(e.key) || e.keyCode === 39) {
             this.player.setMovementKey('right', false)
         }
+        
+        // Left movement - Arrow Left or A
         if (KEYS.LEFT.includes(e.key) || e.keyCode === 37) {
             this.player.setMovementKey('left', false)
         }
+        
+        // Up movement - Arrow Up or W
         if (KEYS.UP.includes(e.key) || e.keyCode === 38) {
             this.player.setMovementKey('up', false)
         }
+        
+        // Down movement - Arrow Down or S
         if (KEYS.DOWN.includes(e.key) || e.keyCode === 40) {
             this.player.setMovementKey('down', false)
         }
     }
 
-    // Touch controls
+    // Legacy swipe controls for backward compatibility
     handleTouchStart(e) {
-        e.preventDefault()
-        const touch = e.touches[0]
-        this.touchStartX = touch.clientX
-        this.touchStartY = touch.clientY
+        // Let the TouchControls class handle this
+        // Only use these if we need fallback behavior
+        if (!this.touchControls || !this.touchControls.isTouchDevice) {
+            e.preventDefault()
+            const touch = e.touches[0]
+            this.touchStartX = touch.clientX
+            this.touchStartY = touch.clientY
+        }
     }
 
     handleTouchEnd(e) {
-        e.preventDefault()
-        const touch = e.changedTouches[0]
-        const touchEndX = touch.clientX
-        const touchEndY = touch.clientY
+        // Let the TouchControls class handle this
+        // Only use these if we need fallback behavior
+        if (!this.touchControls || !this.touchControls.isTouchDevice) {
+            e.preventDefault()
+            const touch = e.changedTouches[0]
+            const touchEndX = touch.clientX
+            const touchEndY = touch.clientY
 
-        const deltaX = touchEndX - this.touchStartX
-        const deltaY = touchEndY - this.touchStartY
+            const deltaX = touchEndX - this.touchStartX
+            const deltaY = touchEndY - this.touchStartY
 
-        // Determine swipe direction based on the larger delta
-        if (Math.abs(deltaX) > Math.abs(deltaY)) {
-            // Horizontal swipe
-            if (deltaX > 20) {
-                this.player.setMovementKey('right', true)
-                setTimeout(() => {
-                    this.player.setMovementKey('right', false)
-                }, 100)
-            } else if (deltaX < -20) {
-                this.player.setMovementKey('left', true)
-                setTimeout(() => {
-                    this.player.setMovementKey('left', false)
-                }, 100)
-            }
-        } else {
-            // Vertical swipe
-            if (deltaY > 20) {
-                this.player.setMovementKey('down', true)
-                setTimeout(() => {
-                    this.player.setMovementKey('down', false)
-                }, 100)
-            } else if (deltaY < -20) {
-                this.player.setMovementKey('up', true)
-                setTimeout(() => {
-                    this.player.setMovementKey('up', false)
-                }, 100)
+            // Determine swipe direction based on the larger delta
+            if (Math.abs(deltaX) > Math.abs(deltaY)) {
+                // Horizontal swipe
+                if (deltaX > 20) {
+                    this.player.setMovementKey('right', true)
+                    setTimeout(() => {
+                        this.player.setMovementKey('right', false)
+                    }, 100)
+                } else if (deltaX < -20) {
+                    this.player.setMovementKey('left', true)
+                    setTimeout(() => {
+                        this.player.setMovementKey('left', false)
+                    }, 100)
+                }
+            } else {
+                // Vertical swipe
+                if (deltaY > 20) {
+                    this.player.setMovementKey('down', true)
+                    setTimeout(() => {
+                        this.player.setMovementKey('down', false)
+                    }, 100)
+                } else if (deltaY < -20) {
+                    this.player.setMovementKey('up', true)
+                    setTimeout(() => {
+                        this.player.setMovementKey('up', false)
+                    }, 100)
+                }
             }
         }
     }
@@ -314,20 +355,34 @@ export default class Game {
         // Update the last frame time
         this.lastFrameTime = timestamp
 
-        // Draw background (replaces clearRect)
-        this.background.update(timestamp)
-
-        // Update and draw player
-        this.player.move()
-        this.player.draw(timestamp)
-
-        // Update and draw obstacles
-        for (const obstacle of this.obstacles) {
-            obstacle.update(timestamp, this.score)
+        try {
+            // Draw background (replaces clearRect)
+            this.background.update(timestamp)
+    
+            // Update and draw player
+            this.player.move()
+            this.player.draw(timestamp)
+    
+            // Update and draw obstacles
+            for (const obstacle of this.obstacles) {
+                obstacle.update(timestamp, this.score)
+            }
+    
+            // Update and draw particles
+            this.updateParticles()
+            
+            // Draw on-screen touch controls (mobile only)
+            if (this.touchControls) {
+                this.touchControls.draw()
+            }
+            
+            // Draw debug info when in debug mode
+            if (window.DEBUG) {
+                this.drawDebugInfo(timestamp)
+            }
+        } catch (e) {
+            console.error('Error in animate loop:', e)
         }
-
-        // Update and draw particles
-        this.updateParticles()
 
         // Game logic
         this.detectCollisions()
@@ -343,5 +398,37 @@ export default class Game {
             this.ctx.strokeStyle = 'rgba(255,255,255,0.3)'
             this.ctx.stroke()
         }
+    }
+    
+    /**
+     * Draw debug information when debug mode is enabled
+     */
+    drawDebugInfo(timestamp) {
+        // Set debug text styles
+        this.ctx.font = '12px monospace';
+        this.ctx.fillStyle = 'yellow';
+        this.ctx.textAlign = 'left';
+        this.ctx.textBaseline = 'top';
+        
+        // Display fps
+        const fps = Math.round(1000 / Math.max(1, timestamp - this.lastFrameTime));
+        this.ctx.fillText(`FPS: ${fps}`, 10, 10);
+        
+        // Display player position
+        this.ctx.fillText(`Player: (${Math.round(this.player.x)}, ${Math.round(this.player.y)})`, 10, 25);
+        
+        // Display obstacle count
+        this.ctx.fillText(`Obstacles: ${this.obstacles.length}`, 10, 40);
+        
+        // Display particle count
+        this.ctx.fillText(`Particles: ${this.particles.length}`, 10, 55);
+        
+        // Draw player hitbox
+        this.ctx.strokeStyle = 'yellow';
+        this.ctx.lineWidth = 1;
+        this.ctx.strokeRect(
+            this.player.x, this.player.y, 
+            this.player.width, this.player.height
+        );
     }
 }

@@ -122,10 +122,27 @@ export class SpriteManager {
     ctx.arc(highlightX + 4, 4, 3, 0, Math.PI * 2);
     ctx.fill();
     
-    // Convert to image
+    // Convert to image - handle asynchronous loading
     const image = new Image();
-    image.src = canvas.toDataURL('image/png');
-    return image;
+    // Use a simple shape as fallback until the image loads
+    const fallbackImage = this.createFallbackImage(canvas.width, canvas.height, 'white');
+    
+    // Set src after onload to ensure proper loading
+    image.onload = () => {
+      console.log('Player sprite frame loaded successfully');
+    };
+    
+    image.onerror = (e) => {
+      console.error('Failed to load player sprite:', e);
+    };
+    
+    try {
+      image.src = canvas.toDataURL('image/png');
+      return image;
+    } catch (e) {
+      console.error('Error creating player sprite:', e);
+      return fallbackImage;
+    }
   }
   
   /**
@@ -357,6 +374,27 @@ export class SpriteManager {
   }
   
   /**
+   * Create a simple colored rectangle as fallback
+   */
+  createFallbackImage(width, height, color) {
+    const canvas = document.createElement('canvas');
+    canvas.width = width;
+    canvas.height = height;
+    const ctx = canvas.getContext('2d');
+    
+    ctx.fillStyle = color;
+    ctx.fillRect(0, 0, width, height);
+    
+    const image = new Image();
+    try {
+      image.src = canvas.toDataURL('image/png');
+    } catch (e) {
+      console.error('Error creating fallback image:', e);
+    }
+    return image;
+  }
+  
+  /**
    * Get the current animation frame for a sprite
    * @param {string} type - The type of sprite ('player', 'obstacle', etc.)
    * @param {number} variantIndex - Optional variant index for obstacles
@@ -364,25 +402,47 @@ export class SpriteManager {
    * @returns {HTMLImageElement} The sprite frame to display
    */
   getAnimationFrame(type, variantIndex = 0, timestamp = 0) {
-    // Update animation frame if enough time has passed
-    if (timestamp - this.lastFrameTime > ANIMATION_SPEED) {
-      this.currentFrame = (this.currentFrame + 1) % 4;
-      this.lastFrameTime = timestamp;
-    }
-    
-    // Return the appropriate sprite frame
-    switch (type) {
-      case 'player':
-        return this.spriteSheets.player[this.currentFrame];
-      case 'obstacle':
-        // For obstacles, use the variant index to determine which obstacle type to show
-        return this.spriteSheets.obstacle[variantIndex % this.spriteSheets.obstacle.length];
-      case 'explosion':
-        // For explosions, frame is directly provided as explosion progresses
-        return this.spriteSheets.explosion[Math.min(variantIndex, 4)];
-      default:
-        console.error('Unknown sprite type:', type);
-        return null;
+    try {
+      // Update animation frame if enough time has passed
+      if (timestamp - this.lastFrameTime > ANIMATION_SPEED) {
+        this.currentFrame = (this.currentFrame + 1) % 4;
+        this.lastFrameTime = timestamp;
+      }
+      
+      // Return the appropriate sprite frame
+      switch (type) {
+        case 'player':
+          if (!this.spriteSheets.player || !this.spriteSheets.player[this.currentFrame]) {
+            // If sprite isn't available yet, create a fallback
+            return this.createFallbackImage(32, 32, 'white');
+          }
+          return this.spriteSheets.player[this.currentFrame];
+        
+        case 'obstacle':
+          // For obstacles, use the variant index to determine which obstacle type to show
+          if (!this.spriteSheets.obstacle || 
+              !this.spriteSheets.obstacle[variantIndex % this.spriteSheets.obstacle.length]) {
+            // If sprite isn't available yet, create a fallback
+            return this.createFallbackImage(64, 32, '#1FF2F2');
+          }
+          return this.spriteSheets.obstacle[variantIndex % this.spriteSheets.obstacle.length];
+        
+        case 'explosion':
+          // For explosions, frame is directly provided as explosion progresses
+          if (!this.spriteSheets.explosion || 
+              !this.spriteSheets.explosion[Math.min(variantIndex, 4)]) {
+            // If sprite isn't available yet, create a fallback
+            return this.createFallbackImage(64, 64, 'orange');
+          }
+          return this.spriteSheets.explosion[Math.min(variantIndex, 4)];
+        
+        default:
+          console.error('Unknown sprite type:', type);
+          return this.createFallbackImage(32, 32, 'gray');
+      }
+    } catch (e) {
+      console.error('Error in getAnimationFrame:', e);
+      return this.createFallbackImage(32, 32, 'red');
     }
   }
 }
