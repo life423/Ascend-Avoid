@@ -59,10 +59,11 @@ export default class Player {
     const moveX = Math.max(stepSizeX, GAME_SETTINGS.MIN_STEP);
     const moveY = Math.max(stepSizeY, GAME_SETTINGS.MIN_STEP);
     
-    // Move up
-    if (this.movementKeys.up && this.canMove.up && this.y > 0) {
+    // Move up - CRITICAL CHANGE: Prevent player from going above WINNING_LINE - 10
+    if (this.movementKeys.up && this.canMove.up && this.y > GAME_SETTINGS.WINNING_LINE + 10) {
       this.y -= moveY;
       this.canMove.up = false;
+      console.log("Moving up to y:", this.y, "Limit:", GAME_SETTINGS.WINNING_LINE + 10);
     }
     if (!this.movementKeys.up) {
       this.canMove.up = true;
