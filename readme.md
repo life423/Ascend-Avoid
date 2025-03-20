@@ -1,36 +1,75 @@
-# Little White Block
+# Cross the Box Game
 
-First project built at General Assembly, I built it there in my Web Development Immersive course.  
-
-
-Enjoy the game at [drewcclark.com](http:www.drewcclark.com)
+A simple canvas game where you control a white block and try to reach the top of the screen without hitting blue obstacle blocks.
 
 ![](Game_Home.png)
 
-This game is built using Javascript, HTML, specifically HTML Canvas, and CSS.  
+## Technologies Used
 
-The point of the game is to get the white block to the other side of the canvas.  The speed and the amount of blocks are based upon the score that is shown in the page.  
+- JavaScript (ES6+)
+- HTML5 Canvas
+- CSS3
+- npm for development server
 
-# What I learned Building this Game
+## Game Features
 
-I learned how to use classes and DOM manipulation.  I started out hard coding where the blue blocks would appear, the size of the blue blocks, and how many blue blocks would be rendered in the canvas.  This created a problem of WET code and the limited the scope of the project.  
+- Responsive design works on both desktop and mobile devices
+- Touch controls for mobile gameplay
+- Frame-rate independent animation for consistent gameplay on all devices
+- Difficulty increases as your score increases
+- Simple one-button restart
 
-# Using Classes 
+## How to Play
 
-Using classes unlocked a whole new potential.  I no longer hard to hard code in the size, position, or amount of blue blocks that would cross the canvas.  I could also base the speed, and amount of blocks, upon the score.  I was also able to randomize where the blue blocks would start along the y-axis of the canvas.  The app is made to where after the first two blocks appear on the page, each time the score mod four equals zero the speed increases of all the blocks.  
-  
- # Possible Users 
- 
-  Possible players:
-  male: age 27
-  is tired after a long day of work and wants to have some silly fun.  He does not want to start a complicated long game and only wants something simple to relax with
-  
-  female: age 35
-    Does not have experience playing complicated games and is only a casual gamer when something looks appealing.  
-    
-   female: age 75
-    Does not understand complicated games and is lucky whenever she finds a game that she can figure out how to play.  This game she could teach her grandchildren how to play.  
-    
-  male: age 5
-    This game has nothing offensive in it and can be played by a child.  A child who does not have the resources to play more advanced or complicated games.  Also it is easy enough to understand the child should be able to pick up the idea quickly.  
-    
+The point of the game is to get the white block to the other side of the canvas without hitting the blue blocks. The speed and number of blocks increase based on your score.
+
+- Use arrow keys to move on desktop
+- Swipe to move on mobile devices
+- Press 'R' to restart the game
+
+## Development Setup
+
+### Prerequisites
+
+- Node.js (version 12 or higher)
+- npm (comes with Node.js)
+
+### Running Locally
+
+1. Clone this repository or download the code
+2. Navigate to the project directory in your terminal
+3. Install dependencies:
+   ```
+   npm install
+   ```
+4. Start the development server:
+   ```
+   npm run dev
+   ```
+   or
+   ```
+   npm start
+   ```
+
+This will automatically open the game in your default browser at `http://localhost:8080`.
+
+## What I Learned Building This Game
+
+I learned how to use classes and DOM manipulation. I started out hard coding where the blue blocks would appear, the size of the blue blocks, and how many blue blocks would be rendered in the canvas. This created a problem of WET (Write Everything Twice) code and limited the scope of the project.
+
+### Using Classes
+
+Using classes unlocked a whole new potential. I no longer had to hard code the size, position, or amount of blue blocks that would cross the canvas. I could also base the speed and amount of blocks upon the score. I was also able to randomize where the blue blocks would start along the y-axis of the canvas.
+
+### Responsive Design
+
+The latest version includes responsive design principles, making the game playable on devices of all sizes. The game elements scale proportionally based on the screen size.
+
+## Target Users
+
+This game is designed to be accessible to players of all ages and experience levels:
+
+- Casual gamers looking for a quick, simple game
+- Mobile users who want a responsive touch experience
+- Players of all ages (5 to 75+) who enjoy simple arcade-style games
+- People looking for a quick distraction during breaks

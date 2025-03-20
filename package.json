@@ -1,0 +1,39 @@
+{
+  "name": "cross-the-box-game",
+  "version": "1.0.0",
+  "description": "A simple canvas game where the player needs to cross the box without hitting obstacles",
+  "main": "index.html",
+  "scripts": {
+    "setup": "node install.js",
+    "postinstall": "node install.js",
+    "dev": "npx http-server src -o -p 8080",
+    "start": "npx http-server src -o -p 8080",
+    "build": "node build.js",
+    "serve:dist": "npx http-server dist -o -p 8080",
+    "lint:js": "eslint src/js/**/*.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "game",
+    "canvas",
+    "javascript",
+    "html5",
+    "responsive"
+  ],
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {
+    "http-server": "^14.1.1",
+    "terser": "^5.14.2",
+    "eslint": "^8.23.0"
+  },
+  "engines": {
+    "node": ">=12.0.0"
+  },
+  "browserslist": [
+    ">0.2%",
+    "not dead",
+    "not ie <= 11",
+    "not op_mini all"
+  ]
+}
