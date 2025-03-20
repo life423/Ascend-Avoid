@@ -27,7 +27,7 @@ export default class Player {
   
   resetPosition() {
     this.x = this.canvas.width / 2;
-    this.y = this.canvas.height - 70; // Position near bottom
+    this.y = this.canvas.height - this.height; // Position exactly at the bottom
   }
   
   draw(timestamp = 0) {

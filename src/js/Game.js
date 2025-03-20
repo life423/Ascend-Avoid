@@ -44,8 +44,17 @@ export default class Game {
         // Initialize obstacles
         this.initObstacles()
 
-        // Initialize touch controls (will only display on touch devices)
-        this.touchControls = new TouchControls(this)
+        // Initialize touch controls (will display on mobile and touch devices)
+        this.touchControls = new TouchControls(this);
+        
+        // Ensure touch controls are properly initialized
+        if (window.matchMedia("(max-width: 768px)").matches) {
+            console.log("Mobile device detected, optimizing touch controls");
+            // Force touch controls to be shown on mobile devices
+            if (this.touchControls) {
+                this.touchControls.show();
+            }
+        }
 
         // Set up event listeners
         this.setupEventListeners()
@@ -294,28 +303,30 @@ export default class Game {
         const minY = 20
         const maxY = this.canvas.height - 50
 
+        // Helper function to create a new obstacle with no overlaps
+        const createNonOverlappingObstacle = () => {
+            // Create the new obstacle with random initial position
+            const newObstacle = new Obstacle(
+                startX,
+                randomIntFromInterval(minY, maxY),
+                randomIntFromInterval(minWidth, maxWidth),
+                this.canvas
+            );
+            
+            // Make sure it doesn't overlap with existing obstacles
+            newObstacle.resetObstacle(this.obstacles);
+            
+            return newObstacle;
+        };
+
         // Add initial obstacles for new game
         if (this.score <= 2) {
-            this.obstacles.push(
-                new Obstacle(
-                    startX,
-                    randomIntFromInterval(minY, maxY),
-                    randomIntFromInterval(minWidth, maxWidth),
-                    this.canvas
-                )
-            )
+            this.obstacles.push(createNonOverlappingObstacle());
         }
 
         // Add obstacles as score increases (difficulty progression)
         if (this.score % 4 === 0) {
-            this.obstacles.push(
-                new Obstacle(
-                    startX,
-                    randomIntFromInterval(minY, maxY),
-                    randomIntFromInterval(minWidth, maxWidth),
-                    this.canvas
-                )
-            )
+            this.obstacles.push(createNonOverlappingObstacle());
         }
 
         // Limit maximum number of obstacles
@@ -366,6 +377,11 @@ export default class Game {
             // Update and draw obstacles
             for (const obstacle of this.obstacles) {
                 obstacle.update(timestamp, this.score)
+                
+                // If obstacle is moving off-screen, pass all obstacles when resetting
+                if (obstacle.x >= this.canvas.width) {
+                    obstacle.resetObstacle(this.obstacles);
+                }
             }
     
             // Update and draw particles

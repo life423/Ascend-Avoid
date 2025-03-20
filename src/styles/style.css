@@ -70,6 +70,91 @@ h4 {
     margin: 0 auto;
 }
 
+#touch-controls-container {
+    max-width: 560px;
+    margin: 15px auto;
+    text-align: center;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-wrap: wrap;
+    padding: 10px 0;
+}
+
+#touch-controls-container .control-button {
+    background: rgba(12, 199, 199, 0.3);
+    border: 3px solid #0CC7C7;
+    border-radius: 50%;
+    width: 70px;
+    height: 70px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 28px;
+    color: white;
+    margin: 8px;
+    user-select: none;
+    touch-action: none;
+    box-shadow: 0 0 10px rgba(0, 200, 200, 0.4);
+    transition: all 0.1s ease;
+}
+
+#touch-controls-container .control-button.active {
+    background: rgba(12, 199, 199, 0.8);
+    transform: scale(0.95);
+    box-shadow: 0 0 15px rgba(0, 200, 200, 0.7);
+}
+
+#touch-controls-container .direction-controls {
+    display: grid;
+    grid-template-columns: repeat(3, 70px);
+    grid-template-rows: repeat(3, 70px);
+    grid-gap: 8px;
+    margin-right: 40px;
+}
+
+#touch-controls-container .direction-controls .up {
+    grid-column: 2;
+    grid-row: 1;
+}
+
+#touch-controls-container .direction-controls .left {
+    grid-column: 1;
+    grid-row: 2;
+}
+
+#touch-controls-container .direction-controls .right {
+    grid-column: 3;
+    grid-row: 2;
+}
+
+#touch-controls-container .direction-controls .down {
+    grid-column: 2;
+    grid-row: 3;
+}
+
+#touch-controls-container .restart-control {
+    margin-left: 40px;
+}
+
+#touch-controls-container .restart-control .restart {
+    background: rgba(255, 60, 60, 0.3);
+    border-color: rgba(255, 60, 60, 0.8);
+    box-shadow: 0 0 10px rgba(255, 60, 60, 0.4);
+}
+
+#touch-controls-container .restart-control .restart.active {
+    background: rgba(255, 60, 60, 0.8);
+    box-shadow: 0 0 15px rgba(255, 60, 60, 0.7);
+}
+
+/* Show touch controls on mobile devices */
+@media (max-width: 768px) {
+    #touch-controls-container {
+        display: flex !important;
+    }
+}
+
 #instructions {
     max-width: 560px;
     margin: 20px auto;

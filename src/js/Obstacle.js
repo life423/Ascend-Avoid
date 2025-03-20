@@ -1,4 +1,4 @@
-import { GAME_SETTINGS } from './constants.js';
+ import { GAME_SETTINGS } from './constants.js';
 import { randomIntFromInterval } from './utils.js';
 import { getSprite } from './sprites.js';
 
@@ -91,11 +91,85 @@ export default class Obstacle {
     this.draw(timestamp);
   }
   
+  // Check if this obstacle overlaps with another
+  checkOverlap(otherObstacle) {
+    // Add a small buffer to prevent obstacles from being too close
+    const buffer = 5;
+    
+    // Check horizontal overlap
+    const horizontalOverlap = 
+      this.x < otherObstacle.x + otherObstacle.width + buffer && 
+      this.x + this.width + buffer > otherObstacle.x;
+    
+    // Check vertical overlap
+    const verticalOverlap = 
+      this.y < otherObstacle.y + otherObstacle.height + buffer && 
+      this.y + this.height + buffer > otherObstacle.y;
+    
+    // Both overlaps must be true for obstacles to overlap
+    return horizontalOverlap && verticalOverlap;
+  }
+  
+  // Check if obstacle is too close to player spawn area
+  isTooCloseToPlayerSpawn() {
+    // Player spawn position is at the horizontal center, near the bottom
+    const playerSpawnX = this.canvas.width / 2;
+    const playerSpawnY = this.canvas.height - 70;
+    
+    // Safe zone around player spawn (larger than the player)
+    const safeZoneWidth = 100;
+    const safeZoneHeight = 100;
+    
+    // Calculate boundaries of the safe zone
+    const safeLeft = playerSpawnX - safeZoneWidth / 2;
+    const safeRight = playerSpawnX + safeZoneWidth / 2;
+    const safeTop = playerSpawnY - safeZoneHeight / 2;
+    const safeBottom = playerSpawnY + safeZoneHeight / 2;
+    
+    // Check if obstacle is within the safe zone
+    return (
+      this.x < safeRight &&
+      this.x + this.width > safeLeft &&
+      this.y < safeBottom &&
+      this.y + this.height > safeTop
+    );
+  }
+  
   // Reset obstacle position and properties
-  resetObstacle() {
+  resetObstacle(obstacles = []) {
     this.x = -this.width;
-    // Randomize the y position for variety
-    this.y = randomIntFromInterval(20, this.canvas.height - 50);
+    
+    // Generate a valid non-overlapping position
+    let attempts = 0;
+    let validPosition = false;
+    
+    while (!validPosition && attempts < 10) {
+      // Randomize the y position for variety
+      this.y = randomIntFromInterval(20, this.canvas.height - 50);
+      
+      // Check for overlap with other obstacles and player spawn area
+      validPosition = true;
+      
+      // Check if obstacle is too close to player spawn
+      if (this.isTooCloseToPlayerSpawn()) {
+        validPosition = false;
+      } else {
+        // Check for overlap with other obstacles
+        for (const obstacle of obstacles) {
+          // Skip checking against self
+          if (obstacle === this) continue;
+          
+          // If there's overlap, try again
+          if (this.checkOverlap(obstacle)) {
+            validPosition = false;
+            break;
+          }
+        }
+      }
+      
+      attempts++;
+    }
+    
     // Randomize variant for visual diversity
     this.variant = randomIntFromInterval(0, 2);
     // Recalculate height in case canvas was resized

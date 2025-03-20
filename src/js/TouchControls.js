@@ -1,202 +1,180 @@
 /**
- * On-screen touch controls for mobile devices
+ * On-screen touch controls for mobile devices using DOM elements instead of canvas
  */
 export default class TouchControls {
   constructor(game) {
     this.game = game;
-    this.canvas = game.canvas;
     this.player = game.player;
-    this.ctx = this.canvas.getContext('2d');
     
-    // Control button properties
+    // Control button properties with symbols
     this.buttons = {
-      up: { x: 75, y: 75, radius: 30, key: 'up', symbol: '▲' },
-      down: { x: 75, y: 150, radius: 30, key: 'down', symbol: '▼' },
-      left: { x: 30, y: 115, radius: 30, key: 'left', symbol: '◀' },
-      right: { x: 120, y: 115, radius: 30, key: 'right', symbol: '▶' },
-      restart: { x: this.canvas.width - 40, y: 40, radius: 25, key: 'restart', symbol: 'R' }
+      up: { key: 'up', symbol: '▲' },
+      down: { key: 'down', symbol: '▼' },
+      left: { key: 'left', symbol: '◀' },
+      right: { key: 'right', symbol: '▶' },
+      restart: { key: 'restart', symbol: '⟳' }
     };
     
     // Active button state
     this.activeButtons = {};
     
-    // Touch state
-    this.touches = [];
-    
     // Check if we're on a touch device
-    this.isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+    this.isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0 || window.matchMedia("(max-width: 768px)").matches;
     
-    // Only set up touch controls if we're on a touch device
-    if (this.isTouchDevice) {
-      this.setupTouchListeners();
+    // Always create controls, but hide them on non-touch devices
+    this.createControlElements();
+    this.setupTouchListeners();
+    
+    // Hide controls on desktop/mouse-based devices
+    if (!this.isTouchDevice) {
+      this.hide();
+    }
+    
+    // Handle window resize to show/hide controls dynamically
+    window.addEventListener('resize', this.handleResize.bind(this));
+  }
+  
+  /**
+   * Handle window resize to dynamically show/hide touch controls
+   */
+  handleResize() {
+    const isMobile = window.matchMedia("(max-width: 768px)").matches;
+    if (isMobile || this.isTouchDevice) {
+      this.show();
+    } else {
+      this.hide();
     }
   }
   
   /**
-   * Set up touch event listeners
+   * Create DOM elements for touch controls
+   */
+  createControlElements() {
+    // Get the container for controls
+    this.container = document.getElementById('touch-controls-container');
+    
+    // Create directional controls container
+    this.directionControls = document.createElement('div');
+    this.directionControls.className = 'direction-controls';
+    
+    // Create restart control container
+    this.restartControl = document.createElement('div');
+    this.restartControl.className = 'restart-control';
+    
+    // Create directional buttons
+    for (const direction of ['up', 'down', 'left', 'right']) {
+      const button = document.createElement('div');
+      button.className = `control-button ${direction}`;
+      button.dataset.key = direction;
+      button.textContent = this.buttons[direction].symbol;
+      this.directionControls.appendChild(button);
+    }
+    
+    // Create restart button
+    const restartButton = document.createElement('div');
+    restartButton.className = 'control-button restart';
+    restartButton.dataset.key = 'restart';
+    restartButton.textContent = this.buttons.restart.symbol;
+    this.restartControl.appendChild(restartButton);
+    
+    // Add controls to the container
+    this.container.appendChild(this.directionControls);
+    this.container.appendChild(this.restartControl);
+    
+    // Store references to all buttons for easy access
+    this.buttonElements = {
+      up: this.directionControls.querySelector('.up'),
+      down: this.directionControls.querySelector('.down'),
+      left: this.directionControls.querySelector('.left'),
+      right: this.directionControls.querySelector('.right'),
+      restart: this.restartControl.querySelector('.restart')
+    };
+  }
+  
+  /**
+   * Set up touch event listeners for all control buttons
    */
   setupTouchListeners() {
-    this.canvas.addEventListener('touchstart', this.handleTouchStart.bind(this), { passive: false });
-    this.canvas.addEventListener('touchmove', this.handleTouchMove.bind(this), { passive: false });
-    this.canvas.addEventListener('touchend', this.handleTouchEnd.bind(this), { passive: false });
-    this.canvas.addEventListener('touchcancel', this.handleTouchEnd.bind(this), { passive: false });
+    // For each button, add event listeners
+    Object.keys(this.buttonElements).forEach(key => {
+      const button = this.buttonElements[key];
+      
+      // Touch start - activate button
+      button.addEventListener('touchstart', (e) => {
+        e.preventDefault();
+        this.handleButtonActivation(key, true, e.changedTouches[0].identifier);
+      }, { passive: false });
+      
+      // Touch end - deactivate button
+      button.addEventListener('touchend', (e) => {
+        e.preventDefault();
+        this.handleButtonActivation(key, false, e.changedTouches[0].identifier);
+      }, { passive: false });
+      
+      // Touch cancel - deactivate button
+      button.addEventListener('touchcancel', (e) => {
+        e.preventDefault();
+        this.handleButtonActivation(key, false, e.changedTouches[0].identifier);
+      }, { passive: false });
+      
+      // Touch leave - deactivate button if touch moves out
+      button.addEventListener('touchleave', (e) => {
+        e.preventDefault();
+        this.handleButtonActivation(key, false, e.changedTouches[0].identifier);
+      }, { passive: false });
+    });
   }
   
   /**
-   * Handle touch start event
+   * Handle button activation state
+   * @param {string} key - The button key (up, down, left, right, restart)
+   * @param {boolean} isActive - Whether to activate or deactivate the button
+   * @param {number} touchId - Touch identifier to keep track of which touch is on which button
    */
-  handleTouchStart(e) {
-    e.preventDefault();
+  handleButtonActivation(key, isActive, touchId) {
+    const button = this.buttonElements[key];
     
-    // Get canvas-relative coordinates
-    const rect = this.canvas.getBoundingClientRect();
-    const touches = e.changedTouches;
-    
-    for (let i = 0; i < touches.length; i++) {
-      const touch = touches[i];
-      const touchX = touch.clientX - rect.left;
-      const touchY = touch.clientY - rect.top;
+    if (isActive) {
+      // Activate button
+      button.classList.add('active');
+      this.activeButtons[key] = touchId;
       
-      // Check if the touch is on a button
-      for (const [key, button] of Object.entries(this.buttons)) {
-        if (this.isPointInButton(touchX, touchY, button)) {
-          this.activeButtons[button.key] = touch.identifier;
-          
-          // Activate the button
-          if (button.key === 'restart') {
-            this.game.resetGame();
-          } else {
-            this.player.setMovementKey(button.key, true);
-          }
-        }
+      // Trigger action based on button
+      if (key === 'restart') {
+        this.game.resetGame();
+      } else {
+        this.player.setMovementKey(key, true);
       }
-      
-      // Store touch for tracking
-      this.touches.push({
-        id: touch.identifier,
-        x: touchX,
-        y: touchY
-      });
-    }
-  }
-  
-  /**
-   * Handle touch move event
-   */
-  handleTouchMove(e) {
-    e.preventDefault();
-    
-    // Get canvas-relative coordinates
-    const rect = this.canvas.getBoundingClientRect();
-    const touches = e.changedTouches;
-    
-    for (let i = 0; i < touches.length; i++) {
-      const touch = touches[i];
-      const touchX = touch.clientX - rect.left;
-      const touchY = touch.clientY - rect.top;
-      
-      // Update touch position
-      for (let j = 0; j < this.touches.length; j++) {
-        if (this.touches[j].id === touch.identifier) {
-          this.touches[j].x = touchX;
-          this.touches[j].y = touchY;
-          break;
-        }
-      }
-      
-      // Check if touch is still on the buttons
-      for (const [key, button] of Object.entries(this.buttons)) {
-        if (this.activeButtons[button.key] === touch.identifier) {
-          // If touch moved out of button, deactivate it
-          if (!this.isPointInButton(touchX, touchY, button) && button.key !== 'restart') {
-            delete this.activeButtons[button.key];
-            this.player.setMovementKey(button.key, false);
-          }
-        } else if (this.isPointInButton(touchX, touchY, button)) {
-          // If touch moved into button, activate it
-          this.activeButtons[button.key] = touch.identifier;
-          
-          if (button.key === 'restart') {
-            this.game.resetGame();
-          } else {
-            this.player.setMovementKey(button.key, true);
-          }
+    } else {
+      // If this touch ID matches the one that activated this button
+      if (this.activeButtons[key] === touchId) {
+        // Deactivate button
+        button.classList.remove('active');
+        delete this.activeButtons[key];
+        
+        // Stop movement for movement keys
+        if (key !== 'restart') {
+          this.player.setMovementKey(key, false);
         }
       }
     }
   }
   
   /**
-   * Handle touch end event
+   * Hide the touch controls - called when touch is not supported or not needed
    */
-  handleTouchEnd(e) {
-    e.preventDefault();
-    
-    const touches = e.changedTouches;
-    
-    for (let i = 0; i < touches.length; i++) {
-      const touch = touches[i];
-      
-      // Remove touch from tracking
-      for (let j = 0; j < this.touches.length; j++) {
-        if (this.touches[j].id === touch.identifier) {
-          this.touches.splice(j, 1);
-          break;
-        }
-      }
-      
-      // Check if the touch was on a button
-      for (const [key, button] of Object.entries(this.buttons)) {
-        if (this.activeButtons[button.key] === touch.identifier) {
-          // Deactivate button
-          delete this.activeButtons[button.key];
-          if (button.key !== 'restart') {
-            this.player.setMovementKey(button.key, false);
-          }
-        }
-      }
+  hide() {
+    if (this.container) {
+      this.container.style.display = 'none';
     }
   }
   
   /**
-   * Check if a point is within a button
+   * Show the touch controls
    */
-  isPointInButton(x, y, button) {
-    const dx = x - button.x;
-    const dy = y - button.y;
-    return dx * dx + dy * dy <= button.radius * button.radius;
-  }
-  
-  /**
-   * Draw touch controls
-   */
-  draw() {
-    // Only draw controls on touch devices
-    if (!this.isTouchDevice) return;
-    
-    // Draw each button
-    for (const [key, button] of Object.entries(this.buttons)) {
-      // Button fill
-      this.ctx.fillStyle = this.activeButtons[button.key] !== undefined
-        ? 'rgba(12, 199, 199, 0.8)'
-        : 'rgba(100, 100, 100, 0.5)';
-      
-      // Draw button
-      this.ctx.beginPath();
-      this.ctx.arc(button.x, button.y, button.radius, 0, Math.PI * 2);
-      this.ctx.fill();
-      
-      // Button border
-      this.ctx.strokeStyle = 'rgba(255, 255, 255, 0.8)';
-      this.ctx.lineWidth = 2;
-      this.ctx.stroke();
-      
-      // Button text
-      this.ctx.fillStyle = 'white';
-      this.ctx.font = `${button.radius * 0.8}px Arial`;
-      this.ctx.textAlign = 'center';
-      this.ctx.textBaseline = 'middle';
-      this.ctx.fillText(button.symbol, button.x, button.y);
+  show() {
+    if (this.container) {
+      this.container.style.display = 'flex';
     }
   }
 }
