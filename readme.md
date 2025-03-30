@@ -1,12 +1,4 @@
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-# Ascend Avoid
-=======
 # Cross the Box Game - Multiplayer Edition
->>>>>>> Stashed changes
-=======
-# Cross the Box Game - Multiplayer Edition
->>>>>>> Stashed changes
 
 ## Overview
 
