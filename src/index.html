@@ -16,22 +16,24 @@
     </div>
     
     <div id="wrapper">
-        <canvas id="canvas" width="560" height="550"></canvas>
+        <canvas id="canvas"></canvas>
     </div>
     
-    <div id="touch-controls-container">
-        <!-- Touch controls will be inserted here by JavaScript -->
-    </div>
-    
-    <div id="instructions">
-        <h3>How to Play:</h3>
-        <p>Move the white block to the top without hitting the blue blocks.</p>
-        <ul>
-            <li>Use arrow keys or WASD to move on desktop</li>
-            <li>Swipe to move on mobile devices</li>
-            <li>Press 'R' to restart the game</li>
-        </ul>
-        <p class="note">Game speed increases as you score more points!</p>
+    <div id="game-ui-container">
+        <div id="touch-controls-container">
+            <!-- Touch controls will be inserted here by JavaScript -->
+        </div>
+        
+        <div id="instructions">
+            <h3>How to Play:</h3>
+            <p>Move the white block to the top without hitting the blue blocks.</p>
+            <ul>
+                <li>Use arrow keys or WASD to move on desktop</li>
+                <li>Touch the direction buttons on mobile devices</li>
+                <li>Press 'R' or the restart button to restart the game</li>
+            </ul>
+            <p class="note">Game speed increases as you score more points!</p>
+        </div>
     </div>
     
     <script type="module" src="js/main.js"></script>

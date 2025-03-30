@@ -3,7 +3,7 @@ import Obstacle from './Obstacle.js'
 import Background from './Background.js'
 import TouchControls from './TouchControls.js'
 import { GAME_SETTINGS, KEYS } from './constants.js'
-import { randomIntFromInterval, playSound, resizeCanvas } from './utils.js'
+import { randomIntFromInterval, playSound, resizeCanvas, SCALE_FACTOR, BASE_CANVAS_WIDTH, BASE_CANVAS_HEIGHT } from './utils.js'
 
 // Enable debug mode with query parameter - e.g. ?debug=true
 window.DEBUG = new URLSearchParams(window.location.search).get('debug') === 'true';
@@ -32,9 +32,10 @@ export default class Game {
     init() {
         console.log('Initializing game...')
 
-        // Set up canvas
-        resizeCanvas(this.canvas)
-
+        // Set up responsive canvas
+        const { widthScale, heightScale } = resizeCanvas(this.canvas)
+        console.log(`Canvas scaled to: ${this.canvas.width}x${this.canvas.height} (scale factor: ${SCALE_FACTOR})`)
+        
         // Create background
         this.background = new Background(this.canvas)
         
@@ -47,10 +48,16 @@ export default class Game {
         // Initialize touch controls (will display on mobile and touch devices)
         this.touchControls = new TouchControls(this);
         
-        // Ensure touch controls are properly initialized
-        if (window.matchMedia("(max-width: 768px)").matches) {
-            console.log("Mobile device detected, optimizing touch controls");
-            // Force touch controls to be shown on mobile devices
+        // Show touch controls on mobile devices or touch screens
+        // Use more comprehensive detection for touch devices
+        if (
+            window.matchMedia("(max-width: 1024px)").matches || 
+            window.matchMedia("(pointer: coarse)").matches ||
+            ('ontouchstart' in window) || 
+            (navigator.maxTouchPoints > 0)
+        ) {
+            console.log("Touch device detected, optimizing controls");
+            // Force touch controls to be shown
             if (this.touchControls) {
                 this.touchControls.show();
             }
@@ -66,11 +73,12 @@ export default class Game {
     }
 
     initObstacles() {
+        // Create initial obstacle with scaled dimensions
         this.obstacles = [
             new Obstacle(
-                100,
-                randomIntFromInterval(20, 450),
-                randomIntFromInterval(40, 100),
+                100, // base X position
+                randomIntFromInterval(20, BASE_CANVAS_HEIGHT - 100), // base Y position
+                randomIntFromInterval(40, 100), // base width
                 this.canvas
             ),
         ]
@@ -88,12 +96,30 @@ export default class Game {
         )
         this.canvas.addEventListener('touchend', this.handleTouchEnd.bind(this))
 
-        // Window resize
+        // Window resize with debouncing
+        let resizeTimer;
         window.addEventListener('resize', () => {
-            resizeCanvas(this.canvas)
-            this.player.resetPosition()
-            this.background.resize()
-        })
+            clearTimeout(resizeTimer);
+            resizeTimer = setTimeout(() => {
+                console.log('Window resized, updating game elements');
+                // Resize canvas and get the new scale factors
+                const { widthScale, heightScale } = resizeCanvas(this.canvas);
+                
+                // Update game elements with new scale
+                this.player.resetPosition();
+                this.background.resize();
+                
+                // Resize obstacles
+                for (const obstacle of this.obstacles) {
+                    obstacle.calculateHeight();
+                }
+                
+                // Update touch controls if they exist
+                if (this.touchControls) {
+                    this.touchControls.resize();
+                }
+            }, 250); // debounce resize events
+        });
     }
 
     // Keyboard event handlers
@@ -272,7 +298,10 @@ export default class Game {
     }
 
     checkForWinner() {
-        if (this.player.y < GAME_SETTINGS.WINNING_LINE) {
+        // Calculate scaled winning line position
+        const scaledWinningLine = GAME_SETTINGS.WINNING_LINE * (this.canvas.height / BASE_CANVAS_HEIGHT);
+        
+        if (this.player.y < scaledWinningLine) {
             this.score++
             this.addObstacle()
             this.addScoreParticles()
@@ -408,9 +437,10 @@ export default class Game {
         // Draw game boundaries if needed for clarity
         if (this.score > 5) {
             // Show winning line for visibility at higher difficulty
+            const scaledWinningLine = GAME_SETTINGS.WINNING_LINE * (this.canvas.height / BASE_CANVAS_HEIGHT);
             this.ctx.beginPath()
-            this.ctx.moveTo(0, GAME_SETTINGS.WINNING_LINE)
-            this.ctx.lineTo(this.canvas.width, GAME_SETTINGS.WINNING_LINE)
+            this.ctx.moveTo(0, scaledWinningLine)
+            this.ctx.lineTo(this.canvas.width, scaledWinningLine)
             this.ctx.strokeStyle = 'rgba(255,255,255,0.3)'
             this.ctx.stroke()
         }

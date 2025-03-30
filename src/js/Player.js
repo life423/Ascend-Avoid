@@ -1,12 +1,17 @@
 import { GAME_SETTINGS } from './constants.js';
 import { getSprite } from './sprites.js';
+import { SCALE_FACTOR, BASE_CANVAS_WIDTH, BASE_CANVAS_HEIGHT } from './utils.js';
 
 export default class Player {
   constructor(canvas) {
     this.canvas = canvas;
     this.ctx = canvas.getContext('2d');
-    this.width = 30;
-    this.height = 30;
+    // Base size that will be scaled
+    this.baseWidth = 30;
+    this.baseHeight = 30;
+    // Actual size after scaling
+    this.width = this.baseWidth * SCALE_FACTOR;
+    this.height = this.baseHeight * SCALE_FACTOR;
     this.resetPosition();
     
     // Movement state
@@ -26,14 +31,19 @@ export default class Player {
   }
   
   resetPosition() {
-    this.x = this.canvas.width / 2;
-    this.y = this.canvas.height - this.height; // Position exactly at the bottom
+    // Update dimensions based on current scale factor
+    this.width = this.baseWidth * SCALE_FACTOR;
+    this.height = this.baseHeight * SCALE_FACTOR;
+    
+    // Position player at the bottom center
+    this.x = this.canvas.width / 2 - this.width / 2;
+    this.y = this.canvas.height - this.height - (10 * SCALE_FACTOR); // Position near the bottom with padding
   }
   
   draw(timestamp = 0) {
-    // Calculate responsive size
+    // Calculate responsive size based on scale factor
     const playerSize = Math.max(
-      Math.min(this.canvas.width, this.canvas.height) * GAME_SETTINGS.PLAYER_SIZE_RATIO, 
+      this.baseWidth * SCALE_FACTOR,
       15
     );
     
@@ -51,26 +61,28 @@ export default class Player {
   }
   
   move() {
-    // Calculate movement step size based on canvas dimensions
-    const stepSizeX = this.canvas.width * 0.07;
-    const stepSizeY = this.canvas.height * 0.07;
+    // Calculate movement step size based on scale factor
+    const baseStepX = BASE_CANVAS_WIDTH * 0.07;
+    const baseStepY = BASE_CANVAS_HEIGHT * 0.07;
     
-    // Use the larger of the calculated or minimum step size
-    const moveX = Math.max(stepSizeX, GAME_SETTINGS.MIN_STEP);
-    const moveY = Math.max(stepSizeY, GAME_SETTINGS.MIN_STEP);
+    // Scale the movement speed
+    const moveX = Math.max(baseStepX * SCALE_FACTOR, GAME_SETTINGS.MIN_STEP * SCALE_FACTOR);
+    const moveY = Math.max(baseStepY * SCALE_FACTOR, GAME_SETTINGS.MIN_STEP * SCALE_FACTOR);
     
-    // Move up - CRITICAL CHANGE: Prevent player from going above WINNING_LINE - 10
-    if (this.movementKeys.up && this.canMove.up && this.y > GAME_SETTINGS.WINNING_LINE + 10) {
+    // Calculate scaled winning line position
+    const scaledWinningLine = GAME_SETTINGS.WINNING_LINE * (this.canvas.height / BASE_CANVAS_HEIGHT);
+    
+    // Move up - Prevent player from going above winning line
+    if (this.movementKeys.up && this.canMove.up && this.y > scaledWinningLine + (10 * SCALE_FACTOR)) {
       this.y -= moveY;
       this.canMove.up = false;
-      console.log("Moving up to y:", this.y, "Limit:", GAME_SETTINGS.WINNING_LINE + 10);
     }
     if (!this.movementKeys.up) {
       this.canMove.up = true;
     }
     
     // Move down
-    if (this.movementKeys.down && this.canMove.down && this.y + this.height <= this.canvas.height - 10) {
+    if (this.movementKeys.down && this.canMove.down && this.y + this.height <= this.canvas.height - (10 * SCALE_FACTOR)) {
       this.y += moveY;
       this.canMove.down = false;
     }
@@ -79,7 +91,7 @@ export default class Player {
     }
     
     // Move right
-    if (this.movementKeys.right && this.canMove.right && this.x < this.canvas.width - this.width) {
+    if (this.movementKeys.right && this.canMove.right && this.x < this.canvas.width - this.width - (5 * SCALE_FACTOR)) {
       this.x += moveX;
       this.canMove.right = false;
     }
@@ -88,7 +100,7 @@ export default class Player {
     }
     
     // Move left
-    if (this.movementKeys.left && this.canMove.left && this.x > 20) {
+    if (this.movementKeys.left && this.canMove.left && this.x > (5 * SCALE_FACTOR)) {
       this.x -= moveX;
       this.canMove.left = false;
     }

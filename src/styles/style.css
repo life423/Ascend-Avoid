@@ -4,56 +4,83 @@
     box-sizing: border-box;
 }
 
+:root {
+    /* Define CSS variables for theming and responsive adjustments */
+    --primary-color: #0CC7C7;
+    --primary-glow: rgba(0, 200, 200, 0.4);
+    --background-dark: #0a1a2f;
+    --background-darker: #000510;
+    --text-color: #eee;
+    --accent-color: rgba(0, 180, 240, 0.6);
+    --highlight-color: #bce4ff;
+    
+    /* Responsive spacing variables */
+    --padding-small: 5px;
+    --padding-medium: 10px;
+    --padding-large: 15px;
+    --margin-small: 8px;
+    --margin-medium: 15px;
+    --margin-large: 20px;
+    
+    /* Font sizes */
+    --font-small: 14px;
+    --font-medium: 16px;
+    --font-large: 24px;
+    --font-xlarge: 32px;
+}
+
 body {
-    background: #0a1a2f;
+    background: var(--background-dark);
     font-family: 'Montserrat', Arial, Helvetica, sans-serif;
-    color: #eee;
-    padding: 10px;
+    color: var(--text-color);
+    padding: var(--padding-medium);
     min-height: 100vh;
-    background: linear-gradient(to bottom, #0a1a2f, #000510);
+    background: linear-gradient(to bottom, var(--background-dark), var(--background-darker));
+    overflow-x: hidden; /* Prevent horizontal scrolling */
 }
 
 canvas {
     background: black;
-    border: 4px solid #0CC7C7;
+    border: 4px solid var(--primary-color);
     border-radius: 4px;
-    box-shadow: 0 0 20px rgba(0, 200, 200, 0.4);
+    box-shadow: 0 0 20px var(--primary-glow);
     touch-action: none; /* Prevents default touch actions like scrolling on canvas */
     display: block;
+    max-width: 100%; /* Ensure it never exceeds container width */
 }
 
 h1 {
     text-align: center;
     margin: 0;
-    padding-top: 15px;
-    color: #eee;
-    text-shadow: 0 0 10px rgba(0, 180, 240, 0.6);
-    font-size: 32px;
+    padding-top: var(--padding-large);
+    color: var(--text-color);
+    text-shadow: 0 0 10px var(--accent-color);
+    font-size: var(--font-xlarge);
     letter-spacing: 2px;
     font-weight: 700;
 }
 
 h3 {
-    margin-top: 20px;
-    margin-bottom: 10px;
-    color: #0CC7C7;
+    margin-top: var(--margin-medium);
+    margin-bottom: var(--margin-small);
+    color: var(--primary-color);
 }
 
 h4 { 
     display: inline-block;
-    margin: 0 10px;
-    color: #eee;
+    margin: 0 var(--margin-small);
+    color: var(--text-color);
 }
 
 #score, #highScore {
-    color: #0CC7C7;
+    color: var(--primary-color);
     font-weight: bold;
-    text-shadow: 0 0 5px rgba(0, 200, 200, 0.6);
+    text-shadow: 0 0 5px var(--primary-glow);
 }
 
 #headers {
     text-align: center;
-    padding: 10px 0 15px;
+    padding: var(--padding-medium) 0 var(--padding-large);
 }
 
 #wrapper {
@@ -62,28 +89,32 @@ h4 {
     align-items: center;
     max-width: 100%;
     overflow: hidden;
+    margin: 0 auto;
+    max-height: 70vh; /* Limit height to ensure controls and instructions are visible */
 }
 
 #canvas {
+    display: block;
     max-width: 100%;
     height: auto;
     margin: 0 auto;
 }
 
 #touch-controls-container {
+    width: 100%;
     max-width: 560px;
-    margin: 15px auto;
+    margin: var(--margin-medium) auto;
     text-align: center;
     display: flex;
     justify-content: center;
     align-items: center;
     flex-wrap: wrap;
-    padding: 10px 0;
+    padding: var(--padding-medium) 0;
 }
 
 #touch-controls-container .control-button {
     background: rgba(12, 199, 199, 0.3);
-    border: 3px solid #0CC7C7;
+    border: 3px solid var(--primary-color);
     border-radius: 50%;
     width: 70px;
     height: 70px;
@@ -92,17 +123,17 @@ h4 {
     align-items: center;
     font-size: 28px;
     color: white;
-    margin: 8px;
+    margin: var(--margin-small);
     user-select: none;
     touch-action: none;
-    box-shadow: 0 0 10px rgba(0, 200, 200, 0.4);
+    box-shadow: 0 0 10px var(--primary-glow);
     transition: all 0.1s ease;
 }
 
 #touch-controls-container .control-button.active {
     background: rgba(12, 199, 199, 0.8);
     transform: scale(0.95);
-    box-shadow: 0 0 15px rgba(0, 200, 200, 0.7);
+    box-shadow: 0 0 15px var(--primary-glow);
 }
 
 #touch-controls-container .direction-controls {
@@ -148,8 +179,8 @@ h4 {
     box-shadow: 0 0 15px rgba(255, 60, 60, 0.7);
 }
 
-/* Show touch controls on mobile devices */
-@media (max-width: 768px) {
+/* Always show touch controls on touch devices and smaller screens */
+@media (max-width: 1024px), (pointer: coarse) {
     #touch-controls-container {
         display: flex !important;
     }
@@ -157,41 +188,207 @@ h4 {
 
 #instructions {
     max-width: 560px;
-    margin: 20px auto;
-    padding: 15px;
+    margin: var(--margin-large) auto;
+    padding: var(--padding-large);
     background: rgba(10, 35, 66, 0.8);
-    border: 2px solid #0CC7C7;
+    border: 2px solid var(--primary-color);
     border-radius: 8px;
-    box-shadow: 0 0 15px rgba(0, 200, 200, 0.4);
+    box-shadow: 0 0 15px var(--primary-glow);
 }
 
 #instructions ul {
     padding-left: 20px;
-    margin: 10px 0;
+    margin: var(--margin-small) 0;
 }
 
 #instructions li {
     margin-bottom: 5px;
-    color: #bce4ff;
+    color: var(--highlight-color);
 }
 
 .note {
     font-weight: bold;
-    margin-top: 10px;
-    color: #0CC7C7;
+    margin-top: var(--margin-small);
+    color: var(--primary-color);
 }
 
-/* Media Queries for Responsive Design */
+/* Comprehensive Media Queries for Responsive Design */
+
+/* Large desktops and high-res tablets (landscape) */
+@media screen and (min-width: 1200px) {
+    :root {
+        --padding-large: 20px;
+        --margin-large: 30px;
+        --font-xlarge: 36px;
+    }
+    
+    #instructions, #touch-controls-container {
+        max-width: 700px;
+    }
+}
+
+/* Tablets and smaller desktops */
+@media screen and (max-width: 1024px) {
+    :root {
+        --font-xlarge: 30px;
+        --font-large: 22px;
+    }
+    
+    /* Adjust canvas container for better proportions */
+    #wrapper {
+        max-height: 65vh;
+    }
+}
+
+/* Tablets and large phones (landscape) */
+@media screen and (max-width: 768px) {
+    :root {
+        --padding-medium: 8px;
+        --margin-large: 15px;
+        --font-xlarge: 28px;
+    }
+    
+    #touch-controls-container .direction-controls {
+        margin-right: 20px;
+    }
+    
+    #touch-controls-container .restart-control {
+        margin-left: 20px;
+    }
+}
+
+/* Portrait phones and small tablets */
 @media screen and (max-width: 600px) {
+    :root {
+        --padding-small: 3px;
+        --padding-medium: 5px;
+        --padding-large: 10px;
+        --margin-small: 5px;
+        --margin-medium: 10px;
+        --font-xlarge: 24px;
+        --font-large: 20px;
+    }
+    
     body {
-        padding: 5px;
+        padding: var(--padding-small);
     }
     
     h1 {
-        font-size: 24px;
+        font-size: var(--font-xlarge);
+        padding-top: var(--padding-medium);
     }
     
     #instructions {
-        padding: 10px;
+        padding: var(--padding-medium);
+        margin: var(--margin-medium) auto;
+    }
+    
+    #touch-controls-container {
+        padding: var(--padding-small) 0;
+    }
+    
+    /* Smaller touch controls for small screens */
+    #touch-controls-container .control-button {
+        width: 60px;
+        height: 60px;
+        font-size: 22px;
+        margin: var(--margin-small);
+        border-width: 2px;
+    }
+    
+    #touch-controls-container .direction-controls {
+        grid-template-columns: repeat(3, 60px);
+        grid-template-rows: repeat(3, 60px);
+        grid-gap: 5px;
+        margin-right: 15px;
+    }
+    
+    #touch-controls-container .restart-control {
+        margin-left: 15px;
+    }
+}
+
+/* Very small phones */
+@media screen and (max-width: 380px) {
+    :root {
+        --font-xlarge: 22px;
+        --font-large: 18px;
+        --font-medium: 14px;
+        --font-small: 12px;
+    }
+    
+    h4 {
+        margin: 0 5px;
+        font-size: var(--font-medium);
+    }
+    
+    #instructions {
+        font-size: var(--font-small);
+    }
+    
+    /* Even smaller touch controls for very small screens */
+    #touch-controls-container .control-button {
+        width: 50px;
+        height: 50px;
+        font-size: 18px;
+        margin: 4px;
+    }
+    
+    #touch-controls-container .direction-controls {
+        grid-template-columns: repeat(3, 50px);
+        grid-template-rows: repeat(3, 50px);
+        grid-gap: 4px;
+        margin-right: 8px;
+    }
+    
+    #touch-controls-container .restart-control {
+        margin-left: 8px;
+    }
+}
+
+/* Landscape mode specific adjustments */
+@media screen and (max-height: 500px) and (orientation: landscape) {
+    #wrapper {
+        max-height: 50vh;
+    }
+    
+    h1 {
+        font-size: var(--font-large);
+        padding-top: var(--padding-small);
+    }
+    
+    #headers {
+        padding: var(--padding-small) 0;
+    }
+    
+    /* Arrange touch controls and instructions side by side in landscape */
+    #game-ui-container {
+        display: flex;
+        flex-direction: row;
+        justify-content: space-between;
+        align-items: flex-start;
+    }
+    
+    #touch-controls-container, #instructions {
+        flex: 1;
+        margin: var(--margin-small);
+    }
+    
+    #instructions {
+        max-height: 40vh;
+        overflow-y: auto;
+        font-size: var(--font-small);
+    }
+    
+    #touch-controls-container .control-button {
+        width: 45px;
+        height: 45px;
+        font-size: 16px;
+    }
+    
+    #touch-controls-container .direction-controls {
+        grid-template-columns: repeat(3, 45px);
+        grid-template-rows: repeat(3, 45px);
+        grid-gap: 4px;
     }
 }

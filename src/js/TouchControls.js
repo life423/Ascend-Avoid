@@ -1,3 +1,5 @@
+import { SCALE_FACTOR } from './utils.js';
+
 /**
  * On-screen touch controls for mobile devices using DOM elements instead of canvas
  */
@@ -5,6 +7,9 @@ export default class TouchControls {
   constructor(game) {
     this.game = game;
     this.player = game.player;
+    
+    // Save current scale for comparison on resize
+    this.currentScale = SCALE_FACTOR;
     
     // Control button properties with symbols
     this.buttons = {
@@ -18,8 +23,12 @@ export default class TouchControls {
     // Active button state
     this.activeButtons = {};
     
-    // Check if we're on a touch device
-    this.isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0 || window.matchMedia("(max-width: 768px)").matches;
+    // Check if we're on a touch device (expanded detection)
+    this.isTouchDevice = 
+      'ontouchstart' in window || 
+      navigator.maxTouchPoints > 0 || 
+      window.matchMedia("(max-width: 1024px)").matches ||
+      window.matchMedia("(pointer: coarse)").matches;
     
     // Always create controls, but hide them on non-touch devices
     this.createControlElements();
@@ -35,14 +44,58 @@ export default class TouchControls {
   }
   
   /**
-   * Handle window resize to dynamically show/hide touch controls
+   * Handle window resize and adjust controls for the screen size
    */
   handleResize() {
-    const isMobile = window.matchMedia("(max-width: 768px)").matches;
+    // Check if device is mobile or touch-enabled
+    const isMobile = 
+      window.matchMedia("(max-width: 1024px)").matches || 
+      window.matchMedia("(pointer: coarse)").matches ||
+      'ontouchstart' in window || 
+      navigator.maxTouchPoints > 0;
+    
     if (isMobile || this.isTouchDevice) {
       this.show();
+      this.resize(); // Adjust sizes based on new dimensions
     } else {
       this.hide();
+    }
+  }
+  
+  /**
+   * Resize touch controls based on screen size
+   */
+  resize() {
+    // If scale factor changed significantly, adjust button sizes
+    if (Math.abs(this.currentScale - SCALE_FACTOR) > 0.05) {
+      this.currentScale = SCALE_FACTOR;
+      
+      // Calculate new button size based on viewport
+      const buttonSize = Math.max(50, Math.min(70 * SCALE_FACTOR, 100));
+      const fontSize = Math.max(18, Math.min(28 * SCALE_FACTOR, 36));
+      
+      // Get all control buttons
+      const buttons = this.container.querySelectorAll('.control-button');
+      
+      // Update size and font for all buttons
+      buttons.forEach(button => {
+        button.style.width = `${buttonSize}px`;
+        button.style.height = `${buttonSize}px`;
+        button.style.fontSize = `${fontSize}px`;
+      });
+      
+      // Update grid size for direction pad
+      this.directionControls.style.gridTemplateColumns = `repeat(3, ${buttonSize}px)`;
+      this.directionControls.style.gridTemplateRows = `repeat(3, ${buttonSize}px)`;
+      
+      // Adjust spacing based on screen size
+      const spacing = Math.max(5, Math.min(40 * SCALE_FACTOR, 60));
+      this.directionControls.style.marginRight = `${spacing}px`;
+      this.restartControl.style.marginLeft = `${spacing}px`;
+      
+      // Update grid gap
+      const gridGap = Math.max(4, Math.min(8 * SCALE_FACTOR, 12));
+      this.directionControls.style.gridGap = `${gridGap}px`;
     }
   }
   
@@ -52,6 +105,9 @@ export default class TouchControls {
   createControlElements() {
     // Get the container for controls
     this.container = document.getElementById('touch-controls-container');
+    
+    // Make container responsive to viewport size
+    this.container.style.maxWidth = '100%';
     
     // Create directional controls container
     this.directionControls = document.createElement('div');

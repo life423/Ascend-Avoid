@@ -79,19 +79,53 @@ export function playSound(type) {
   }
 }
 
+// Global scaling factor for game elements
+export let SCALE_FACTOR = 1;
+// Base canvas dimensions - will be used as a reference for scaling
+export const BASE_CANVAS_WIDTH = 560;
+export const BASE_CANVAS_HEIGHT = 550;
+// Aspect ratio of the game
+export const ASPECT_RATIO = BASE_CANVAS_HEIGHT / BASE_CANVAS_WIDTH;
+
 /**
- * Resize the canvas to match its display size
+ * Resize the canvas to be responsive while maintaining aspect ratio
  * @param {HTMLCanvasElement} canvas - The canvas element to resize
+ * @returns {Object} The scale factors for width and height
  */
 export function resizeCanvas(canvas) {
-  // Get the width from CSS
-  const displayWidth = canvas.clientWidth;
-  const displayHeight = canvas.clientHeight;
+  // Get the container dimensions
+  const container = canvas.parentElement;
+  const containerWidth = container.clientWidth;
   
-  // Check if the canvas is not the same size
-  if (canvas.width !== displayWidth || canvas.height !== displayHeight) {
-    // Make the canvas the same size
-    canvas.width = displayWidth;
-    canvas.height = displayHeight;
+  // Calculate optimal canvas size based on container
+  let canvasWidth = Math.min(containerWidth, window.innerWidth * 0.95);
+  
+  // For very small screens, ensure minimum usable size
+  canvasWidth = Math.max(canvasWidth, 280);
+  
+  // Calculate height based on aspect ratio
+  let canvasHeight = canvasWidth * ASPECT_RATIO;
+  
+  // Check if height exceeds window height (minus some margin for UI)
+  const maxHeight = window.innerHeight * 0.7;
+  if (canvasHeight > maxHeight) {
+    canvasHeight = maxHeight;
+    canvasWidth = canvasHeight / ASPECT_RATIO;
   }
+  
+  // Apply the dimensions
+  canvas.style.width = `${canvasWidth}px`;
+  canvas.style.height = `${canvasHeight}px`;
+  
+  // Set actual canvas resolution to match display size
+  canvas.width = canvasWidth;
+  canvas.height = canvasHeight;
+  
+  // Calculate scaling factors for game elements
+  SCALE_FACTOR = canvasWidth / BASE_CANVAS_WIDTH;
+  
+  return {
+    widthScale: canvasWidth / BASE_CANVAS_WIDTH,
+    heightScale: canvasHeight / BASE_CANVAS_HEIGHT
+  };
 }
