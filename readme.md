@@ -1,4 +1,4 @@
-# Cross the Box Game
+# Ascend Avoid
 
 A simple canvas game where you control a white block and try to reach the top of the screen without hitting blue obstacle blocks.
 
