@@ -1,7 +1,7 @@
 {
-  "name": "cross-the-box-game",
+  "name": "ascend-avoid",
   "version": "1.0.0",
-  "description": "A simple canvas game where the player needs to cross the box without hitting obstacles",
+  "description": "A multiplayer game where players need to ascend and avoid obstacles",
   "main": "index.html",
   "type": "module",
   "scripts": {
