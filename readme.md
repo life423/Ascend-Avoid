@@ -2,7 +2,6 @@
 
 A simple canvas game where you control a white block and try to reach the top of the screen without hitting blue obstacle blocks.
 
-![Game screenshot showing the Cross the Box game interface](Game_Home.png)
 
 ## Technologies Used
 
