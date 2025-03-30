@@ -19,6 +19,25 @@ export const GAME_SETTINGS = {
   DIFFICULTY_INCREASE_RATE: 0.15, // How quickly difficulty increases with score
 }
 
+// Desktop-specific settings to override base settings on larger screens
+export const DESKTOP_SETTINGS = {
+  // Smaller player on desktop for more precise control
+  PLAYER_SIZE_RATIO: 0.03,
+  
+  // Slightly faster player movement for desktop (lower = faster)
+  MIN_STEP: 10,
+  
+  // Narrower obstacles make game more challenging but fair on desktop
+  OBSTACLE_MIN_WIDTH_RATIO: 0.06,
+  OBSTACLE_MAX_WIDTH_RATIO: 0.15,
+  
+  // Slightly faster baseline speed on desktop
+  BASE_SPEED: 3.0,
+  
+  // Increase difficulty slightly faster on desktop
+  DIFFICULTY_INCREASE_RATE: 0.18
+}
+
 // Key mappings
 export const KEYS = {
   UP: ['ArrowUp', 'Up', 'w', 'W'],

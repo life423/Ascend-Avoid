@@ -222,8 +222,107 @@ h4 {
         --font-xlarge: 36px;
     }
     
-    #instructions, #touch-controls-container {
-        max-width: 700px;
+    /* Smart Canvas Scaling */
+    #wrapper {
+        max-width: 800px;
+        margin: 0 auto;
+        position: relative;
+        /* Maintain aspect ratio that works well on mobile */
+        aspect-ratio: 3 / 4;
+    }
+    
+    /* Canvas adjustments for large screens */
+    canvas {
+        /* Enhanced visual effects for desktop */
+        box-shadow: 0 0 30px var(--primary-glow), 0 0 60px rgba(0, 180, 240, 0.2);
+        border-width: 4px;
+        /* Improve sharpness */
+        image-rendering: crisp-edges;
+    }
+    
+    /* Desktop-Optimized Layout */
+    body {
+        padding: var(--padding-large);
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) 300px;
+        grid-template-areas:
+            "header header"
+            "game sidebar"
+            "controls sidebar";
+        gap: 25px;
+        align-items: start;
+        max-width: 1200px;
+        margin: 0 auto;
+    }
+    
+    /* Assign grid areas to elements */
+    h1 { 
+        grid-area: header; 
+        margin-bottom: 10px;
+    }
+    
+    #headers {
+        /* Move score into sidebar to maximize game space */
+        grid-area: sidebar;
+        text-align: left;
+        margin-top: 0;
+        margin-bottom: 20px;
+        padding: 0;
+        display: flex;
+        flex-direction: column;
+    }
+    
+    #headers h4 {
+        margin-bottom: 10px;
+        font-size: var(--font-large);
+    }
+    
+    #wrapper { 
+        grid-area: game;
+        margin: 0; /* Remove default margins */
+    }
+    
+    #touch-controls-container { 
+        grid-area: controls;
+        margin-top: 0;
+    }
+    
+    #instructions { 
+        grid-area: sidebar;
+        margin-top: 80px; /* Space after the score */
+        height: calc(100% - 80px);
+        max-height: none;
+    }
+    
+    /* Make instructions more prominent on desktop */
+    #instructions h3 {
+        font-size: 22px;
+    }
+    
+    #instructions p, #instructions li {
+        font-size: 16px;
+        line-height: 1.6;
+    }
+    
+    /* Design enhancement: add a container around the sidebar content */
+    .sidebar-container {
+        background: rgba(10, 35, 66, 0.6);
+        border-radius: 8px;
+        padding: 20px;
+        border: 2px solid var(--primary-color);
+        height: 100%;
+    }
+    
+    /* Hide touch controls on desktop unless specifically using touch */
+    #touch-controls-container {
+        display: none;
+    }
+    
+    /* But always show on touch devices regardless of screen size */
+    @media (pointer: coarse) {
+        #touch-controls-container {
+            display: flex !important;
+        }
     }
 }
 

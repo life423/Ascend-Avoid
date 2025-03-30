@@ -2,7 +2,7 @@ import Player from './Player.js'
 import Obstacle from './Obstacle.js'
 import Background from './Background.js'
 import TouchControls from './TouchControls.js'
-import { GAME_SETTINGS, KEYS } from './constants.js'
+import { GAME_SETTINGS, DESKTOP_SETTINGS, KEYS } from './constants.js'
 import { randomIntFromInterval, playSound, resizeCanvas, SCALE_FACTOR, BASE_CANVAS_WIDTH, BASE_CANVAS_HEIGHT } from './utils.js'
 
 // Enable debug mode with query parameter - e.g. ?debug=true
@@ -24,6 +24,15 @@ export default class Game {
         this.lastFrameTime = 0
         this.obstacles = []
         this.particles = []
+        
+        // Check if we're on desktop and apply desktop-specific settings
+        this.isDesktop = window.matchMedia("(min-width: 1200px)").matches;
+        
+        // Override settings for desktop if needed
+        if (this.isDesktop) {
+            console.log('Applying desktop-specific game settings');
+            Object.assign(GAME_SETTINGS, DESKTOP_SETTINGS);
+        }
 
         // Initialize game
         this.init()
@@ -62,6 +71,9 @@ export default class Game {
                 this.touchControls.show();
             }
         }
+        
+        // If on desktop, set up sidebar container for better layout
+        this.setupDesktopLayout();
 
         // Set up event listeners
         this.setupEventListeners()
@@ -70,6 +82,155 @@ export default class Game {
         requestAnimationFrame(this.animate.bind(this))
         
         console.log('Game initialized successfully')
+    }
+    
+    setupDesktopLayout() {
+        // Only apply this on larger screens
+        if (window.matchMedia("(min-width: 1200px)").matches) {
+            console.log('Setting up desktop-optimized layout');
+            
+            // Check if sidebar container doesn't already exist
+            if (!document.getElementById('sidebar-container')) {
+                // Create sidebar container
+                const sidebarContainer = document.createElement('div');
+                sidebarContainer.id = 'sidebar-container';
+                sidebarContainer.className = 'sidebar-container';
+                
+                // Move headers and instructions into sidebar
+                const headers = document.getElementById('headers');
+                const instructions = document.getElementById('instructions');
+                
+                if (headers && instructions) {
+                    // Clone the elements to avoid reference issues
+                    const headersClone = headers.cloneNode(true);
+                    const instructionsClone = instructions.cloneNode(true);
+                    
+                    // Remove elements from their current location
+                    if (headers.parentNode) {
+                        headers.parentNode.removeChild(headers);
+                    }
+                    if (instructions.parentNode) {
+                        instructions.parentNode.removeChild(instructions);
+                    }
+                    
+                    // Add clones to sidebar
+                    sidebarContainer.appendChild(headersClone);
+                    sidebarContainer.appendChild(instructionsClone);
+                    
+                    // Add sidebar after game wrapper
+                    const wrapper = document.getElementById('wrapper');
+                    if (wrapper && wrapper.parentNode) {
+                        wrapper.parentNode.insertBefore(sidebarContainer, wrapper.nextSibling);
+                    }
+                }
+                
+                // Add desktop visual enhancements
+                this.addDesktopVisualEnhancements();
+            }
+        }
+    }
+    
+    addDesktopVisualEnhancements() {
+        // Add keyboard controls visual indicator for desktop
+        const keyboardHelperElement = document.createElement('div');
+        keyboardHelperElement.id = 'keyboard-helper';
+        keyboardHelperElement.className = 'keyboard-helper';
+        keyboardHelperElement.innerHTML = `
+            <div class="key-container">
+                <div class="key-row">
+                    <div class="key wasd">W</div>
+                </div>
+                <div class="key-row">
+                    <div class="key wasd">A</div>
+                    <div class="key wasd">S</div>
+                    <div class="key wasd">D</div>
+                </div>
+                <div class="key-label">WASD to move</div>
+            </div>
+            <div class="key-container">
+                <div class="key-row">
+                    <div class="key arrows">↑</div>
+                </div>
+                <div class="key-row">
+                    <div class="key arrows">←</div>
+                    <div class="key arrows">↓</div>
+                    <div class="key arrows">→</div>
+                </div>
+                <div class="key-label">Arrows to move</div>
+            </div>
+            <div class="key-container">
+                <div class="key restart">R</div>
+                <div class="key-label">Restart</div>
+            </div>
+        `;
+        
+        // Add the keyboard helper to the game container
+        const gameUIContainer = document.getElementById('game-ui-container');
+        if (gameUIContainer) {
+            gameUIContainer.appendChild(keyboardHelperElement);
+            
+            // Add styles for the keyboard helper
+            const style = document.createElement('style');
+            style.textContent = `
+                .keyboard-helper {
+                    display: flex;
+                    justify-content: center;
+                    gap: 30px;
+                    margin: 20px auto;
+                    max-width: 800px;
+                }
+                
+                .key-container {
+                    display: flex;
+                    flex-direction: column;
+                    align-items: center;
+                    margin: 0 10px;
+                }
+                
+                .key-row {
+                    display: flex;
+                    gap: 5px;
+                    margin: 5px 0;
+                }
+                
+                .key {
+                    width: 40px;
+                    height: 40px;
+                    background: rgba(0, 0, 0, 0.4);
+                    border: 2px solid var(--primary-color);
+                    border-radius: 6px;
+                    display: flex;
+                    justify-content: center;
+                    align-items: center;
+                    font-size: 18px;
+                    color: white;
+                    box-shadow: 0 0 10px var(--primary-glow);
+                }
+                
+                .key.arrows {
+                    font-size: 22px;
+                }
+                
+                .key.restart {
+                    background: rgba(255, 60, 60, 0.2);
+                    border-color: rgba(255, 60, 60, 0.8);
+                }
+                
+                .key-label {
+                    margin-top: 8px;
+                    font-size: 14px;
+                    color: var(--highlight-color);
+                }
+                
+                /* Hide on mobile/touch devices */
+                @media (max-width: 1199px), (pointer: coarse) {
+                    .keyboard-helper {
+                        display: none;
+                    }
+                }
+            `;
+            document.head.appendChild(style);
+        }
     }
 
     initObstacles() {
@@ -435,15 +596,60 @@ export default class Game {
         this.checkForWinner()
 
         // Draw game boundaries if needed for clarity
-        if (this.score > 5) {
+        if (this.score > 5 || this.isDesktop) {
             // Show winning line for visibility at higher difficulty
             const scaledWinningLine = GAME_SETTINGS.WINNING_LINE * (this.canvas.height / BASE_CANVAS_HEIGHT);
-            this.ctx.beginPath()
-            this.ctx.moveTo(0, scaledWinningLine)
-            this.ctx.lineTo(this.canvas.width, scaledWinningLine)
-            this.ctx.strokeStyle = 'rgba(255,255,255,0.3)'
-            this.ctx.stroke()
+            
+            // Enhanced visual feedback for desktop
+            if (this.isDesktop) {
+                // Draw animated winning line with glow effect
+                this.ctx.beginPath();
+                this.ctx.moveTo(0, scaledWinningLine);
+                this.ctx.lineTo(this.canvas.width, scaledWinningLine);
+                const glowIntensity = 0.3 + 0.2 * Math.sin(timestamp / 500); // Pulsing effect
+                this.ctx.strokeStyle = `rgba(0, 255, 255, ${glowIntensity})`;
+                this.ctx.lineWidth = 2;
+                this.ctx.stroke();
+                
+                // Draw subtle grid pattern on desktop
+                if (window.DEBUG || this.score > 5) {
+                    this.drawGridPattern();
+                }
+            } else {
+                // Standard line for mobile
+                this.ctx.beginPath()
+                this.ctx.moveTo(0, scaledWinningLine)
+                this.ctx.lineTo(this.canvas.width, scaledWinningLine)
+                this.ctx.strokeStyle = 'rgba(255,255,255,0.3)'
+                this.ctx.stroke()
+            }
         }
+    }
+    
+    /**
+     * Draw a subtle grid pattern for desktop view to enhance visual depth
+     */
+    drawGridPattern() {
+        // Draw a subtle grid pattern visible only on desktop
+        this.ctx.beginPath();
+        this.ctx.strokeStyle = "rgba(0, 255, 255, 0.05)";
+        this.ctx.lineWidth = 0.5;
+        
+        const gridSize = 30;
+        
+        // Vertical lines
+        for (let x = 0; x < this.canvas.width; x += gridSize) {
+            this.ctx.moveTo(x, 0);
+            this.ctx.lineTo(x, this.canvas.height);
+        }
+        
+        // Horizontal lines
+        for (let y = 0; y < this.canvas.height; y += gridSize) {
+            this.ctx.moveTo(0, y);
+            this.ctx.lineTo(this.canvas.width, y);
+        }
+        
+        this.ctx.stroke();
     }
     
     /**
