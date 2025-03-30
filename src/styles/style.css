@@ -88,15 +88,17 @@ h4 {
     justify-content: center;
     align-items: center;
     max-width: 100%;
+    min-height: 550px;
     overflow: hidden;
     margin: 0 auto;
-    max-height: 70vh; /* Limit height to ensure controls and instructions are visible */
+    max-height: 80vh; /* Increased from 70vh to allow more canvas space */
 }
 
 #canvas {
     display: block;
-    max-width: 100%;
-    height: auto;
+    width: 100%;
+    height: 100%;
+    max-width: 1200px; /* Set a max-width to prevent excessive stretching */
     margin: 0 auto;
 }
 
@@ -119,8 +121,6 @@ h4 {
     width: 70px;
     height: 70px;
     display: flex;
-    justify-content: center;
-    align-items: center;
     font-size: 28px;
     color: white;
     margin: var(--margin-small);
@@ -216,106 +216,110 @@ h4 {
 
 /* Large desktops and high-res tablets (landscape) */
 @media screen and (min-width: 1200px) {
+    /* Basic root variable adjustments */
     :root {
         --padding-large: 20px;
         --margin-large: 30px;
         --font-xlarge: 36px;
     }
     
-    /* Smart Canvas Scaling */
-    #wrapper {
-        max-width: 800px;
-        margin: 0 auto;
-        position: relative;
-        /* Maintain aspect ratio that works well on mobile */
-        aspect-ratio: 3 / 4;
-    }
-    
-    /* Canvas adjustments for large screens */
-    canvas {
-        /* Enhanced visual effects for desktop */
-        box-shadow: 0 0 30px var(--primary-glow), 0 0 60px rgba(0, 180, 240, 0.2);
-        border-width: 4px;
-        /* Improve sharpness */
-        image-rendering: crisp-edges;
-    }
-    
-    /* Desktop-Optimized Layout */
+    /* Core body styling for desktop layout */
     body {
-        padding: var(--padding-large);
-        display: grid;
-        grid-template-columns: minmax(0, 1fr) 300px;
+        padding: 20px !important;
+        max-width: 1400px;
+        margin: 0 auto;
+        display: grid !important;
+        grid-template-columns: 2fr 1fr !important;
         grid-template-areas:
             "header header"
-            "game sidebar"
-            "controls sidebar";
-        gap: 25px;
-        align-items: start;
-        max-width: 1200px;
-        margin: 0 auto;
+            "game sidebar" !important;
+        gap: 30px !important;
+        align-items: start !important;
     }
     
-    /* Assign grid areas to elements */
-    h1 { 
-        grid-area: header; 
-        margin-bottom: 10px;
+    /* Heading placement */
+    h1 {
+        grid-area: header !important;
+        margin-bottom: 40px !important;
+        font-size: 42px !important;
+        letter-spacing: 3px !important;
+        text-align: center !important;
     }
     
+    /* Game wrapper - FORCE larger size */
+    #wrapper {
+        grid-area: game !important;
+        width: 100% !important;
+        max-width: none !important; 
+        min-width: 600px !important;
+        min-height: 600px !important;
+        margin: 0 !important;
+        position: relative !important;
+        aspect-ratio: 3 / 4 !important;
+        max-height: 800px !important;
+        overflow: visible !important;
+    }
+    
+    /* Canvas - FORCE it to be as large as possible */
+    canvas, #canvas {
+        width: 100% !important;
+        height: auto !important;
+        min-height: 550px !important;
+        box-shadow: 0 0 30px var(--primary-glow), 0 0 60px rgba(0, 180, 240, 0.2) !important;
+        border-width: 4px !important;
+        image-rendering: crisp-edges !important;
+        display: block !important;
+        max-width: 100% !important;
+    }
+    
+    /* Game UI container */
+    #game-ui-container {
+        grid-area: sidebar !important;
+        margin: 0 !important;
+    }
+    
+    /* Sidebar elements */
+    #headers, #instructions {
+        background: rgba(10, 35, 66, 0.6) !important;
+        border-radius: 8px !important;
+        padding: 20px !important;
+        border: 2px solid var(--primary-color) !important;
+        box-shadow: 0 0 25px rgba(0, 180, 240, 0.2) !important;
+        width: 100% !important;
+        max-width: none !important;
+        margin: 0 0 20px 0 !important;
+    }
+    
+    /* Score headers */
     #headers {
-        /* Move score into sidebar to maximize game space */
-        grid-area: sidebar;
-        text-align: left;
-        margin-top: 0;
-        margin-bottom: 20px;
-        padding: 0;
-        display: flex;
-        flex-direction: column;
+        text-align: left !important;
+        display: flex !important;
+        flex-direction: column !important;
     }
     
     #headers h4 {
-        margin-bottom: 10px;
-        font-size: var(--font-large);
+        margin-bottom: 10px !important;
+        font-size: var(--font-large) !important;
+        display: block !important;
     }
     
-    #wrapper { 
-        grid-area: game;
-        margin: 0; /* Remove default margins */
+    /* Instructions formatting */
+    #instructions {
+        margin-top: 20px !important;
     }
     
-    #touch-controls-container { 
-        grid-area: controls;
-        margin-top: 0;
-    }
-    
-    #instructions { 
-        grid-area: sidebar;
-        margin-top: 80px; /* Space after the score */
-        height: calc(100% - 80px);
-        max-height: none;
-    }
-    
-    /* Make instructions more prominent on desktop */
     #instructions h3 {
-        font-size: 22px;
+        font-size: 22px !important;
     }
     
     #instructions p, #instructions li {
-        font-size: 16px;
-        line-height: 1.6;
+        font-size: 16px !important;
+        line-height: 1.6 !important;
     }
     
-    /* Design enhancement: add a container around the sidebar content */
-    .sidebar-container {
-        background: rgba(10, 35, 66, 0.6);
-        border-radius: 8px;
-        padding: 20px;
-        border: 2px solid var(--primary-color);
-        height: 100%;
-    }
-    
-    /* Hide touch controls on desktop unless specifically using touch */
+    /* Hide touch controls on desktop unless using touch */
     #touch-controls-container {
-        display: none;
+        display: none !important;
     }
     
     /* But always show on touch devices regardless of screen size */
@@ -323,6 +327,28 @@ h4 {
         #touch-controls-container {
             display: flex !important;
         }
+    }
+    
+    /* Show keyboard controls instead */
+    .keyboard-helper {
+        margin-top: 30px !important;
+        display: flex !important;
+    }
+}
+
+/* Debug Helper - adds a border to help visualize layout problems */
+.debug-border {
+    border: 2px solid red !important;
+}
+
+/* Force larger canvas on larger screens */
+@media screen and (min-width: 1400px) {
+    #wrapper {
+        min-width: 800px !important;
+    }
+    
+    canvas, #canvas {
+        min-height: 700px !important;
     }
 }
 

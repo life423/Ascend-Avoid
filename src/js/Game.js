@@ -87,46 +87,71 @@ export default class Game {
     setupDesktopLayout() {
         // Only apply this on larger screens
         if (window.matchMedia("(min-width: 1200px)").matches) {
-            console.log('Setting up desktop-optimized layout');
+            console.log('Setting up desktop-optimized layout with CSS Grid');
             
-            // Check if sidebar container doesn't already exist
-            if (!document.getElementById('sidebar-container')) {
-                // Create sidebar container
-                const sidebarContainer = document.createElement('div');
-                sidebarContainer.id = 'sidebar-container';
-                sidebarContainer.className = 'sidebar-container';
+            // Instead of manipulating DOM, just add classes that our CSS will target
+            document.body.classList.add('desktop-layout');
+            
+            // Directly set canvas size to ensure it's large
+            if (this.canvas) {
+                // Force canvas to be properly sized
+                this.canvas.style.width = '100%';
+                this.canvas.style.minHeight = '550px';
                 
-                // Move headers and instructions into sidebar
-                const headers = document.getElementById('headers');
-                const instructions = document.getElementById('instructions');
+                // Debug output
+                console.log(`INITIAL Canvas size: ${this.canvas.width}x${this.canvas.height}`);
                 
-                if (headers && instructions) {
-                    // Clone the elements to avoid reference issues
-                    const headersClone = headers.cloneNode(true);
-                    const instructionsClone = instructions.cloneNode(true);
-                    
-                    // Remove elements from their current location
-                    if (headers.parentNode) {
-                        headers.parentNode.removeChild(headers);
-                    }
-                    if (instructions.parentNode) {
-                        instructions.parentNode.removeChild(instructions);
-                    }
-                    
-                    // Add clones to sidebar
-                    sidebarContainer.appendChild(headersClone);
-                    sidebarContainer.appendChild(instructionsClone);
-                    
-                    // Add sidebar after game wrapper
-                    const wrapper = document.getElementById('wrapper');
-                    if (wrapper && wrapper.parentNode) {
-                        wrapper.parentNode.insertBefore(sidebarContainer, wrapper.nextSibling);
-                    }
+                // Force a resize to ensure game elements scale properly
+                const { widthScale, heightScale } = resizeCanvas(this.canvas);
+                console.log(`AFTER RESIZE: Canvas size: ${this.canvas.width}x${this.canvas.height}`);
+                
+                // Update game elements with new scale
+                this.player.resetPosition();
+                for (const obstacle of this.obstacles) {
+                    obstacle.calculateHeight();
                 }
-                
-                // Add desktop visual enhancements
-                this.addDesktopVisualEnhancements();
             }
+            
+            // Add desktop visual enhancements
+            this.addDesktopVisualEnhancements();
+            
+            // Add special resize handler for desktop
+            window.addEventListener('resize', this.handleDesktopResize.bind(this));
+            
+            // Force an initial resize
+            setTimeout(() => {
+                // This timeout ensures the CSS has been applied before we resize
+                if (this.canvas) {
+                    const { widthScale, heightScale } = resizeCanvas(this.canvas);
+                    console.log(`DELAYED RESIZE: Canvas size: ${this.canvas.width}x${this.canvas.height}`);
+                }
+            }, 100);
+        }
+    }
+    
+    /**
+     * Special resize handler for desktop to ensure canvas stays large
+     */
+    handleDesktopResize() {
+        if (!window.matchMedia("(min-width: 1200px)").matches) return;
+        
+        console.log('Desktop resize event');
+        
+        if (this.canvas) {
+            // Force canvas to maintain large size
+            this.canvas.style.width = '100%';
+            this.canvas.style.minHeight = '550px';
+            
+            // Perform resize with updated dimensions
+            const { widthScale, heightScale } = resizeCanvas(this.canvas);
+            
+            // Update game elements
+            this.player.resetPosition();
+            for (const obstacle of this.obstacles) {
+                obstacle.calculateHeight();
+            }
+            
+            console.log(`After resize: ${this.canvas.width}x${this.canvas.height}`);
         }
     }
     

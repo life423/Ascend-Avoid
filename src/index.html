@@ -6,10 +6,54 @@
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <title>Cross the Box</title>
     <link rel="stylesheet" href="styles/style.css">
+    <style>
+        /* Fallback styles to prevent visual jumps during layout adjustment */
+        @media screen and (min-width: 1200px) {
+            body.desktop-layout {
+                max-width: 1400px;
+                margin: 0 auto;
+            }
+            .game-content-wrapper {
+                display: flex;
+                flex-direction: row;
+                justify-content: center;
+                align-items: flex-start;
+                gap: 30px;
+                margin: 0 auto;
+                max-width: 1400px;
+            }
+            .game-content-wrapper #wrapper {
+                width: 60%;
+                max-width: 900px;
+            }
+            .game-content-wrapper .sidebar-container {
+                width: 30%;
+                max-width: 400px;
+                background: rgba(10, 35, 66, 0.6);
+                border-radius: 8px;
+                padding: 20px;
+                border: 2px solid #0CC7C7;
+                box-shadow: 0 0 25px rgba(0, 180, 240, 0.2);
+                margin-top: 50px;
+            }
+        }
+    </style>
+    <script>
+        // Apply desktop layout class on load if needed
+        document.addEventListener('DOMContentLoaded', function() {
+            if (window.matchMedia("(min-width: 1200px)").matches) {
+                document.body.classList.add('desktop-layout');
+            }
+        });
+    </script>
 </head>
 <body>
     <h1>Cross the Box</h1>
     
+    <!-- This div will be populated by JS for desktop layout -->
+    <div id="desktop-layout-container"></div>
+    
+    <!-- Mobile layout elements - these will be moved by JS on desktop -->
     <div id="headers">
         <h4>High Score: <span id="highScore">0</span></h4>
         <h4>Score: <span id="score">0</span></h4>
