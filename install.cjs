@@ -5,7 +5,7 @@ const fs = require('fs');
 const path = require('path');
 
 console.log('===================================================');
-console.log('  Cross the Box Game - Installation Script         ');
+console.log('  Ascend Avoid - Installation Script         ');
 console.log('===================================================');
 console.log('');
 
@@ -48,7 +48,7 @@ if (!fs.existsSync(readmeShortcutPath)) {
   }
 }
 
-console.log('\n🎮 Cross the Box Game is ready to play!');
+console.log('\n🎮 Ascend Avoid is ready to play!');
 console.log('\nTo start the game, run one of the following commands:');
 console.log('  • npm run dev');
 console.log('  • npm start');
