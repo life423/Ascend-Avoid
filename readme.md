@@ -1,103 +1,130 @@
+<<<<<<< Updated upstream
 # Ascend Avoid
+=======
+# Cross the Box Game - Multiplayer Edition
+>>>>>>> Stashed changes
 
-A simple canvas game where you control a white block and try to reach the top of the screen without hitting blue obstacle blocks.
+## Overview
 
+This repository contains a browser-based game called "Cross the Box" which has been enhanced with multiplayer functionality. The game allows up to 30 simultaneous players to compete in a "Last Player Standing" mode.
 
-## Technologies Used
+## Features
 
-- JavaScript (ES6+)
-- HTML5 Canvas
-- CSS3
-- npm for development server
-- Jest for testing
+- **Single Player Mode**: Cross the screen as many times as possible without colliding with obstacles
+- **Last Player Standing Multiplayer Mode**: Compete with up to 30 players to be the last survivor
+- **Shrinking Arena**: The play area shrinks over time, forcing players closer together
+- **Real-time Synchronization**: Fast WebSocket-based updates for smooth gameplay
+- **Player Identity**: Each player is assigned a unique color for easy identification
+- **Spectator Mode**: Continue watching after elimination
 
-## Game Features
+## Implementation Architecture
 
-- Responsive design works on both desktop and mobile devices
-- Touch controls for mobile gameplay
-- Frame-rate independent animation for consistent gameplay on all devices
-- Difficulty increases as your score increases
-- Simple one-button restart
-- Smart obstacle spawning to prevent overlaps
+### Server-Side Components
 
-## How to Play
+The multiplayer functionality is built on a server-authoritative model using the following technologies:
 
-The point of the game is to get the white block to the other side of the canvas without hitting the blue blocks. The speed and number of blocks increase based on your score.
+- **Colyseus**: WebSocket-based game server framework for Node.js
+- **Schema-based State Synchronization**: Efficient delta updates for minimal network traffic
+- **Express**: Web server for serving static assets and API endpoints
+- **Room-based Matchmaking**: Players are grouped into game rooms with up to 30 players
 
-- Use arrow keys to move on desktop
-- Swipe to move on mobile devices
-- Press 'R' to restart the game
+### Client-Side Components
 
-## Development Setup
+The client implementation takes advantage of:
 
-### Prerequisites
+- **Client-side Prediction**: Immediate local response to player input
+- **State Reconciliation**: Corrections applied when server state differs
+- **Interpolation**: Smooth movement of remote players
+- **Responsive UI**: Adaptive interface for both desktop and mobile devices
 
-- Node.js (version 16 or higher)
-- npm (comes with Node.js)
+### Network Communication
 
-### Running Locally
+- **WebSockets**: Bi-directional, low-latency communication
+- **Binary State Serialization**: Minimizes bandwidth requirements
+- **Delta Encoding**: Only transmits state changes, not the full state
 
-1. Clone this repository or download the code
-2. Navigate to the project directory in your terminal
-3. Install dependencies:
+## Project Structure
 
-   ```bash
-   npm install
-   ```
-4. Start the development server:
-
-   ```bash
-   npm run dev
-   ```
-   or
-
-   ```bash
-   npm start
-   ```
-
-This will automatically open the game in your default browser at `http://localhost:8080`.
-
-### Running Tests
-
-The game includes a suite of unit tests to ensure proper functionality:
-
-```bash
-npm test
+```
+.
+├── server/                 # Server-side code
+│   ├── index.js            # Main server entry point
+│   ├── rooms/              # Colyseus room implementations
+│   │   └── GameRoom.js     # Game room with Last Player Standing logic
+│   └── schema/             # Colyseus schema definitions
+│       ├── GameState.js    # Main game state schema
+│       ├── PlayerSchema.js # Player data schema
+│       └── ObstacleSchema.js # Obstacle data schema
+├── shared/                 # Code shared between client and server
+│   └── utils/
+│       └── gameConstants.js # Game constants shared by client and server
+├── src/                     # Client-side code
+│   ├── index.html           # Main HTML
+│   ├── styles/              # CSS styles
+│   ├── assets/              # Game assets
+│   └── js/                  # Game logic
+│       ├── Game.js          # Main game controller
+│       ├── Player.js        # Player entity
+│       ├── MultiplayerManager.js # Client-side multiplayer handling
+│       ├── MultiplayerUI.js # Multiplayer user interface
+│       └── ... (other game files)
+└── package.json            # Project dependencies
 ```
 
-You can also run tests in watch mode during development:
+## How to Run
+
+### Running the Server
+
+To start the multiplayer server:
 
 ```bash
-npm run test:watch
+# Navigate to the server directory
+cd server
+
+# Install dependencies (first time only)
+npm install
+
+# Start the server
+npm start
 ```
 
-Or generate test coverage reports:
+The server will run on port 3000 by default. You can access the Colyseus monitor dashboard at `http://localhost:3000/colyseus`.
+
+### Running the Client
+
+To run the client:
 
 ```bash
-npm run test:coverage
+# From the project root
+npm run dev
 ```
 
-## What I Learned Building This Game
+This will start a local development server and open the game in your browser.
 
-I learned how to use classes and DOM manipulation. I started out hard coding where the blue blocks would appear, the size of the blue blocks, and how many blue blocks would be rendered in the canvas. This created a problem of WET (Write Everything Twice) code and limited the scope of the project.
+## How to Play Multiplayer
 
-### Using Classes
+1. Start the multiplayer server as described above
+2. Open the game in your browser
+3. Click the "Multiplayer" button in the top-right corner
+4. Enter your player name and the server address (default: `ws://localhost:3000`)
+5. Click "Connect" to join a game
+6. Wait for other players to join (minimum 2 players needed to start)
+7. Game will automatically start with a countdown once enough players join
+8. Use arrow keys or WASD to move your player
+9. Avoid obstacles and stay within the arena boundary
+10. The last player surviving wins!
 
-Using classes unlocked a whole new potential. I no longer had to hard code the size, position, or amount of blue blocks that would cross the canvas. I could also base the speed and amount of blocks upon the score. I was also able to randomize where the blue blocks would start along the y-axis of the canvas.
+## Development Notes
 
-### Responsive Design
+- The server is built to handle up to 30 concurrent players per room
+- The arena shrinks at regular intervals, making the game more challenging over time
+- Player movement uses client-side prediction with server authority for conflict resolution
+- When a player collides with an obstacle or leaves the arena boundary, they are eliminated
 
-The latest version includes responsive design principles, making the game playable on devices of all sizes. The game elements scale proportionally based on the screen size.
+## Future Enhancements
 
-### Collision Prevention
-
-The game now features intelligent obstacle spawning logic to prevent obstacles from overlapping each other, providing a more fair and enjoyable gameplay experience.
-
-## Target Users
-
-This game is designed to be accessible to players of all ages and experience levels:
-
-- Casual gamers looking for a quick, simple game
-- Mobile users who want a responsive touch experience
-- Players of all ages (5 to 75+) who enjoy simple arcade-style games
-- People looking for a quick distraction during breaks
+- Power-ups and special abilities
+- Multiple arena types with different obstacle patterns
+- Improved matchmaking with skill-based pairing
+- Chat functionality for player communication
+- Customizable player appearance

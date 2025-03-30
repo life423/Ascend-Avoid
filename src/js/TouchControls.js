@@ -233,4 +233,14 @@ export default class TouchControls {
       this.container.style.display = 'flex';
     }
   }
+  
+  /**
+   * Draw the touch controls - empty method to match Game's expectations
+   * Since we're using DOM elements, no actual canvas drawing is needed
+   */
+  draw() {
+    // No canvas drawing needed - controls are DOM elements
+    // This method exists to match the Game class expectations
+    return; // Explicitly return to ensure method is recognized
+  }
 }

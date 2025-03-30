@@ -121,6 +121,8 @@ h4 {
     width: 70px;
     height: 70px;
     display: flex;
+    justify-content: center;
+    align-items: center;
     font-size: 28px;
     color: white;
     margin: var(--margin-small);

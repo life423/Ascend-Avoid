@@ -43,5 +43,8 @@
     "not dead",
     "not ie <= 11",
     "not op_mini all"
-  ]
+  ],
+  "dependencies": {
+    "colyseus.js": "^0.16.15"
+  }
 }

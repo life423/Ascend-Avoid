@@ -72,8 +72,8 @@ export default class Player {
     // Calculate scaled winning line position
     const scaledWinningLine = GAME_SETTINGS.WINNING_LINE * (this.canvas.height / BASE_CANVAS_HEIGHT);
     
-    // Move up - Prevent player from going above winning line
-    if (this.movementKeys.up && this.canMove.up && this.y > scaledWinningLine + (10 * SCALE_FACTOR)) {
+    // Move up - Allow player to reach the winning line
+    if (this.movementKeys.up && this.canMove.up && this.y > scaledWinningLine - (this.height / 2)) {
       this.y -= moveY;
       this.canMove.up = false;
     }
