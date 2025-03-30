@@ -1,0 +1,20 @@
+version: '3.8'
+
+services:
+  game-server:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"  # Server port
+      - "8080:8080"  # Client dev server port
+    environment:
+      - NODE_ENV=development
+      - PORT=3000
+    volumes:
+      # Mount source for hot reloading
+      - ./server:/app/server
+      - ./shared:/app/shared
+      - ./src:/app/src
+    command: >
+      sh -c "cd /app && npm run dev & cd /app/server && npm run dev"

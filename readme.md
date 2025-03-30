@@ -77,7 +77,9 @@ The client implementation takes advantage of:
 
 ## How to Run
 
-### Running the Server
+### Option 1: Local Development (Without Docker)
+
+#### Running the Server
 
 To start the multiplayer server:
 
@@ -94,7 +96,7 @@ npm start
 
 The server will run on port 3000 by default. You can access the Colyseus monitor dashboard at `http://localhost:3000/colyseus`.
 
-### Running the Client
+#### Running the Client
 
 To run the client:
 
@@ -104,6 +106,30 @@ npm run dev
 ```
 
 This will start a local development server and open the game in your browser.
+
+### Option 2: Using Docker
+
+This project supports Docker for both development and production environments.
+
+#### Development
+
+To run the game in development mode with live reloading:
+
+```bash
+# From project root
+docker-compose -f docker-compose.yml -f docker/docker-compose.dev.yml up --build
+```
+
+#### Production
+
+To run the game in production mode:
+
+```bash
+# From project root
+docker-compose -f docker-compose.yml -f docker/docker-compose.prod.yml up --build
+```
+
+For more details about Docker setup, see [Docker README](docker/README.md).
 
 ## How to Play Multiplayer
 

@@ -16,8 +16,12 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-// Serve static files from the client directory
-app.use(express.static("src"));
+// Serve static files from the appropriate directory based on environment
+if (process.env.NODE_ENV === 'production') {
+  app.use(express.static("dist"));
+} else {
+  app.use(express.static("src"));
+}
 
 // Create HTTP server
 const httpServer = createServer(app);

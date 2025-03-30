@@ -1,0 +1,22 @@
+name: ascend-avoid
+region: nyc
+services:
+  - name: ascend-avoid-web
+    github:
+      branch: main
+      deploy_on_push: true
+      repo: YOUR_GITHUB_USERNAME/ascend-avoid
+    http_port: 3000
+    instance_count: 1
+    instance_size_slug: basic-xs
+    source_dir: /
+    envs:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: "3000"
+    health_check:
+      http_path: /
+      port: 3000
+    routes:
+      - path: /
