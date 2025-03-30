@@ -23,6 +23,7 @@ This repository contains a browser-based game called "Cross the Box" which has b
 
 ## Implementation Architecture
 
+
 ### Server-Side Components
 
 The multiplayer functionality is built on a server-authoritative model using the following technologies:
