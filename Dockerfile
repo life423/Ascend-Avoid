@@ -4,7 +4,8 @@
 FROM node:18-alpine AS client-builder
 WORKDIR /app
 COPY package*.json ./
-RUN npm install
+COPY install.cjs ./
+RUN npm install --legacy-peer-deps
 COPY . .
 RUN npm run build
 
@@ -13,7 +14,7 @@ FROM node:18-alpine
 WORKDIR /app
 # Copy server dependencies and install
 COPY server/package*.json ./server/
-RUN cd server && npm install --production
+RUN cd server && npm install --production --legacy-peer-deps
 # Copy shared utilities
 COPY shared ./shared
 # Copy built client assets
