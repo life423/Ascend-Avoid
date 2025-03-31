@@ -23,7 +23,7 @@ jobs:
 
   build-and-deploy:
     needs: test
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    if: github.event_name == 'push' && github.ref == 'refs/heads/master'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
@@ -31,26 +31,42 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v2
       
-      - name: Login to GitHub Container Registry
+      - name: Login to Docker Hub
         uses: docker/login-action@v2
         with:
-          registry: ghcr.io
-          username: ${{ github.repository_owner }}
-          password: ${{ secrets.GITHUB_TOKEN }}
+          registry: docker.io
+          username: aiandrew631
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
       
       - name: Build and push Docker image
         uses: docker/build-push-action@v4
         with:
           context: .
           push: true
-          tags: ghcr.io/${{ github.repository_owner }}/ascend-avoid:latest
-          cache-from: type=registry,ref=ghcr.io/${{ github.repository_owner }}/ascend-avoid:buildcache
-          cache-to: type=registry,ref=ghcr.io/${{ github.repository_owner }}/ascend-avoid:buildcache,mode=max
+          tags: aiandrew631/ascend-avoid:latest
+          cache-from: type=registry,ref=aiandrew631/ascend-avoid:buildcache
+          cache-to: type=registry,ref=aiandrew631/ascend-avoid:buildcache,mode=max
       
-      # Deployment (customize based on your hosting provider)
-      - name: Deploy to Cloud Provider
-        run: |
-          echo "Deploying to cloud provider..."
-          # Add specific deployment commands for your chosen provider
-          # For example, for Digital Ocean App Platform:
-          # doctl app create --spec app-spec.yaml
+      # Azure Login and Deployment
+      - name: Azure Login
+        uses: azure/login@v1
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+      
+      # Deploy to Azure Container App
+      - name: Deploy to Azure Container App
+        uses: azure/container-apps-deploy-action@v1
+        with:
+          appSourcePath: ${{ github.workspace }}
+          containerAppName: ascend
+          resourceGroup: DefaultResourceGroup-EUS
+          imageToDeploy: docker.io/aiandrew631/ascend-avoid:latest
+          targetPort: 3000
+          ingress: external
+          environmentVariables: >
+            NODE_ENV=production
+            PORT=3000
+          enableDapr: false
+          maxReplicas: 5
+          minReplicas: 1
+          revisionMode: single
