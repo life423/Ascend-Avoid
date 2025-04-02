@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Basic Test</title>
+    <style>
+        body {
+            font-family: system-ui, sans-serif;
+            background: #111;
+            color: #fff;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        canvas {
+            background: black;
+            border: 4px solid cyan;
+            margin: 20px auto;
+            display: block;
+            max-width: 100%;
+        }
+        button {
+            background: #0CC7C7;
+            border: none;
+            padding: 8px 16px;
+            color: black;
+            font-weight: bold;
+            cursor: pointer;
+            margin: 10px 0;
+        }
+        #debug {
+            background: #000;
+            padding: 10px;
+            border-radius: 4px;
+            overflow: auto;
+            font-family: monospace;
+            white-space: pre-wrap;
+            word-break: break-all;
+        }
+    </style>
+</head>
+<body>
+    <h1>Basic Responsive Canvas Test</h1>
+    
+    <div id="controls">
+        <button id="resize-smaller">Make Smaller</button>
+        <button id="resize-larger">Make Larger</button>
+        <button id="resize-mobile">Simulate Mobile</button>
+        <button id="resize-desktop">Simulate Desktop</button>
+    </div>
+    
+    <div id="canvas-container" style="width: 80%; max-width: 800px; margin: 0 auto;">
+        <canvas id="game-canvas"></canvas>
+    </div>
+    
+    <div id="debug">Log output will appear here...</div>
+    
+    <script>
+        // Simple logging function
+        function log(message) {
+            const debug = document.getElementById('debug');
+            debug.textContent += message + "\n";
+            console.log(message);
+        }
+        
+        // Canvas setup
+        const canvas = document.getElementById('game-canvas');
+        const ctx = canvas.getContext('2d');
+        const container = document.getElementById('canvas-container');
+        
+        // Constants
+        const BASE_WIDTH = 560;
+        const BASE_HEIGHT = 550;
+        const ASPECT_RATIO = BASE_HEIGHT / BASE_WIDTH;
+        
+        // State
+        let currentScale = 1;
+        
+        // Device detection
+        function detectDevice() {
+            return {
+                isTouchDevice: 'ontouchstart' in window || navigator.maxTouchPoints > 0,
+                isMobile: window.innerWidth < 768,
+                isTablet: window.innerWidth >= 768 && window.innerWidth < 1200,
+                isDesktop: window.innerWidth >= 1200,
+                isHighDPI: window.devicePixelRatio > 1,
+                isLandscape: window.innerWidth > window.innerHeight,
+            };
+        }
+        
+        // Resize function
+        function resizeCanvas() {
+            // Get container dimensions
+            const containerWidth = container.clientWidth;
+            
+            // Calculate canvas size
+            let canvasWidth = containerWidth;
+            let canvasHeight = canvasWidth * ASPECT_RATIO;
+            
+            // Set display size (CSS)
+            canvas.style.width = canvasWidth + 'px';
+            canvas.style.height = canvasHeight + 'px';
+            
+            // Set actual drawing buffer size
+            canvas.width = canvasWidth;
+            canvas.height = canvasHeight;
+            
+            // Calculate scale factor
+            currentScale = canvasWidth / BASE_WIDTH;
+            
+            // Log info
+            log(`Canvas resized to ${canvas.width}x${canvas.height} (scale: ${currentScale.toFixed(2)})`);
+            
+            // Draw demo content
+            drawDemo();
+            
+            return {
+                widthScale: canvasWidth / BASE_WIDTH,
+                heightScale: canvasHeight / BASE_HEIGHT,
+            };
+        }
+        
+        // Draw demo content
+        function drawDemo() {
+            // Clear canvas
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            // Draw border
+            ctx.strokeStyle = '#0CC7C7';
+            ctx.lineWidth = 2;
+            ctx.strokeRect(2, 2, canvas.width - 4, canvas.height - 4);
+            
+            // Draw grid
+            const gridSize = 40 * currentScale;
+            ctx.beginPath();
+            ctx.strokeStyle = "rgba(0, 255, 255, 0.2)";
+            ctx.lineWidth = 1;
+            
+            // Vertical lines
+            for (let x = 0; x < canvas.width; x += gridSize) {
+                ctx.moveTo(x, 0);
+                ctx.lineTo(x, canvas.height);
+            }
+            
+            // Horizontal lines
+            for (let y = 0; y < canvas.height; y += gridSize) {
+                ctx.moveTo(0, y);
+                ctx.lineTo(canvas.width, y);
+            }
+            ctx.stroke();
+            
+            // Draw player
+            const playerSize = 30 * currentScale;
+            ctx.fillStyle = 'white';
+            ctx.fillRect(
+                canvas.width / 2 - playerSize / 2,
+                canvas.height / 2 - playerSize / 2,
+                playerSize,
+                playerSize
+            );
+            
+            // Draw obstacles
+            ctx.fillStyle = '#2196F3';
+            for (let i = 0; i < 5; i++) {
+                const width = (30 + i * 10) * currentScale;
+                const height = 20 * currentScale;
+                const x = (100 + i * 80) * currentScale;
+                const y = (100 + i * 50) * currentScale;
+                
+                ctx.fillRect(x, y, width, height);
+            }
+            
+            // Draw text
+            ctx.font = `${16 * currentScale}px sans-serif`;
+            ctx.fillStyle = 'white';
+            ctx.textAlign = 'center';
+            ctx.fillText(
+                `Canvas: ${canvas.width}x${canvas.height} (Scale: ${currentScale.toFixed(2)})`,
+                canvas.width / 2,
+                30 * currentScale
+            );
+        }
+        
+        // Initialize
+        window.addEventListener('load', () => {
+            log('Initializing canvas...');
+            resizeCanvas();
+            
+            // Log device info
+            const device = detectDevice();
+            log('Device Info:');
+            log(JSON.stringify(device, null, 2));
+            
+            // Handle window resize
+            window.addEventListener('resize', resizeCanvas);
+            
+            // Button controls
+            document.getElementById('resize-smaller').addEventListener('click', () => {
+                container.style.width = '60%';
+                resizeCanvas();
+            });
+            
+            document.getElementById('resize-larger').addEventListener('click', () => {
+                container.style.width = '90%';
+                resizeCanvas();
+            });
+            
+            document.getElementById('resize-mobile').addEventListener('click', () => {
+                container.style.width = '320px';
+                resizeCanvas();
+            });
+            
+            document.getElementById('resize-desktop').addEventListener('click', () => {
+                container.style.width = '800px';
+                resizeCanvas();
+            });
+        });
+    </script>
+</body>
+</html>

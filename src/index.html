@@ -2,12 +2,47 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <!-- Responsive viewport meta tag that maintains accessibility -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <!-- Mobile web app capable meta tags -->
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <!-- Theme color for browser UI elements -->
+    <meta name="theme-color" content="#0a1a2f">
+    
     <title>Cross the Box</title>
     <link rel="stylesheet" href="styles/style.css">
+    <!-- Preconnect to resources to speed up loading -->
+    <link rel="preconnect" href="https://unpkg.com">
+    
+    <!-- Critical CSS for faster rendering -->
     <style>
-        /* Fallback styles to prevent visual jumps during layout adjustment */
+        /* Critical styles to prevent flash of unstyled content */
+        :root {
+            --primary-color: #0CC7C7;
+            --primary-glow: rgba(0, 200, 200, 0.4);
+            --background-dark: #0a1a2f;
+        }
+        
+        body {
+            margin: 0;
+            padding: 0;
+            background: var(--background-dark);
+            color: #fff;
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            overscroll-behavior: contain; /* Prevent overscroll bounce effects */
+            touch-action: manipulation; /* Speed up clicks on touch devices */
+        }
+        
+        canvas {
+            display: block;
+            max-width: 100%;
+            touch-action: none; /* Prevents default touch actions like scrolling */
+        }
+        
+        /* Responsive layout for different screen sizes */
         @media screen and (min-width: 1200px) {
             body.desktop-layout {
                 max-width: 1400px;
@@ -37,17 +72,76 @@
                 margin-top: 50px;
             }
         }
+        
+        /* Loading indicator for initial load */
+        .loader {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: var(--background-dark);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+        }
+        
+        .loader::after {
+            content: '';
+            width: 50px;
+            height: 50px;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: var(--primary-color);
+            animation: spin 1s ease-in-out infinite;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
     </style>
+    
     <script>
-        // Apply desktop layout class on load if needed
+        // Initial loading indicator
         document.addEventListener('DOMContentLoaded', function() {
+            // Remove loader when page is ready
+            const loader = document.querySelector('.loader');
+            if (loader) {
+                setTimeout(() => {
+                    loader.style.opacity = '0';
+                    setTimeout(() => loader.remove(), 300);
+                }, 200);
+            }
+            
+            // Apply desktop layout class if needed
             if (window.matchMedia("(min-width: 1200px)").matches) {
                 document.body.classList.add('desktop-layout');
             }
+            
+            // Listen for orientation changes
+            window.addEventListener('orientationchange', function() {
+                // Allow time for the orientation change to complete
+                setTimeout(function() {
+                    // Force a resize event to update the canvas
+                    window.dispatchEvent(new Event('resize'));
+                }, 200);
+            });
+            
+            // Prevent unwanted browser behaviors on mobile
+            document.addEventListener('touchmove', function(e) {
+                // Prevent overscrolling on game canvas
+                if (e.target.id === 'canvas') {
+                    e.preventDefault();
+                }
+            }, { passive: false });
         });
     </script>
 </head>
 <body>
+    <!-- Loading indicator -->
+    <div class="loader"></div>
+    
     <h1>Cross the Box</h1>
     
     <!-- This div will be populated by JS for desktop layout -->
@@ -60,7 +154,7 @@
     </div>
     
     <div id="wrapper">
-        <canvas id="canvas"></canvas>
+        <canvas id="canvas" aria-label="Cross the Box game" role="img"></canvas>
     </div>
     
     <div id="game-ui-container">
@@ -80,10 +174,19 @@
         </div>
     </div>
     
-    <!-- Multiplayer dependencies -->
+    <!-- Game error handling -->
+    <div id="error-container" style="display: none; padding: 20px; background: rgba(255,0,0,0.2); margin: 20px auto; max-width: 500px; border-radius: 8px; border: 1px solid red;">
+        <h3>Oops! Something went wrong</h3>
+        <p id="error-message">There was a problem loading the game.</p>
+        <button onclick="window.location.reload()">Reload Game</button>
+    </div>
+    
+    <!-- Multiplayer dependencies temporarily disabled for debugging -->
+    <!-- 
     <script src="https://unpkg.com/colyseus.js@^0.15.0/dist/colyseus.js"></script>
+    -->
     
     <!-- Game scripts -->
-    <script type="module" src="js/main.js"></script>
+    <script type="module" src="js/main.js" onerror="document.getElementById('error-container').style.display='block'; document.getElementById('error-message').textContent='Failed to load game script. Please check your connection and try again.'"></script>
 </body>
 </html>

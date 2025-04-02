@@ -207,16 +207,7 @@ export default class Obstacle {
 
     // Collision detection with player
     detectCollision(player) {
-        // Debug output for collision detection
-        console.log(
-            `Collision check: Obstacle(${this.x.toFixed(2)}, ${this.y.toFixed(
-                2
-            )}, ${this.width}x${this.height}) vs Player(${player.x.toFixed(
-                2
-            )}, ${player.y.toFixed(2)}, ${player.width}x${player.height})`
-        )
-
-        // Add a smaller hitbox for better gameplay experience (80% of visual size)
+        // Use reduced hitbox for better gameplay experience
         const hitboxReduction = 0.2 // 20% reduction
 
         // Player hitbox
@@ -261,7 +252,6 @@ export default class Obstacle {
 
         // Set collision state (for explosion animation)
         if (colliding && !this.isColliding) {
-            console.log('Collision detected!')
             this.isColliding = true
             this.explosionFrame = 0
         }

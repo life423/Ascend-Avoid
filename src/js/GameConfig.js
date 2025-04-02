@@ -39,6 +39,21 @@ export default class GameConfig {
   }
   
   /**
+   * Update desktop mode setting
+   * @param {boolean} isDesktop - Whether the game is running on desktop
+   */
+  setDesktopMode(isDesktop) {
+    this.isDesktop = isDesktop;
+    
+    // Update settings based on platform
+    if (isDesktop) {
+      this.settings = { ...GAME_SETTINGS, ...DESKTOP_SETTINGS };
+    } else {
+      this.settings = { ...GAME_SETTINGS };
+    }
+  }
+  
+  /**
    * Get the winning line position, scaled by the canvas height ratio if needed
    * @param {number} canvasHeight - Current canvas height (optional)
    * @param {number} baseCanvasHeight - Base canvas height (optional)

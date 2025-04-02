@@ -5,7 +5,7 @@ services:
     github:
       branch: main
       deploy_on_push: true
-      repo: YOUR_GITHUB_USERNAME/ascend-avoid
+      repo: life423/ascend-avoid
     http_port: 3000
     instance_count: 1
     instance_size_slug: basic-xs

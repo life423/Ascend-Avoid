@@ -1,12 +1,16 @@
 /**
  * Manages loading and caching of game assets such as images and audio.
- * Ensures assets are loaded before the game starts.
+ * Ensures assets are loaded before the game starts and provides robust
+ * error handling with retry functionality.
  */
 export default class AssetManager {
   /**
    * Creates a new AssetManager
+   * @param {Object} options - Configuration options
+   * @param {number} options.timeout - Timeout in ms for asset loading (default: 10000)
+   * @param {number} options.maxRetries - Max retry attempts for failed assets (default: 2)
    */
-  constructor() {
+  constructor(options = {}) {
     // Storage for loaded assets
     this.images = {};
     this.audio = {};
@@ -17,33 +21,67 @@ export default class AssetManager {
     // Load status tracking
     this.totalAssets = 0;
     this.loadedAssets = 0;
+    this.failedAssets = [];
     
     // Sound cache for efficient playback
     this.soundCache = new Map();
+    
+    // Configuration
+    this.timeout = options.timeout || 10000; // 10 seconds default timeout
+    this.maxRetries = options.maxRetries || 2;
   }
   
   /**
-   * Preload an image asset
+   * Preload an image asset with retry and timeout
    * @param {string} key - Identifier for the image
    * @param {string} src - Path to the image file
+   * @param {number} retryCount - Current retry attempt (internal use)
    * @returns {Promise} A promise that resolves when the image is loaded
    */
-  preloadImage(key, src) {
+  preloadImage(key, src, retryCount = 0) {
     this.totalAssets++;
     
     return new Promise((resolve, reject) => {
       const img = new Image();
+      let timeoutId;
+      
+      // Set up timeout
+      timeoutId = setTimeout(() => {
+        console.warn(`Loading image timed out: ${src}, retrying (${retryCount + 1}/${this.maxRetries})`);
+        
+        // If we haven't hit max retries, try again
+        if (retryCount < this.maxRetries) {
+          this.totalAssets--; // Don't count this attempt
+          resolve(this.preloadImage(key, src, retryCount + 1));
+        } else {
+          console.error(`Failed to load image after ${this.maxRetries} retries: ${src}`);
+          this.failedAssets.push({ type: 'image', key, src });
+          this.loadedAssets++;
+          reject(new Error(`Image load timeout: ${src}`));
+        }
+      }, this.timeout);
       
       img.onload = () => {
+        clearTimeout(timeoutId);
         this.images[key] = img;
         this.loadedAssets++;
         resolve(img);
       };
       
       img.onerror = (err) => {
+        clearTimeout(timeoutId);
         console.error(`Failed to load image: ${src}`, err);
-        this.loadedAssets++;
-        reject(err);
+        
+        // If we haven't hit max retries, try again
+        if (retryCount < this.maxRetries) {
+          console.warn(`Retrying image load (${retryCount + 1}/${this.maxRetries}): ${src}`);
+          this.totalAssets--; // Don't count this attempt
+          resolve(this.preloadImage(key, src, retryCount + 1));
+        } else {
+          this.failedAssets.push({ type: 'image', key, src });
+          this.loadedAssets++;
+          reject(err);
+        }
       };
       
       img.src = src;
@@ -51,28 +89,65 @@ export default class AssetManager {
   }
   
   /**
-   * Preload an audio asset
+   * Preload an audio asset with retry and timeout
    * @param {string} key - Identifier for the audio
    * @param {string} src - Path to the audio file
+   * @param {number} retryCount - Current retry attempt (internal use)
    * @returns {Promise} A promise that resolves when the audio is loaded
    */
-  preloadAudio(key, src) {
+  preloadAudio(key, src, retryCount = 0) {
     this.totalAssets++;
     
     return new Promise((resolve, reject) => {
       const audio = new Audio();
+      let timeoutId;
+      
+      // Set up timeout
+      timeoutId = setTimeout(() => {
+        console.warn(`Loading audio timed out: ${src}, retrying (${retryCount + 1}/${this.maxRetries})`);
+        
+        // If we haven't hit max retries, try again
+        if (retryCount < this.maxRetries) {
+          this.totalAssets--; // Don't count this attempt
+          resolve(this.preloadAudio(key, src, retryCount + 1));
+        } else {
+          console.error(`Failed to load audio after ${this.maxRetries} retries: ${src}`);
+          this.failedAssets.push({ type: 'audio', key, src });
+          this.loadedAssets++;
+          reject(new Error(`Audio load timeout: ${src}`));
+        }
+      }, this.timeout);
       
       audio.oncanplaythrough = () => {
+        clearTimeout(timeoutId);
         this.audio[key] = audio;
         this.loadedAssets++;
         resolve(audio);
       };
       
       audio.onerror = (err) => {
+        clearTimeout(timeoutId);
         console.error(`Failed to load audio: ${src}`, err);
-        this.loadedAssets++;
-        reject(err);
+        
+        // If we haven't hit max retries, try again
+        if (retryCount < this.maxRetries) {
+          console.warn(`Retrying audio load (${retryCount + 1}/${this.maxRetries}): ${src}`);
+          this.totalAssets--; // Don't count this attempt
+          resolve(this.preloadAudio(key, src, retryCount + 1));
+        } else {
+          this.failedAssets.push({ type: 'audio', key, src });
+          this.loadedAssets++;
+          reject(err);
+        }
       };
+      
+      // Safari needs this
+      audio.addEventListener('loadeddata', () => {
+        clearTimeout(timeoutId);
+        this.audio[key] = audio;
+        this.loadedAssets++;
+        resolve(audio);
+      });
       
       audio.src = src;
       audio.load();
@@ -80,38 +155,73 @@ export default class AssetManager {
   }
   
   /**
-   * Load all game assets
+   * Load all game assets with improved error handling
    * @param {Array} imageAssets - Array of {key, src} objects for images
    * @param {Array} audioAssets - Array of {key, src} objects for audio
-   * @returns {Promise} A promise that resolves when all assets are loaded
+   * @returns {Promise} A promise that resolves with loading results including any failures
    */
   loadAssets(imageAssets = [], audioAssets = []) {
-    // Clear any previous load operations
+    // Reset loading state
     this.loadPromises = [];
     this.totalAssets = 0;
     this.loadedAssets = 0;
+    this.failedAssets = [];
     
-    // Queue image loading
-    for (const asset of imageAssets) {
-      const promise = this.preloadImage(asset.key, asset.src);
-      this.loadPromises.push(promise);
-    }
+    // Keep track of all assets for reporting
+    const allAssets = [...imageAssets, ...audioAssets];
     
-    // Queue audio loading
-    for (const asset of audioAssets) {
-      const promise = this.preloadAudio(asset.key, asset.src);
-      this.loadPromises.push(promise);
-    }
+    // Process each type of asset
+    const processAssets = (assets, loaderFn) => {
+      return assets.map(asset => {
+        // Create wrapped promise that won't reject (for Promise.all)
+        return loaderFn.call(this, asset.key, asset.src)
+          .catch(err => {
+            // Don't let failures break Promise.all
+            console.error(`Failed to load asset: ${asset.key} (${asset.src})`, err);
+            return null; // Return null for failed assets
+          });
+      });
+    };
     
-    // Return a promise that resolves when all assets are loaded
+    // Queue all asset loading
+    const imagePromises = processAssets(imageAssets, this.preloadImage);
+    const audioPromises = processAssets(audioAssets, this.preloadAudio);
+    
+    // Combine all promises
+    this.loadPromises = [...imagePromises, ...audioPromises];
+    
+    // Wait for all assets to load (or fail)
     return Promise.all(this.loadPromises)
-      .then(() => {
-        console.log('All assets loaded successfully');
-        return { success: true };
+      .then(results => {
+        // Count loaded vs. failed assets
+        const loadedCount = results.filter(r => r !== null).length;
+        
+        // Report results
+        if (loadedCount === allAssets.length) {
+          console.log('All assets loaded successfully');
+          return { 
+            success: true,
+            totalAssets: allAssets.length,
+            loadedAssets: loadedCount
+          };
+        } else {
+          console.warn(`Loaded ${loadedCount}/${allAssets.length} assets. Some assets failed to load.`);
+          return { 
+            success: false,
+            totalAssets: allAssets.length,
+            loadedAssets: loadedCount,
+            failedAssets: this.failedAssets
+          };
+        }
       })
-      .catch((err) => {
-        console.error('Some assets failed to load', err);
-        return { success: false, error: err };
+      .catch(err => {
+        // This should rarely happen since we catch individual asset failures
+        console.error('Unexpected error during asset loading:', err);
+        return { 
+          success: false, 
+          error: err,
+          failedAssets: this.failedAssets 
+        };
       });
   }
   
