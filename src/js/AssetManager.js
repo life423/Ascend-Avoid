@@ -38,8 +38,29 @@ export default class AssetManager {
    * @param {number} retryCount - Current retry attempt (internal use)
    * @returns {Promise} A promise that resolves when the image is loaded
    */
-  preloadImage(key, src, retryCount = 0) {
+  preloadImage(key, src, retryCount = 0, pathIndex = 0) {
     this.totalAssets++;
+    
+    // Define alternate paths to try
+    const alternativePaths = [
+      src,                     // original path
+      `/${src}`,               // absolute path
+      `../${src}`,             // one level up
+      src.replace('src/', ''), // without src prefix
+      `../${src.replace('src/', '')}` // one level up without src prefix
+    ];
+    
+    // If we've tried all paths, give up
+    if (pathIndex >= alternativePaths.length) {
+      console.error(`Failed to load image after trying all path variants: ${src}`);
+      this.failedAssets.push({ type: 'image', key, src });
+      this.loadedAssets++;
+      return Promise.reject(new Error(`Image not found: ${src}`));
+    }
+    
+    // Get the path to try
+    const pathToTry = alternativePaths[pathIndex];
+    console.log(`Trying to load image: ${pathToTry}`);
     
     return new Promise((resolve, reject) => {
       const img = new Image();
@@ -47,17 +68,16 @@ export default class AssetManager {
       
       // Set up timeout
       timeoutId = setTimeout(() => {
-        console.warn(`Loading image timed out: ${src}, retrying (${retryCount + 1}/${this.maxRetries})`);
+        console.warn(`Loading image timed out: ${pathToTry}, retrying (${retryCount + 1}/${this.maxRetries})`);
         
         // If we haven't hit max retries, try again
         if (retryCount < this.maxRetries) {
           this.totalAssets--; // Don't count this attempt
-          resolve(this.preloadImage(key, src, retryCount + 1));
+          resolve(this.preloadImage(key, src, retryCount + 1, pathIndex));
         } else {
-          console.error(`Failed to load image after ${this.maxRetries} retries: ${src}`);
-          this.failedAssets.push({ type: 'image', key, src });
-          this.loadedAssets++;
-          reject(new Error(`Image load timeout: ${src}`));
+          // Try next path variant
+          this.totalAssets--; // Don't count this attempt
+          resolve(this.preloadImage(key, src, 0, pathIndex + 1));
         }
       }, this.timeout);
       
@@ -65,26 +85,27 @@ export default class AssetManager {
         clearTimeout(timeoutId);
         this.images[key] = img;
         this.loadedAssets++;
+        console.log(`Successfully loaded image ${key} from path: ${pathToTry}`);
         resolve(img);
       };
       
       img.onerror = (err) => {
         clearTimeout(timeoutId);
-        console.error(`Failed to load image: ${src}`, err);
+        console.error(`Failed to load image: ${pathToTry}`, err);
         
         // If we haven't hit max retries, try again
         if (retryCount < this.maxRetries) {
-          console.warn(`Retrying image load (${retryCount + 1}/${this.maxRetries}): ${src}`);
+          console.warn(`Retrying image load (${retryCount + 1}/${this.maxRetries}): ${pathToTry}`);
           this.totalAssets--; // Don't count this attempt
-          resolve(this.preloadImage(key, src, retryCount + 1));
+          resolve(this.preloadImage(key, src, retryCount + 1, pathIndex));
         } else {
-          this.failedAssets.push({ type: 'image', key, src });
-          this.loadedAssets++;
-          reject(err);
+          // Try next path variant
+          this.totalAssets--; // Don't count this attempt
+          resolve(this.preloadImage(key, src, 0, pathIndex + 1));
         }
       };
       
-      img.src = src;
+      img.src = pathToTry;
     });
   }
   
