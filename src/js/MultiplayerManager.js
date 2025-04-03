@@ -1,6 +1,6 @@
 // Use global Colyseus object instead of importing it
 // import { Client } from "colyseus.js";
-import { GAME_CONSTANTS, PLAYER_COLORS } from '../../shared/constants/baseConstants.js'
+import { GAME_CONSTANTS, PLAYER_COLORS } from '../../shared/constants/gameConstants.js'
 
 /**
  * Manages the multiplayer connection and synchronization with the server

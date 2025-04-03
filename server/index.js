@@ -1,4 +1,5 @@
-import { Server } from "colyseus";
+import pkg from "colyseus";
+const { Server } = pkg;
 import { WebSocketTransport } from "@colyseus/ws-transport";
 import { createServer } from "http";
 import express from "express";

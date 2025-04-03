@@ -56,11 +56,23 @@ export default class GameConfig {
   setDesktopMode(isDesktop) {
     this.isDesktop = isDesktop;
     
+    // Create a base set of settings
+    const baseSettings = {
+      WINNING_LINE: GAME.WINNING_LINE,
+      BASE_SPEED: OBSTACLE.BASE_SPEED,
+      PLAYER_SIZE_RATIO: PLAYER.SIZE_RATIO,
+      MIN_STEP: PLAYER.MIN_STEP,
+      OBSTACLE_MIN_WIDTH_RATIO: OBSTACLE.MIN_WIDTH_RATIO,
+      OBSTACLE_MAX_WIDTH_RATIO: OBSTACLE.MAX_WIDTH_RATIO,
+      MAX_CARS: GAME.MAX_OBSTACLES,
+      DIFFICULTY_INCREASE_RATE: GAME.DIFFICULTY_INCREASE_RATE
+    };
+    
     // Update settings based on platform
     if (isDesktop) {
-      this.settings = { ...GAME_SETTINGS, ...DESKTOP_SETTINGS };
+      this.settings = { ...baseSettings, ...DESKTOP_SETTINGS };
     } else {
-      this.settings = { ...GAME_SETTINGS };
+      this.settings = { ...baseSettings };
     }
   }
   

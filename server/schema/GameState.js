@@ -1,4 +1,5 @@
-import { Schema, MapSchema, ArraySchema, type } from "@colyseus/schema";
+import * as schema from "@colyseus/schema";
+const { Schema, MapSchema, ArraySchema, type } = schema;
 import { PlayerSchema } from "./PlayerSchema.js";
 import { ObstacleSchema } from "./ObstacleSchema.js";
 import { GAME_CONSTANTS } from "../constants/serverConstants.js";

@@ -1,4 +1,5 @@
-import { Room } from "colyseus";
+import pkg from 'colyseus';
+const { Room } = pkg;
 import { GameState } from "../schema/GameState.js";
 import { GAME_CONSTANTS, PLAYER_COLORS } from "../constants/serverConstants.js";
 
