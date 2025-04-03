@@ -1,5 +1,5 @@
-const { Schema, type } = require("@colyseus/schema");
-const { GAME_CONSTANTS } = require("../../shared/utils/gameConstants.cjs");
+import { Schema, type } from "@colyseus/schema";
+import { GAME_CONSTANTS } from "../constants/serverConstants.js";
 
 /**
  * ObstacleSchema defines the synchronized properties for each obstacle
@@ -117,4 +117,4 @@ type("number")(ObstacleSchema.prototype, "speed");
 type("number")(ObstacleSchema.prototype, "variant");
 type("boolean")(ObstacleSchema.prototype, "active");
 
-module.exports = { ObstacleSchema };
+export { ObstacleSchema };

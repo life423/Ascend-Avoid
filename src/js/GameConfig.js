@@ -2,7 +2,14 @@
  * A class to encapsulate game configuration, avoiding mutation of global constants
  * and providing clean access to game settings based on platform.
  */
-import { GAME_SETTINGS, DESKTOP_SETTINGS, KEYS } from './constants.js';
+import { 
+  GAME,
+  PLAYER,
+  OBSTACLE,
+  STATE,
+  DESKTOP_SETTINGS,
+  KEYS
+} from '../../shared/constants/gameConstants.js';
 
 export default class GameConfig {
   /**
@@ -12,7 +19,16 @@ export default class GameConfig {
    */
   constructor({ isDesktop = false } = {}) {
     // Create a local copy of settings to avoid mutating the original
-    this.settings = { ...GAME_SETTINGS };
+    this.settings = {
+      WINNING_LINE: GAME.WINNING_LINE,
+      BASE_SPEED: OBSTACLE.BASE_SPEED,
+      PLAYER_SIZE_RATIO: PLAYER.SIZE_RATIO,
+      MIN_STEP: PLAYER.MIN_STEP,
+      OBSTACLE_MIN_WIDTH_RATIO: OBSTACLE.MIN_WIDTH_RATIO,
+      OBSTACLE_MAX_WIDTH_RATIO: OBSTACLE.MAX_WIDTH_RATIO,
+      MAX_CARS: GAME.MAX_OBSTACLES,
+      DIFFICULTY_INCREASE_RATE: GAME.DIFFICULTY_INCREASE_RATE
+    };
     
     // Apply platform-specific settings if on desktop
     if (isDesktop) {
@@ -29,13 +45,8 @@ export default class GameConfig {
       showFPS: new URLSearchParams(window.location.search).get('debug') === 'true'
     };
     
-    // Game state constants
-    this.STATE = {
-      READY: 'ready',
-      PLAYING: 'playing',
-      GAME_OVER: 'game_over',
-      PAUSED: 'paused'
-    };
+    // Game state constants - use the standardized ones from constants
+    this.STATE = STATE;
   }
   
   /**

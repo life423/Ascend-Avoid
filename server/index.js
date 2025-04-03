@@ -1,13 +1,13 @@
-const { Server } = require("colyseus");
-const { WebSocketTransport } = require("@colyseus/ws-transport");
-const { createServer } = require("http");
-const express = require("express");
-const cors = require("cors");
-const { monitor } = require("@colyseus/monitor");
+import { Server } from "colyseus";
+import { WebSocketTransport } from "@colyseus/ws-transport";
+import { createServer } from "http";
+import express from "express";
+import cors from "cors";
+import { monitor } from "@colyseus/monitor";
 
 // Import our game room
-const { GameRoom } = require("./rooms/GameRoom.js");
-const { GAME_CONSTANTS } = require("../shared/utils/gameConstants.cjs");
+import { GameRoom } from "./rooms/GameRoom.js";
+import { GAME_CONSTANTS, SERVER } from "./constants/serverConstants.js";
 
 // Create the Express app
 const app = express();

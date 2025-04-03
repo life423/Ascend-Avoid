@@ -1,5 +1,5 @@
-const { Schema, type } = require("@colyseus/schema");
-const { GAME_CONSTANTS } = require("../../shared/utils/gameConstants.cjs");
+import { Schema, type } from "@colyseus/schema";
+import { GAME_CONSTANTS } from "../constants/serverConstants.js";
 
 /**
  * PlayerSchema defines the synchronized properties for each player
@@ -82,4 +82,4 @@ type("number")(PlayerSchema.prototype, "height");
 type("string")(PlayerSchema.prototype, "state");
 type("number")(PlayerSchema.prototype, "score");
 
-module.exports = { PlayerSchema };
+export { PlayerSchema };

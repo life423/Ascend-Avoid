@@ -1,4 +1,4 @@
-import { GAME_CONSTANTS, PLAYER_COLORS } from "./gameConstants.js";
+import { GAME_CONSTANTS, PLAYER_COLORS } from "../../shared/constants/baseConstants.js";
 
 /**
  * Handles UI elements for multiplayer mode

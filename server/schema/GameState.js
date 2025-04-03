@@ -1,7 +1,7 @@
-const { Schema, MapSchema, ArraySchema, type } = require("@colyseus/schema");
-const { PlayerSchema } = require("./PlayerSchema.js");
-const { ObstacleSchema } = require("./ObstacleSchema.js");
-const { GAME_CONSTANTS } = require("../../shared/utils/gameConstants.cjs");
+import { Schema, MapSchema, ArraySchema, type } from "@colyseus/schema";
+import { PlayerSchema } from "./PlayerSchema.js";
+import { ObstacleSchema } from "./ObstacleSchema.js";
+import { GAME_CONSTANTS } from "../constants/serverConstants.js";
 
 /**
  * GameState defines the full synchronized game state
@@ -289,4 +289,4 @@ type("number")(GameState.prototype, "aliveCount");
 type("number")(GameState.prototype, "totalPlayers");
 type("string")(GameState.prototype, "winnerName");
 
-module.exports = { GameState };
+export { GameState };

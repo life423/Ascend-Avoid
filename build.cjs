@@ -5,10 +5,6 @@ const path = require('path');
 const { execSync } = require('child_process');
 const { minify } = require('terser');
 
-console.log('===================================================');
-console.log('  Cross the Box Game - Production Build Script     ');
-console.log('===================================================');
-console.log('');
 
 // Source and build directories
 const srcDir = path.join(__dirname, 'src');

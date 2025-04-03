@@ -35,14 +35,13 @@ jobs:
         uses: azure/container-apps-deploy-action@v2
         with:
           appSourcePath: ${{ github.workspace }}
-          _dockerfilePathKey_: _dockerfilePath_
+          dockerfilePath: Dockerfile
           registryUrl: hub.docker.com
           registryUsername: ${{ secrets.ASCEND_REGISTRY_USERNAME }}
           registryPassword: ${{ secrets.ASCEND_REGISTRY_PASSWORD }}
           containerAppName: ascend
           resourceGroup: DefaultResourceGroup-EUS
           imageToBuild: hub.docker.com/ascend:${{ github.sha }}
-          _buildArgumentsKey_: |
-            _buildArgumentsValues_
+          buildArguments: ""
 
 

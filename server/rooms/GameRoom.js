@@ -1,6 +1,6 @@
-const { Room } = require("colyseus");
-const { GameState } = require("../schema/GameState.js");
-const { GAME_CONSTANTS, PLAYER_COLORS } = require("../../shared/utils/gameConstants.cjs");
+import { Room } from "colyseus";
+import { GameState } from "../schema/GameState.js";
+import { GAME_CONSTANTS, PLAYER_COLORS } from "../constants/serverConstants.js";
 
 /**
  * Last Player Standing Game Room
@@ -149,4 +149,4 @@ class GameRoom extends Room {
   }
 }
 
-module.exports = { GameRoom };
+export { GameRoom };
