@@ -1,153 +1,89 @@
-# Cross the Box Game - Multiplayer Edition
+# Ascend & Avoid Game
 
-## Overview
+A multiplayer arcade game where players need to ascend to the top of the screen while avoiding obstacles.
 
-This repository contains a browser-based game called "Cross the Box" which has been enhanced with multiplayer functionality. The game allows up to 30 simultaneous players to compete in a "Last Player Standing" mode.
+## Project Overview
 
-## Features
+This is a multiplayer HTML5 canvas game with both single-player and multiplayer modes. The game features:
 
-- **Single Player Mode**: Cross the screen as many times as possible without colliding with obstacles
-- **Last Player Standing Multiplayer Mode**: Compete with up to 30 players to be the last survivor
-- **Shrinking Arena**: The play area shrinks over time, forcing players closer together
-- **Real-time Synchronization**: Fast WebSocket-based updates for smooth gameplay
-- **Player Identity**: Each player is assigned a unique color for easy identification
-- **Spectator Mode**: Continue watching after elimination
-
-## Implementation Architecture
-
-
-### Server-Side Components
-
-The multiplayer functionality is built on a server-authoritative model using the following technologies:
-
-- **Colyseus**: WebSocket-based game server framework for Node.js
-- **Schema-based State Synchronization**: Efficient delta updates for minimal network traffic
-- **Express**: Web server for serving static assets and API endpoints
-- **Room-based Matchmaking**: Players are grouped into game rooms with up to 30 players
-
-### Client-Side Components
-
-The client implementation takes advantage of:
-
-- **Client-side Prediction**: Immediate local response to player input
-- **State Reconciliation**: Corrections applied when server state differs
-- **Interpolation**: Smooth movement of remote players
-- **Responsive UI**: Adaptive interface for both desktop and mobile devices
-
-### Network Communication
-
-- **WebSockets**: Bi-directional, low-latency communication
-- **Binary State Serialization**: Minimizes bandwidth requirements
-- **Delta Encoding**: Only transmits state changes, not the full state
+- Responsive design for both desktop and mobile
+- Canvas-based rendering
+- Multiplayer support via [Colyseus](https://colyseus.io/)
+- Real-time multiplayer with up to 30 players
+- Competitive "last player standing" mode
 
 ## Project Structure
 
+The codebase follows a modular architecture to separate concerns:
+
 ```
-.
-├── server/                 # Server-side code
-│   ├── index.js            # Main server entry point
-│   ├── rooms/              # Colyseus room implementations
-│   │   └── GameRoom.js     # Game room with Last Player Standing logic
-│   └── schema/             # Colyseus schema definitions
-│       ├── GameState.js    # Main game state schema
-│       ├── PlayerSchema.js # Player data schema
-│       └── ObstacleSchema.js # Obstacle data schema
-├── shared/                 # Code shared between client and server
-│   └── utils/
-│       └── gameConstants.js # Game constants shared by client and server
-├── src/                     # Client-side code
-│   ├── index.html           # Main HTML
-│   ├── styles/              # CSS styles
-│   ├── assets/              # Game assets
-│   └── js/                  # Game logic
-│       ├── Game.js          # Main game controller
-│       ├── Player.js        # Player entity
-│       ├── MultiplayerManager.js # Client-side multiplayer handling
-│       ├── MultiplayerUI.js # Multiplayer user interface
-│       └── ... (other game files)
-└── package.json            # Project dependencies
+ascend-avoid/
+├── shared/                  # Shared code between client and server
+│   └── constants/           # Game constants used by both client and server
+├── server/                  # Multiplayer server
+│   ├── constants/           # Server-specific constants
+│   ├── rooms/               # Colyseus game rooms
+│   └── schema/              # Network schemas for state synchronization
+└── src/                     # Client-side code
+    ├── assets/              # Game assets (images, sounds)
+    ├── js/                  # Game logic
+    └── styles/              # CSS styles
 ```
 
-## How to Run
+## Design Patterns
 
-### Option 1: Local Development (Without Docker)
+The game implements several design patterns for maintainability:
 
-#### Running the Server
+1. **Module Pattern**: Code is organized into modules with specific responsibilities
+2. **Manager Pattern**: Specialized classes manage specific game subsystems
+3. **State Pattern**: Game flows through distinct states (waiting, playing, game over)
+4. **Observer Pattern**: Events are used for communication between components
+5. **Factory Pattern**: Objects like obstacles are created through factory methods
 
-To start the multiplayer server:
+## Key Technologies
 
-```bash
-# Navigate to the server directory
-cd server
+- **HTML5 Canvas** for rendering
+- **JavaScript (ES6+)** for game logic
+- **Colyseus** for multiplayer networking
+- **Express.js** for the server
 
-# Install dependencies (first time only)
-npm install
+## Running the Game
 
-# Start the server
-npm start
+### Single-Player Mode
+
 ```
-
-The server will run on port 3000 by default. You can access the Colyseus monitor dashboard at `http://localhost:3000/colyseus`.
-
-#### Running the Client
-
-To run the client:
-
-```bash
-# From the project root
 npm run dev
 ```
 
-This will start a local development server and open the game in your browser.
+This will start a local server and open the game in single-player mode.
 
-### Option 2: Using Docker
+### Multiplayer Mode
 
-This project supports Docker for both development and production environments.
+```
+# Start the multiplayer server
+cd server
+npm start
 
-#### Development
-
-To run the game in development mode with live reloading:
-
-```bash
-# From project root
-docker-compose -f docker-compose.yml -f docker/docker-compose.dev.yml up --build
+# In another terminal, start the client
+npm run dev
 ```
 
-#### Production
+Then use the multiplayer toggle in the game UI to connect to the server.
 
-To run the game in production mode:
+## Code Cleanup Notes
 
-```bash
-# From project root
-docker-compose -f docker-compose.yml -f docker/docker-compose.prod.yml up --build
-```
+The codebase has been streamlined and improved:
 
-For more details about Docker setup, see [Docker README](docker/README.md).
+1. **Consolidated Constants**: All game constants are now in a single source of truth at `shared/constants/gameConstants.js`
+2. **Consistent Module System**: Standardized on ESM imports/exports
+3. **Removed Duplicate Files**: Eliminated redundant code and merged functionality
+4. **Improved Server Architecture**: Server now follows best practices for Colyseus implementation
 
-## How to Play Multiplayer
+## Future Development
 
-1. Start the multiplayer server as described above
-2. Open the game in your browser
-3. Click the "Multiplayer" button in the top-right corner
-4. Enter your player name and the server address (default: `ws://localhost:3000`)
-5. Click "Connect" to join a game
-6. Wait for other players to join (minimum 2 players needed to start)
-7. Game will automatically start with a countdown once enough players join
-8. Use arrow keys or WASD to move your player
-9. Avoid obstacles and stay within the arena boundary
-10. The last player surviving wins!
+Planned improvements:
 
-## Development Notes
-
-- The server is built to handle up to 30 concurrent players per room
-- The arena shrinks at regular intervals, making the game more challenging over time
-- Player movement uses client-side prediction with server authority for conflict resolution
-- When a player collides with an obstacle or leaves the arena boundary, they are eliminated
-
-## Future Enhancements
-
-- Power-ups and special abilities
-- Multiple arena types with different obstacle patterns
-- Improved matchmaking with skill-based pairing
-- Chat functionality for player communication
-- Customizable player appearance
+1. Enhanced visual effects and animations
+2. More diverse obstacles and power-ups
+3. User accounts and persistent high scores
+4. Additional multiplayer game modes
