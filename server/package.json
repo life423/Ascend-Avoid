@@ -1,8 +1,9 @@
 {
-  "name": "cross-the-box-game-server",
+  "name": "ascend-avoid-game-server",
   "version": "1.0.0",
-  "description": "Multiplayer server for Cross the Box game using Colyseus",
+  "description": "Multiplayer server for Ascend & Avoid game using Colyseus",
   "main": "index.js",
+  "type": "module",
   "scripts": {
     "start": "node index.js",
     "dev": "node --watch index.js",
