@@ -35,7 +35,7 @@ jobs:
         uses: docker/login-action@v2
         with:
           registry: docker.io
-          username: aiandrew631
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
       
       - name: Build and push Docker image
@@ -63,10 +63,4 @@ jobs:
           imageToDeploy: docker.io/aiandrew631/ascend-avoid:latest
           targetPort: 3000
           ingress: external
-          environmentVariables: >
-            NODE_ENV=production
-            PORT=3000
-          enableDapr: false
-          maxReplicas: 5
-          minReplicas: 1
-          revisionMode: single
+          environmentVariables: NODE_ENV=production PORT=3000
