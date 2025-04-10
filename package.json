@@ -29,6 +29,9 @@
   "devDependencies": {
     "@babel/core": "^7.22.5",
     "@babel/preset-env": "^7.22.5",
+    "@types/node": "^22.14.0",
+    "@typescript-eslint/eslint-plugin": "^8.29.1",
+    "@typescript-eslint/parser": "^8.29.1",
     "@vitejs/plugin-legacy": "^6.0.2",
     "babel-jest": "^29.5.0",
     "buffer": "^6.0.3",
@@ -38,7 +41,9 @@
     "jest-environment-jsdom": "^29.5.0",
     "process": "^0.11.10",
     "terser": "^5.14.2",
-    "vite": "^6.2.5"
+    "typescript": "^5.8.3",
+    "vite": "^6.2.5",
+    "vite-plugin-checker": "^0.9.1"
   },
   "engines": {
     "node": ">=16.0.0"

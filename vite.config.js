@@ -1,6 +1,7 @@
 import { defineConfig } from 'vite';
 import legacy from '@vitejs/plugin-legacy';
 import { resolve } from 'path';
+import checker from 'vite-plugin-checker';
 
 export default defineConfig({
   root: 'src',
@@ -8,6 +9,9 @@ export default defineConfig({
   plugins: [
     legacy({
       targets: ['defaults', 'not IE 11']
+    }),
+    checker({
+      typescript: true,
     })
   ],
   define: {
