@@ -1,9 +1,14 @@
-import { GAME_CONSTANTS, PLAYER_COLORS } from "./shared/constants/gameConstants.js";
-
 /**
  * Handles UI elements for multiplayer mode
+ * Moved from root to dedicated ui directory
  */
+import { GAME_CONSTANTS, PLAYER_COLORS } from '../shared/constants/gameConstants.js';
+
 export default class MultiplayerUI {
+  /**
+   * Creates a new MultiplayerUI instance
+   * @param {Object} multiplayerManager - The multiplayer manager instance
+   */
   constructor(multiplayerManager) {
     this.multiplayerManager = multiplayerManager;
     this.isVisible = false;
@@ -205,29 +210,31 @@ export default class MultiplayerUI {
     });
     
     // Set up event callbacks for multiplayer manager
-    this.multiplayerManager.onConnectionSuccess = () => {
-      this.handleConnectionSuccess();
-    };
-    
-    this.multiplayerManager.onConnectionError = (error) => {
-      this.handleConnectionError(error);
-    };
-    
-    this.multiplayerManager.onGameStateChange = (state) => {
-      this.updateUIFromGameState(state);
-    };
-    
-    this.multiplayerManager.onPlayerJoin = (data) => {
-      this.updatePlayerList();
-    };
-    
-    this.multiplayerManager.onPlayerLeave = (data) => {
-      this.updatePlayerList();
-    };
-    
-    this.multiplayerManager.onGameOver = (winnerName) => {
-      this.handleGameOver(winnerName);
-    };
+    if (this.multiplayerManager) {
+      this.multiplayerManager.onConnectionSuccess = () => {
+        this.handleConnectionSuccess();
+      };
+      
+      this.multiplayerManager.onConnectionError = (error) => {
+        this.handleConnectionError(error);
+      };
+      
+      this.multiplayerManager.onGameStateChange = (state) => {
+        this.updateUIFromGameState(state);
+      };
+      
+      this.multiplayerManager.onPlayerJoin = (data) => {
+        this.updatePlayerList();
+      };
+      
+      this.multiplayerManager.onPlayerLeave = (data) => {
+        this.updatePlayerList();
+      };
+      
+      this.multiplayerManager.onGameOver = (winnerName) => {
+        this.handleGameOver(winnerName);
+      };
+    }
   }
   
   /**
@@ -436,6 +443,8 @@ export default class MultiplayerUI {
   
   /**
    * Connect to the multiplayer server
+   * @param {string} playerName - The player's name
+   * @param {string} serverAddress - The server address
    */
   async connectToServer(playerName, serverAddress) {
     // Disable connect button during connection attempt
@@ -478,6 +487,7 @@ export default class MultiplayerUI {
   
   /**
    * Handle connection error
+   * @param {string} error - The error message
    */
   handleConnectionError(error) {
     // Show error message
@@ -507,6 +517,7 @@ export default class MultiplayerUI {
   
   /**
    * Update UI based on game state
+   * @param {Object} state - The current game state
    */
   updateUIFromGameState(state) {
     // Update player count
@@ -549,6 +560,7 @@ export default class MultiplayerUI {
   
   /**
    * Update the arena indicator
+   * @param {Object} state - The current game state
    */
   updateArenaIndicator(state) {
     if (!state || state.areaPercentage >= 100) {
@@ -648,6 +660,7 @@ export default class MultiplayerUI {
   
   /**
    * Handle game over
+   * @param {string} winnerName - The name of the winner
    */
   handleGameOver(winnerName) {
     // Update game status
@@ -668,6 +681,123 @@ export default class MultiplayerUI {
   }
   
   /**
+   * Get the player name from the input field
+   * @returns {string} The player name
+   */
+  getPlayerName() {
+    return this.playerNameInput.value.trim();
+  }
+  
+  /**
+   * Show connected state in the UI
+   */
+  showConnected() {
+    this.handleConnectionSuccess();
+  }
+  
+  /**
+   * Update the player list and player count
+   * @param {Object} players - The players object
+   * @param {number} totalPlayers - The total number of players
+   */
+  updatePlayerList(players, totalPlayers) {
+    // Update players and total count if provided
+    if (players) {
+      this.players = players;
+    }
+    
+    if (totalPlayers) {
+      this.playerCountDisplay.textContent = `Players: ${totalPlayers}`;
+    }
+    
+    // Update the player list UI
+    this.updatePlayerList();
+  }
+  
+  /**
+   * Update game state display
+   * @param {string} gameState - The current game state
+   * @param {Object} players - The players object
+   * @param {number} totalPlayers - The total number of players
+   * @param {number} aliveCount - The number of alive players
+   */
+  updateGameState(gameState, players, totalPlayers, aliveCount) {
+    // Update player count
+    this.playerCountDisplay.textContent = `Players: ${aliveCount}/${totalPlayers} alive`;
+    
+    // Update game status
+    let statusText = '';
+    
+    switch (gameState) {
+      case GAME_CONSTANTS.STATE.WAITING:
+        statusText = 'Waiting for players...';
+        this.countdownDisplay.textContent = '';
+        break;
+        
+      case GAME_CONSTANTS.STATE.STARTING:
+        statusText = 'Game starting soon!';
+        break;
+        
+      case GAME_CONSTANTS.STATE.PLAYING:
+        statusText = 'Game in progress';
+        this.countdownDisplay.textContent = '';
+        break;
+        
+      case GAME_CONSTANTS.STATE.GAME_OVER:
+        statusText = 'Game over!';
+        this.countdownDisplay.textContent = '';
+        break;
+    }
+    
+    this.gameStatusDisplay.textContent = statusText;
+    
+    // Update player list
+    this.updatePlayerList();
+  }
+  
+  /**
+   * Update the countdown display
+   * @param {number} countdownTime - The countdown time in seconds
+   */
+  updateCountdown(countdownTime) {
+    if (countdownTime) {
+      this.countdownDisplay.textContent = countdownTime;
+    } else {
+      this.countdownDisplay.textContent = '';
+    }
+  }
+  
+  /**
+   * Show game over UI
+   * @param {string} winnerName - The name of the winner
+   * @param {Function} resetCallback - The callback to reset the game
+   */
+  showGameOver(winnerName, resetCallback) {
+    // Update game status
+    this.gameStatusDisplay.textContent = `Game over! ${winnerName} wins!`;
+    
+    // Add restart button if not exists
+    if (!this.restartButton) {
+      this.restartButton = document.createElement('button');
+      this.restartButton.textContent = 'Play Again';
+      this.restartButton.className = 'connect-button';
+      this.restartButton.addEventListener('click', resetCallback);
+      this.gameStatusContainer.appendChild(this.restartButton);
+    } else {
+      this.restartButton.style.display = 'block';
+    }
+  }
+  
+  /**
+   * Hide game over UI
+   */
+  hideGameOver() {
+    if (this.restartButton) {
+      this.restartButton.style.display = 'none';
+    }
+  }
+  
+  /**
    * Show the multiplayer UI
    */
   show() {
@@ -681,10 +811,16 @@ export default class MultiplayerUI {
   hide() {
     this.multiplayerContainer.style.display = 'none';
     this.isVisible = false;
+    
+    // Also hide arena indicator
+    if (this.arenaIndicator) {
+      this.arenaIndicator.style.display = 'none';
+    }
   }
   
   /**
    * Toggle the multiplayer UI visibility
+   * @returns {boolean} The new visibility state
    */
   toggle() {
     if (this.isVisible) {

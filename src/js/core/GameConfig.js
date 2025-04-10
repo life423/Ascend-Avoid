@@ -1,6 +1,7 @@
 /**
  * A class to encapsulate game configuration, avoiding mutation of global constants
  * and providing clean access to game settings based on platform.
+ * Moved from root to core/ directory for better organization.
  */
 import { 
   GAME,
@@ -9,7 +10,7 @@ import {
   STATE,
   DESKTOP_SETTINGS,
   KEYS
-} from './shared/constants/gameConstants.js';
+} from '/js/shared/constants/gameConstants.js';
 
 export default class GameConfig {
   /**

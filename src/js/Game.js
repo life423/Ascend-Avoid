@@ -2,9 +2,9 @@
  * Main game controller class that orchestrates all game systems.
  * Refactored to support responsive design across all devices and screen sizes.
  */
-import Player from './Player.js'
-import Background from './Background.js'
-import TouchControls from './TouchControls.js'
+import Player from '/js/objects/Player.js'
+import Background from '/js/objects/Background.js'
+import TouchControls from '/js/ui/TouchControls.js'
 
 // Fallback constants in case imports fail
 const BASE_CANVAS_WIDTH = 560
@@ -13,23 +13,40 @@ const BASE_CANVAS_HEIGHT = 550
 // No imports from utils module needed
 
 // Import our manager classes
-import GameConfig from './GameConfig.js'
-import InputManager from './InputManager.js'
-import ObstacleManager from './ObstacleManager.js'
-import UIManager from './UIManager.js'
-import AssetManager from './AssetManager.js'
-import ParticleSystem from './ParticleSystem.js'
+import GameConfig from '/js/core/GameConfig.js'
+import InputManager from '/js/managers/InputManager.js'
+import ObstacleManager from '/js/managers/ObstacleManager.js'
+import UIManager from '/js/ui/UIManager.js'
+import AssetManager from '/js/managers/AssetManager.js'
+import ParticleSystem from '/js/managers/ParticleSystem.js'
 
 export default class Game {
     /**
      * Creates a new Game instance
      */
     constructor() {
+        console.log('Game constructor called');
+        
         // Get DOM elements
-        this.canvas = document.getElementById('canvas')
-        this.ctx = this.canvas.getContext('2d')
-        this.scoreElement = document.getElementById('score')
-        this.highScoreElement = document.getElementById('highScore')
+        this.canvas = document.getElementById('canvas');
+        console.log('Canvas element:', this.canvas);
+        
+        if (this.canvas) {
+            this.ctx = this.canvas.getContext('2d');
+            console.log('Canvas context:', this.ctx);
+            
+            // Check canvas dimensions
+            console.log('Canvas dimensions:', this.canvas.width, this.canvas.height);
+            if (this.canvas.width === 0 || this.canvas.height === 0) {
+                console.warn('Canvas has zero dimensions - may need explicit sizing');
+                // Don't set size here yet - let ResponsiveManager handle it
+            }
+        } else {
+            console.error('Canvas element not found in DOM!');
+        }
+        
+        this.scoreElement = document.getElementById('score');
+        this.highScoreElement = document.getElementById('highScore');
 
         // Game state
         this.score = 0
@@ -208,10 +225,10 @@ export default class Game {
      * Preload all game assets
      */
     async preloadAssets() {
-    // Define game assets to preload with correct paths
+    // Define game assets to preload with paths starting from root
     const imageAssets = [
-      { key: 'player', src: 'src/assets/images/player.png' },
-      { key: 'obstacle', src: 'src/assets/images/obstacle.png' },
+      { key: 'player', src: '/images/player.png' },
+      { key: 'obstacle', src: '/images/obstacle.png' },
     ]
 
         // Preload assets (will expand with more assets as needed)
@@ -376,19 +393,72 @@ export default class Game {
      * @param {number} timestamp - Current animation timestamp
      */
     render(timestamp) {
+        // Simple test to check if canvas rendering works at all
+        try {
+            // Draw a simple red square to verify canvas is working
+            if (this.ctx) {
+                this.ctx.fillStyle = 'red';
+                this.ctx.fillRect(50, 50, 100, 100);
+                console.log('Test red square drawn');
+            } else {
+                console.error('No canvas context available for rendering');
+            }
+        } catch (e) {
+            console.error('Error drawing test square:', e);
+        }
+        
+        // Log what we're about to render
+        console.log('Rendering frame:', {
+            background: this.background ? 'loaded' : 'missing',
+            player: this.player ? 'loaded' : 'missing',
+            obstacleCount: this.obstacleManager ? this.obstacleManager.getObstacles().length : 'no manager',
+            gameState: this.gameState
+        });
+        
         // Draw background (replaces clearRect)
-        this.background.update(timestamp)
+        if (this.background) {
+            try {
+                this.background.update(timestamp);
+            } catch (e) {
+                console.error('Error updating background:', e);
+            }
+        } else {
+            console.warn('No background object available');
+            // Fallback: Clear the canvas manually
+            if (this.ctx && this.canvas) {
+                this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+                this.ctx.fillStyle = '#0a192f'; // Dark blue background
+                this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+            }
+        }
 
-        // Get obstacles
-        const obstacles = this.obstacleManager.getObstacles()
+        // Get obstacles - with error handling
+        let obstacles = [];
+        try {
+            if (this.obstacleManager) {
+                obstacles = this.obstacleManager.getObstacles();
+            } else {
+                console.error('Obstacle manager not available');
+            }
+        } catch (e) {
+            console.error('Error getting obstacles:', e);
+        }
 
         // Draw obstacles
         for (const obstacle of obstacles) {
             obstacle.draw(this.ctx)
         }
 
-        // Draw local player
-        this.player.draw(timestamp)
+        // Draw local player - with error handling
+        try {
+            if (this.player) {
+                this.player.draw(timestamp);
+            } else {
+                console.error('Player object not available for drawing');
+            }
+        } catch (e) {
+            console.error('Error drawing player:', e);
+        }
 
         // Draw particles
         this.drawParticles()

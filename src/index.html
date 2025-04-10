@@ -1,6 +1,23 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <!-- Node.js environment polyfills - load before anything else -->
+    <script>
+        // Add process polyfill before anything loads
+        window.process = {
+            env: {},
+            nextTick: function(callback) { setTimeout(callback, 0); },
+            browser: true,
+            version: '',
+            platform: 'browser',
+            // Add commonly used properties
+            cwd: function() { return '/' },
+            stdout: { write: function() {} },
+            stderr: { write: function() {} }
+        };
+        console.log("Process polyfill loaded:", typeof window.process);
+    </script>
+    
     <meta charset="UTF-8">
     <!-- Responsive viewport meta tag that maintains accessibility -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -181,10 +198,127 @@
         <button onclick="window.location.reload()">Reload Game</button>
     </div>
     
-    <!-- Multiplayer dependencies -->
-    <script src="https://unpkg.com/colyseus.js@^0.15.0/dist/colyseus.js"></script>
+    <!-- Node.js environment polyfills for browser compatibility -->
+    <script>
+        // Add process polyfill for Node.js compatibility
+        if (typeof window.process === 'undefined') {
+            window.process = {
+                env: {},
+                nextTick: function(callback) { setTimeout(callback, 0); },
+                browser: true,
+                version: '',
+                platform: 'browser'
+            };
+        }
+
+        // Create a complete Buffer polyfill for browser environment
+        if (typeof window.Buffer === 'undefined') {
+            // Constructor function
+            window.Buffer = function(arg, encodingOrOffset, length) {
+                // Handle constructor overloads
+                if (!(this instanceof Buffer)) {
+                    return new Buffer(arg, encodingOrOffset, length);
+                }
+                
+                // Initialize data based on constructor arguments
+                if (typeof arg === 'number') {
+                    // Create with size
+                    this.data = new Uint8Array(arg);
+                } else if (arg instanceof Uint8Array || Array.isArray(arg)) {
+                    // Create from array
+                    this.data = new Uint8Array(arg);
+                } else if (typeof arg === 'string') {
+                    // Create from string with encoding
+                    const encoding = encodingOrOffset || 'utf8';
+                    if (encoding === 'base64') {
+                        const decoded = atob(arg);
+                        this.data = new Uint8Array(decoded.length);
+                        for (let i = 0; i < decoded.length; i++) {
+                            this.data[i] = decoded.charCodeAt(i);
+                        }
+                    } else {
+                        // Default to UTF-8
+                        const bytes = [];
+                        for (let i = 0; i < arg.length; i++) {
+                            bytes.push(arg.charCodeAt(i));
+                        }
+                        this.data = new Uint8Array(bytes);
+                    }
+                } else {
+                    // Default to empty buffer
+                    this.data = new Uint8Array(0);
+                }
+                
+                this.length = this.data.length;
+                
+                // Make array-like
+                for (let i = 0; i < this.length; i++) {
+                    this[i] = this.data[i];
+                }
+            };
+
+            // Static methods
+            Buffer.alloc = function(size, fill, encoding) {
+                const buf = new Buffer(size);
+                if (fill !== undefined) {
+                    const fillValue = typeof fill === 'string' ? fill.charCodeAt(0) : fill;
+                    for (let i = 0; i < size; i++) {
+                        buf.data[i] = fillValue;
+                        buf[i] = fillValue;
+                    }
+                }
+                return buf;
+            };
+            
+            Buffer.allocUnsafe = function(size) {
+                return new Buffer(size);
+            };
+            
+            Buffer.from = function(data, encoding) {
+                return new Buffer(data, encoding);
+            };
+            
+            Buffer.isBuffer = function(obj) {
+                return obj instanceof Buffer;
+            };
+            
+            Buffer.byteLength = function(string, encoding) {
+                return new Buffer(string, encoding).length;
+            };
+            
+            // Instance methods
+            Buffer.prototype.toString = function(encoding) {
+                encoding = encoding || 'utf8';
+                if (encoding === 'hex') {
+                    // Hex conversion
+                    let result = '';
+                    for (let i = 0; i < this.length; i++) {
+                        result += this.data[i].toString(16).padStart(2, '0');
+                    }
+                    return result;
+                } else {
+                    // Default to UTF-8
+                    return String.fromCharCode.apply(null, this.data);
+                }
+            };
+            
+            Buffer.prototype.slice = function(start, end) {
+                const sliced = this.data.slice(start, end);
+                const result = new Buffer(sliced.length);
+                result.data = sliced;
+                for (let i = 0; i < sliced.length; i++) {
+                    result[i] = sliced[i];
+                }
+                return result;
+            };
+        }
+
+        // Debug environment
+        console.log("Buffer polyfill loaded:", typeof window.Buffer);
+        console.log("Process polyfill loaded:", typeof window.process);
+    </script>
     
-    <!-- Game scripts -->
-    <script type="module" src="js/main.js" onerror="document.getElementById('error-container').style.display='block'; document.getElementById('error-message').textContent='Failed to load game script. Please check your connection and try again.'"></script>
+    <!-- Game scripts - Using Vite entry point -->
+    <script type="module" src="js/index.js" onerror="document.getElementById('error-container').style.display='block'; document.getElementById('error-message').textContent='Failed to load game script. Please check your connection and try again.'"></script>
 </body>
 </html>

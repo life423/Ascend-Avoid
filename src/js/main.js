@@ -4,6 +4,19 @@
  */
 import Game from './Game.js';
 import ResponsiveManager from './managers/ResponsiveManager.js';
+
+// Add buffer polyfill for Colyseus (needed for multiplayer)
+import { Buffer } from 'buffer';
+
+try {
+  // Check if we're running in browser and Buffer isn't defined
+  if (typeof window !== 'undefined' && typeof window.Buffer === 'undefined') {
+    console.log('Buffer not available in browser, adding polyfill for multiplayer');
+    window.Buffer = Buffer;
+  }
+} catch (e) {
+  console.warn('Error setting up Buffer polyfill:', e);
+}
 // Use inline device detection to avoid import issues
 function detectDevice() {
   return {
@@ -153,8 +166,8 @@ function initializeMultiplayer() {
   
   // Dynamically load multiplayer components
   Promise.all([
-    import('./MultiplayerManager.js'),
-    import('./MultiplayerUI.js')
+    import('./multiplayer/MultiplayerManager.js'),
+    import('./ui/MultiplayerUI.js')
   ]).then(([MultiplayerManagerModule, MultiplayerUIModule]) => {
     // Reset button state
     mpButton.textContent = originalText;
