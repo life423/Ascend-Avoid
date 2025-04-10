@@ -369,6 +369,8 @@ h4 {
     
     #game-ui-container {
         grid-area: sidebar;
+        display: flex;
+        flex-direction: column;
     }
     
     /* Enhanced canvas for desktop */
@@ -388,11 +390,18 @@ h4 {
         border: 2px solid var(--primary-color);
         box-shadow: 0 0 25px rgba(0, 180, 240, 0.2);
         width: 100%;
+    }
+    
+    /* Instructions placed first in the visual order */
+    #instructions {
+        order: 1;
         margin: 0 0 20px 0;
     }
     
-    /* Score header re-styling */
+    /* Score header re-styling and placed second in the visual order */
     #headers {
+        order: 2;
+        margin: 0 0 20px 0;
         text-align: left;
         display: flex;
         flex-direction: column;
