@@ -144,6 +144,9 @@ export default class Game {
         // Set up touch controls if needed
         this.setupTouchControls()
 
+        // Initialize the default game mode (single player)
+        await this.initializeGameMode('singlePlayer');
+
         // Hide loading screen
         this.uiManager.hideLoading()
 
@@ -154,6 +157,91 @@ export default class Game {
         requestAnimationFrame(this.gameLoop.bind(this))
 
         console.log('Game initialized successfully')
+    }
+    
+    /**
+     * Initialize the specified game mode
+     * @param {string} mode - The mode to initialize ('singlePlayer' or 'multiplayer')
+     * @returns {Promise<void>} A promise that resolves when the mode is initialized
+     */
+    async initializeGameMode(mode) {
+        // Clean up any existing game mode
+        if (this.currentGameMode) {
+            this.currentGameMode.dispose();
+            this.currentGameMode = null;
+        }
+        
+        try {
+            // Dynamically import the appropriate game mode class
+            let GameModeClass;
+            
+            switch (mode) {
+                case 'multiplayer':
+                    // Dynamic import of MultiplayerMode
+                    const MultiplayerModeModule = await import('./core/MultiplayerMode.js');
+                    GameModeClass = MultiplayerModeModule.default;
+                    break;
+                    
+                case 'singlePlayer':
+                default:
+                    // Dynamic import of SinglePlayerMode
+                    const SinglePlayerModeModule = await import('./core/SinglePlayerMode.js');
+                    GameModeClass = SinglePlayerModeModule.default;
+                    break;
+            }
+            
+            // Create and initialize the game mode
+            this.currentGameMode = new GameModeClass(this);
+            await this.currentGameMode.initialize();
+            
+            console.log(`Game mode initialized: ${mode}`);
+            return Promise.resolve();
+        } catch (error) {
+            console.error(`Failed to initialize game mode ${mode}:`, error);
+            // Fallback to single player mode if multiplayer fails
+            if (mode === 'multiplayer') {
+                console.log('Falling back to single player mode');
+                return this.initializeGameMode('singlePlayer');
+            }
+            return Promise.reject(error);
+        }
+    }
+    
+    /**
+     * Switch to the specified game mode
+     * @param {string} mode - The mode to switch to ('singlePlayer' or 'multiplayer')
+     * @returns {Promise<void>} A promise that resolves when the mode switch is complete
+     */
+    async switchGameMode(mode) {
+        // Show loading indicator during mode switch
+        if (this.uiManager) {
+            this.uiManager.showLoading(`Switching to ${mode === 'multiplayer' ? 'multiplayer' : 'single player'} mode...`);
+        }
+        
+        try {
+            // Initialize the new game mode
+            await this.initializeGameMode(mode);
+            
+            // Reset game state
+            this.resetGame();
+            
+            // Hide loading indicator
+            if (this.uiManager) {
+                this.uiManager.hideLoading();
+            }
+            
+            return Promise.resolve();
+        } catch (error) {
+            console.error(`Failed to switch to game mode ${mode}:`, error);
+            
+            // Hide loading and show error
+            if (this.uiManager) {
+                this.uiManager.hideLoading();
+                this.uiManager.showError(`Failed to switch game mode: ${error.message}`);
+            }
+            
+            return Promise.reject(error);
+        }
     }
 
     /**
@@ -278,67 +366,45 @@ export default class Game {
 
         this.lastFrameTime = timestamp
 
-        // Skip updates if game is paused or in game over state
-        if (this.gameState !== this.config.STATE.PLAYING) {
-            // Just render the current state without updating
-            this.render(timestamp)
-            return
-        }
-
         try {
-            // 1. Update phase
-            this.update(deltaTime, timestamp)
+            // Skip updates if game is paused or in game over state
+            if (this.gameState !== this.config.STATE.PLAYING) {
+                // Just render the current state without updating
+                this.render(timestamp)
+                return;
+            }
 
-            // 2. Render phase
-            this.render(timestamp)
+            // Get current input state
+            const inputState = this.inputManager.getInputState();
 
-            // 3. Post-update phase (check win/lose conditions)
-            this.postUpdate()
+            // 1. Update phase - delegate to current game mode
+            if (this.currentGameMode) {
+                this.currentGameMode.update(inputState, deltaTime, timestamp);
+            }
+
+            // 2. Update common systems (particles, etc)
+            this.updateCommonSystems(deltaTime, timestamp);
+
+            // 3. Render phase
+            this.render(timestamp);
+
+            // 4. Post-update phase (check win/lose conditions)
+            if (this.currentGameMode) {
+                this.currentGameMode.postUpdate();
+            }
         } catch (error) {
-            console.error('Error in game loop:', error)
+            console.error('Error in game loop:', error);
         }
     }
 
     /**
-     * Update game state
+     * Update common game systems that work the same regardless of game mode
      * @param {number} deltaTime - Time since last frame in seconds
-     * @param {number} timestamp - Current animation timestamp
+     * @param {number} timestamp - Current timestamp for animation
      */
-    update(deltaTime, timestamp) {
-        // Get current input state
-        const inputState = this.inputManager.getInputState()
-
-        // Handle updates differently based on multiplayer mode
-        if (this.isMultiplayerMode) {
-            // In multiplayer mode, send input to server
-            this.updateMultiplayerMode(inputState, deltaTime, timestamp)
-        } else {
-            // In single player mode, update locally
-            this.updateSinglePlayerMode(inputState, deltaTime, timestamp)
-        }
-
+    updateCommonSystems(deltaTime, timestamp) {
         // Update particles
-        this.updateParticles(deltaTime)
-    }
-
-    /**
-     * Update game in singleplayer mode
-     */
-    updateSinglePlayerMode(inputState, deltaTime, timestamp) {
-        // Update player movement based on input
-        this.updatePlayerMovement(inputState)
-
-        // Update player
-        this.player.move()
-
-        // Update obstacles - use current scaling info for speed adjustments
-        this.obstacleManager.update(timestamp, this.score, this.scalingInfo)
-
-        // Check for collisions
-        const collision = this.obstacleManager.checkCollisions(this.player)
-        if (collision) {
-            this.handleCollision(collision)
-        }
+        this.updateParticles(deltaTime);
     }
 
     /**

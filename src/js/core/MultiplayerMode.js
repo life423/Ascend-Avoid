@@ -1,229 +1,168 @@
 /**
- * MultiplayerMode implementation for the game.
- * Encapsulates all logic specific to multiplayer gameplay.
+ * Implementation of multiplayer game mode.
+ * Handles all game logic specific to the multiplayer experience.
  */
 import GameMode from './GameMode.js';
-import { STATE } from '../shared/constants/gameConstants.js';
 
 export default class MultiplayerMode extends GameMode {
   /**
    * Creates a new MultiplayerMode instance
-   * @param {Game} game - Reference to the main game instance
+   * @param {Game} game - Reference to the main game controller
    */
   constructor(game) {
     super(game);
     
-    // Multiplayer specific properties
+    // Additional multiplayer-specific state
     this.multiplayerManager = null;
     this.remotePlayers = {};
-    this.winner = null;
+    
+    // Bind methods to maintain proper 'this' context
+    this.handleNetworkUpdate = this.handleNetworkUpdate.bind(this);
   }
   
   /**
-   * Initialize this game mode
-   * @returns {Promise} Promise that resolves when initialization is complete
+   * Initialize the multiplayer mode
+   * @returns {Promise<void>} A promise that resolves when initialization is complete
    */
   async initialize() {
-    // Initialize multiplayer manager if it doesn't exist
-    if (!this.multiplayerManager) {
-      // Check if the game already has a multiplayer manager
-      if (this.game.multiplayerManager) {
-        this.multiplayerManager = this.game.multiplayerManager;
-      } else {
-        // Create new multiplayer manager
-        // We'll import it here to avoid circular dependencies
-        const MultiplayerManager = (await import('../multiplayer/MultiplayerManager.js')).default;
-        this.multiplayerManager = new MultiplayerManager();
-        
-        // Initialize the multiplayer manager
-        this.multiplayerManager.init();
-        
-        // Store reference in the game object
-        this.game.multiplayerManager = this.multiplayerManager;
-      }
+    await super.initialize();
+    
+    // Set state for multiplayer mode
+    this.game.isMultiplayerMode = true;
+    
+    // Dynamically import multiplayer manager to avoid loading it in single-player mode
+    try {
+      const MultiplayerManagerModule = await import('../multiplayer/MultiplayerManager.js');
+      const MultiplayerManager = MultiplayerManagerModule.default;
       
-      // Set up event handlers for multiplayer events
-      this.setupMultiplayerEventHandlers();
+      // Create and initialize the multiplayer manager
+      this.multiplayerManager = new MultiplayerManager();
+      await this.multiplayerManager.init();
+      
+      // Set up multiplayer event handlers
+      this.setupEventHandlers();
+      
+      console.log('MultiplayerMode initialized');
+    } catch (error) {
+      console.error('Failed to initialize multiplayer mode:', error);
+      throw error;
     }
     
-    // Connect to server
-    try {
-      // Update UI to show connecting state
-      this.game.uiManager.showLoading('Connecting to game server...');
-      
-      // Get player name from UI or use default
-      const playerName = this.game.multiplayerUI ? 
-        this.game.multiplayerUI.getPlayerName() : 'Player';
-      
-      // Connect to server
-      const connected = await this.multiplayerManager.connect(playerName);
-      
-      if (!connected) {
-        throw new Error('Failed to connect to multiplayer server');
-      }
-      
-      // Hide loading screen
-      this.game.uiManager.hideLoading();
-      
-      // Set game state
-      this.game.gameState = STATE.WAITING;
-      
-      return true;
-    } catch (error) {
-      console.error('Multiplayer initialization error:', error);
-      
-      // Show error message
-      this.game.uiManager.hideLoading();
-      this.game.uiManager.showError(
-        'Connection Error',
-        'Failed to connect to multiplayer server. Check your connection and try again.',
-        () => {
-          // Switch back to single player mode
-          this.game.setGameMode('singleplayer');
-        }
-      );
-      
-      return false;
-    }
+    return Promise.resolve();
   }
   
   /**
    * Set up event handlers for multiplayer events
    */
-  setupMultiplayerEventHandlers() {
-    // Handle player join events
-    this.multiplayerManager.onPlayerJoin = (data) => {
-      console.log(`Player joined: ${data.name} (${data.id})`);
-      
-      // Update UI if available
-      if (this.game.multiplayerUI) {
-        this.game.multiplayerUI.updatePlayerList(
-          this.multiplayerManager.getRemotePlayers(),
-          this.multiplayerManager.getTotalPlayers()
-        );
+  setupEventHandlers() {
+    if (!this.multiplayerManager) return;
+    
+    // Handle game state changes from server
+    this.multiplayerManager.onGameStateChange = this.handleNetworkUpdate;
+    
+    // Handle player joining
+    this.multiplayerManager.onPlayerJoin = (player) => {
+      console.log(`Player joined: ${player.name}`);
+      // Update UI or show notification
+      if (this.game.uiManager) {
+        this.game.uiManager.showNotification(`${player.name} joined the game`);
       }
     };
     
-    // Handle player leave events
-    this.multiplayerManager.onPlayerLeave = (data) => {
-      console.log(`Player left: ${data.id}`);
-      
-      // Update UI if available
-      if (this.game.multiplayerUI) {
-        this.game.multiplayerUI.updatePlayerList(
-          this.multiplayerManager.getRemotePlayers(),
-          this.multiplayerManager.getTotalPlayers()
-        );
-      }
-    };
-    
-    // Handle game state changes
-    this.multiplayerManager.onGameStateChange = (state) => {
-      // Update game state
-      this.game.gameState = state.gameState;
-      
-      // Update remote players
-      this.remotePlayers = this.multiplayerManager.getRemotePlayers();
-      
-      // Update UI based on game state
-      if (this.game.multiplayerUI) {
-        this.game.multiplayerUI.updateGameState(
-          state.gameState,
-          this.multiplayerManager.getRemotePlayers(),
-          this.multiplayerManager.getTotalPlayers(),
-          this.multiplayerManager.getAliveCount()
-        );
-        
-        // If waiting, update countdown
-        if (state.gameState === STATE.STARTING && state.countdownTime) {
-          this.game.multiplayerUI.updateCountdown(state.countdownTime);
-        }
-      }
-    };
-    
-    // Handle game over events
-    this.multiplayerManager.onGameOver = (winnerName) => {
-      this.winner = winnerName;
-      
-      // Update UI
-      if (this.game.multiplayerUI) {
-        this.game.multiplayerUI.showGameOver(
-          winnerName,
-          this.completeReset.bind(this)
-        );
+    // Handle player leaving
+    this.multiplayerManager.onPlayerLeave = (player) => {
+      console.log(`Player left: ${player.id}`);
+      // Update UI or show notification
+      if (this.game.uiManager) {
+        this.game.uiManager.showNotification(`${player.name || 'A player'} left the game`);
       }
     };
     
     // Handle connection errors
     this.multiplayerManager.onConnectionError = (error) => {
-      console.error('Connection error:', error);
-      
-      // Show error message
-      this.game.uiManager.showError(
-        'Connection Error',
-        `Lost connection to multiplayer server: ${error}`,
-        () => {
-          // Switch back to single player mode
-          this.game.setGameMode('singleplayer');
-        }
-      );
-    };
-    
-    // Handle successful connection
-    this.multiplayerManager.onConnectionSuccess = () => {
-      console.log('Connected to multiplayer server');
-      
-      // Update UI if available
-      if (this.game.multiplayerUI) {
-        this.game.multiplayerUI.showConnected();
+      console.error(`Multiplayer connection error: ${error}`);
+      if (this.game.uiManager) {
+        this.game.uiManager.showError(`Connection error: ${error}`);
       }
     };
+    
+    // Handle game over from server
+    this.multiplayerManager.onGameOver = (winnerName) => {
+      if (this.game.uiManager) {
+        this.game.uiManager.showGameOver(
+          this.game.score,
+          this.game.highScore,
+          this.completeReset.bind(this),
+          winnerName
+        );
+      }
+    };
+  }
+  
+  /**
+   * Handle network state update from the server
+   * @param {Object} gameState - Server game state
+   */
+  handleNetworkUpdate(gameState) {
+    // Update local game state based on server state
+    this.game.gameState = gameState.gameState;
+    
+    // Update remote players
+    this.remotePlayers = this.multiplayerManager.getRemotePlayers();
+    
+    // Update obstacles from server if in multiplayer mode
+    if (gameState.obstacles) {
+      // Convert server obstacle format to client format if needed
+      // This depends on your specific implementation
+    }
+    
+    // Update arena information if applicable
+    if (gameState.arenaWidth && gameState.arenaHeight) {
+      // Update arena dimensions
+    }
   }
   
   /**
    * Update game state for multiplayer mode
    * @param {Object} inputState - Current input state
    * @param {number} deltaTime - Time since last frame in seconds
-   * @param {number} timestamp - Current animation timestamp
+   * @param {number} timestamp - Current timestamp for animation
    */
   update(inputState, deltaTime, timestamp) {
-    // Send player input to server if connected and playing
-    if (
-      this.multiplayerManager.isConnected &&
-      this.multiplayerManager.isInMultiplayerMode() &&
-      this.game.gameState === STATE.PLAYING
-    ) {
+    // Skip if game is not in playing state
+    if (this.game.gameState !== this.game.config.STATE.PLAYING) {
+      return;
+    }
+    
+    // Get local player from multiplayer manager
+    const localPlayer = this.multiplayerManager?.getLocalPlayer();
+    
+    // Update local player based on input
+    if (localPlayer && this.game.player) {
+      // Apply input to player (visual representation only)
+      this.updatePlayerMovement(inputState);
+      
+      // Move local player - this will be overridden by server updates
+      // but provides immediate visual feedback
+      this.game.player.move();
+      
       // Send input to server
       this.multiplayerManager.sendInput(inputState);
-      
-      // Update local player movement for responsiveness
-      // (server will correct any discrepancies)
-      this.updatePlayerMovement(inputState);
-      this.game.player.move();
     }
     
-    // Get obstacles from server instead of using local obstacle manager
-    const serverObstacles = this.multiplayerManager.getObstacles();
-    
-    // Update remote players (interpolation/prediction can be added here)
-    // This is a simplified implementation
+    // Update remote players (animations, interpolation)
     this.updateRemotePlayers(deltaTime);
     
-    // Check for collisions (handled server-side, but we can provide visual feedback)
-    if (this.game.gameState === STATE.PLAYING) {
-      // Visual updates only - actual collision detection is on the server
-      this.checkVisualCollisions(serverObstacles);
-    }
+    // Obstacles are server-authoritative in multiplayer mode
+    // They will be updated via network updates
   }
   
   /**
-   * Update player movement for visual feedback
+   * Update player movement based on input state
    * @param {Object} inputState - Current input state
    */
   updatePlayerMovement(inputState) {
-    // Get local player from multiplayer manager
-    const localPlayer = this.multiplayerManager.getLocalPlayer();
-    if (!localPlayer) return;
+    if (!this.game.player) return;
     
     // Apply input to player movement
     this.game.player.setMovementKey('up', inputState.up);
@@ -233,63 +172,171 @@ export default class MultiplayerMode extends GameMode {
   }
   
   /**
-   * Update remote players
+   * Update remote players for animation and interpolation
    * @param {number} deltaTime - Time since last frame in seconds
    */
   updateRemotePlayers(deltaTime) {
-    // Get remote players from multiplayer manager
-    this.remotePlayers = this.multiplayerManager.getRemotePlayers();
-    
-    // Update remote player positions (can be expanded with interpolation)
-    // This is a simplified implementation
+    // Interpolate remote player positions
+    for (const id in this.remotePlayers) {
+      const remotePlayer = this.remotePlayers[id];
+      
+      // Apply any visual updates or interpolation
+      // This depends on your specific implementation
+    }
   }
   
   /**
-   * Check for visual collisions (feedback only, actual logic is on server)
-   * @param {Array} serverObstacles - Obstacles from the server
+   * Render multiplayer mode specific elements
+   * @param {number} timestamp - Current timestamp for animation
    */
-  checkVisualCollisions(serverObstacles) {
-    // Check only for visual feedback, not actual collision handling
-    // The server handles the real collision detection
-  }
-  
-  /**
-   * Handle collision with obstacle
-   * @param {Obstacle} obstacle - The obstacle that was hit
-   */
-  handleCollision(obstacle) {
-    // In multiplayer, collisions are handled by the server
-    // This is just for visual effects
-    
-    // Play collision sound
-    if (this.game.assetManager) {
-      this.game.assetManager.playSound('collision', 0.3);
+  render(timestamp) {
+    // Render remote players
+    for (const id in this.remotePlayers) {
+      const remotePlayer = this.remotePlayers[id];
+      
+      // Draw remote player - implementation depends on your player visualization
+      if (remotePlayer.x !== undefined && remotePlayer.y !== undefined) {
+        // Draw remote player at position
+        this.drawRemotePlayer(remotePlayer, timestamp);
+      }
     }
     
-    // Flash screen red
-    this.game.uiManager.flashScreen('#ff0000', 200);
+    // Render any multiplayer-specific UI elements
+    this.renderMultiplayerUI(timestamp);
   }
   
   /**
-   * Check for winner - not needed in multiplayer as the server determines this
+   * Draw a remote player
+   * @param {Object} playerData - Remote player data
+   * @param {number} timestamp - Current timestamp for animation
    */
-  checkForWinner() {
-    // Server handles win condition in multiplayer
+  drawRemotePlayer(playerData, timestamp) {
+    if (!this.game.ctx) return;
+    
+    // Get player color based on index or other property
+    const color = this.getPlayerColor(playerData.index || 0);
+    
+    // Draw remote player with distinct color
+    this.game.ctx.fillStyle = color;
+    this.game.ctx.fillRect(
+      playerData.x,
+      playerData.y,
+      this.game.player ? this.game.player.width : 30,
+      this.game.player ? this.game.player.height : 30
+    );
+    
+    // Draw player name above
+    if (playerData.name) {
+      this.game.ctx.fillStyle = 'white';
+      this.game.ctx.font = '12px Arial';
+      this.game.ctx.textAlign = 'center';
+      this.game.ctx.fillText(
+        playerData.name,
+        playerData.x + (this.game.player ? this.game.player.width / 2 : 15),
+        playerData.y - 5
+      );
+    }
+  }
+  
+  /**
+   * Get player color based on index
+   * @param {number} index - Player index
+   * @returns {string} Color in CSS format
+   */
+  getPlayerColor(index) {
+    // Define a set of distinct colors for players
+    const colors = [
+      '#FF5252', // Red
+      '#FF9800', // Orange
+      '#FFEB3B', // Yellow
+      '#4CAF50', // Green
+      '#2196F3', // Blue
+      '#9C27B0', // Purple
+      '#E91E63', // Pink
+    ];
+    
+    return colors[index % colors.length];
+  }
+  
+  /**
+   * Render multiplayer-specific UI elements
+   * @param {number} timestamp - Current timestamp for animation
+   */
+  renderMultiplayerUI(timestamp) {
+    if (!this.game.ctx || !this.multiplayerManager) return;
+    
+    // Draw player count
+    const totalPlayers = this.multiplayerManager.getTotalPlayers();
+    const alivePlayers = this.multiplayerManager.getAliveCount();
+    
+    this.game.ctx.fillStyle = 'white';
+    this.game.ctx.font = '14px Arial';
+    this.game.ctx.textAlign = 'right';
+    this.game.ctx.fillText(
+      `Players: ${alivePlayers}/${totalPlayers}`,
+      this.game.canvas.width - 10,
+      20
+    );
+    
+    // Draw arena boundary if applicable
+    const arenaStats = this.multiplayerManager.getArenaStats();
+    if (arenaStats && arenaStats.areaPercentage < 100) {
+      // Draw shrinking arena boundary
+      this.drawArenaBoundary(arenaStats);
+    }
+  }
+  
+  /**
+   * Draw arena boundary for battle royale mode
+   * @param {Object} arenaStats - Arena statistics from server
+   */
+  drawArenaBoundary(arenaStats) {
+    if (!this.game.ctx) return;
+    
+    // Calculate arena dimensions based on percentage
+    const margin = (100 - arenaStats.areaPercentage) / 100;
+    const marginX = this.game.canvas.width * (margin / 2);
+    const marginY = this.game.canvas.height * (margin / 2);
+    
+    // Draw arena boundary
+    this.game.ctx.strokeStyle = 'rgba(255, 0, 0, 0.7)';
+    this.game.ctx.lineWidth = 2;
+    this.game.ctx.strokeRect(
+      marginX,
+      marginY,
+      this.game.canvas.width - marginX * 2,
+      this.game.canvas.height - marginY * 2
+    );
+  }
+  
+  /**
+   * Post-update operations for multiplayer mode
+   */
+  postUpdate() {
+    // Most game logic is server-driven in multiplayer mode
+    // Local post-update mainly deals with UI updates
+    
+    // Update player count display if needed
   }
   
   /**
    * Reset game state
    */
   reset() {
-    // Reset player position
-    this.game.player.resetPosition();
+    // In multiplayer, reset is mostly server-driven
+    // This handles local cleanup
     
-    // Reset winner
-    this.winner = null;
+    if (this.game.uiManager) {
+      this.game.uiManager.updateScore(0);
+    }
     
-    // Request server to reset game
-    if (this.multiplayerManager.isConnected) {
-      this.multiplayerManager.requestRestart();
+    if (this.game.player) {
+      this.game.player.resetPosition();
+    }
+    
+    // Clear particles
+    if (this.game.particleSystem) {
+      this.game.particleSystem.clear();
     }
   }
   
@@ -297,43 +344,18 @@ export default class MultiplayerMode extends GameMode {
    * Complete reset after game over
    */
   completeReset() {
-    // Hide game over UI
-    if (this.game.multiplayerUI) {
-      this.game.multiplayerUI.hideGameOver();
+    // Hide any game over UI
+    if (this.game.uiManager) {
+      this.game.uiManager.hideGameOver();
     }
     
-    // Reset game elements
+    // Request server restart if user is host
+    if (this.multiplayerManager) {
+      this.multiplayerManager.requestRestart();
+    }
+    
+    // Reset local elements
     this.reset();
-  }
-  
-  /**
-   * Activate multiplayer mode
-   */
-  activate() {
-    super.activate();
-    this.game.isMultiplayerMode = true;
-    
-    // Show multiplayer UI if it exists
-    if (this.game.multiplayerUI) {
-      this.game.multiplayerUI.show();
-    }
-  }
-  
-  /**
-   * Deactivate multiplayer mode
-   */
-  deactivate() {
-    super.deactivate();
-    
-    // Disconnect from server
-    if (this.multiplayerManager && this.multiplayerManager.isConnected) {
-      this.multiplayerManager.disconnect();
-    }
-    
-    // Hide multiplayer UI if it exists
-    if (this.game.multiplayerUI) {
-      this.game.multiplayerUI.hide();
-    }
   }
   
   /**
@@ -343,6 +365,10 @@ export default class MultiplayerMode extends GameMode {
     // Disconnect from server
     if (this.multiplayerManager) {
       this.multiplayerManager.disconnect();
+      this.multiplayerManager = null;
     }
+    
+    this.remotePlayers = {};
+    console.log('MultiplayerMode disposed');
   }
 }

@@ -153,58 +153,82 @@ function createMultiplayerButton() {
 }
 
 /**
- * Initializes multiplayer functionality on demand
- * Uses dynamic imports to avoid loading unnecessary code
+ * Initializes multiplayer functionality on demand using the Game mode system
+ * Delegates to Game.switchGameMode for proper mode initialization
  */
 function initializeMultiplayer() {
-  // Show a loading state on button
+  // Get button and game reference
   const mpButton = document.querySelector('.multiplayer-button');
+  const game = window.game;
+  
+  // Ensure game instance exists
+  if (!game) {
+    console.error("Game instance not found. Cannot initialize multiplayer.");
+    alert("Error: Game not initialized properly.");
+    return;
+  }
+  
+  // Show a loading state on button
   const originalText = mpButton.textContent;
   mpButton.textContent = 'Loading...';
   mpButton.style.opacity = '0.7';
   mpButton.disabled = true;
   
-  // Dynamically load multiplayer components
-  Promise.all([
-    import('./multiplayer/MultiplayerManager.js'),
-    import('./ui/MultiplayerUI.js')
-  ]).then(([MultiplayerManagerModule, MultiplayerUIModule]) => {
-    // Reset button state
-    mpButton.textContent = originalText;
-    mpButton.style.opacity = '1';
-    mpButton.disabled = false;
-    
-    // Initialize multiplayer if not already initialized
-    if (!window.multiplayerManager) {
-      console.log("Initializing multiplayer components...");
-      
-      // Create new instances
-      const MultiplayerManager = MultiplayerManagerModule.default;
+  // Check if we're already in multiplayer mode
+  if (game.isMultiplayerMode) {
+    // We're already in multiplayer mode, just show UI
+    import('./ui/MultiplayerUI.js').then((MultiplayerUIModule) => {
       const MultiplayerUI = MultiplayerUIModule.default;
       
-      const multiplayerManager = new MultiplayerManager();
-      const multiplayerUI = new MultiplayerUI(multiplayerManager);
+      // Create UI if it doesn't exist
+      if (!window.multiplayerUI) {
+        window.multiplayerUI = new MultiplayerUI(null); // We don't need manager here
+      }
       
-      // Initialize the UI and show it
-      multiplayerUI.toggle();
-      
-      // Store for future access
-      window.multiplayerManager = multiplayerManager;
-      window.multiplayerUI = multiplayerUI;
-      
-      console.log("Multiplayer initialized.");
-    } else {
-      // Just toggle existing UI
+      // Show UI
       window.multiplayerUI.toggle();
-    }
-  }).catch(err => {
-    // Reset button state
-    mpButton.textContent = originalText;
-    mpButton.style.opacity = '1';
-    mpButton.disabled = false;
+      
+      // Reset button
+      mpButton.textContent = originalText;
+      mpButton.style.opacity = '1';
+      mpButton.disabled = false;
+    });
     
-    // Show error
-    console.error("Failed to load multiplayer components:", err);
-    alert("Could not initialize multiplayer. Please check your connection and try again.");
-  });
+    return;
+  }
+  
+  // Switch to multiplayer mode
+  game.switchGameMode('multiplayer')
+    .then(() => {
+      console.log("Switched to multiplayer mode successfully");
+      
+      // Reset button state
+      mpButton.textContent = originalText;
+      mpButton.style.opacity = '1';
+      mpButton.disabled = false;
+      
+      // Load and show UI
+      return import('./ui/MultiplayerUI.js');
+    })
+    .then((MultiplayerUIModule) => {
+      const MultiplayerUI = MultiplayerUIModule.default;
+      
+      // Create UI
+      window.multiplayerUI = new MultiplayerUI(null); // Game mode already has manager
+      
+      // Show UI
+      window.multiplayerUI.toggle();
+      
+      console.log("Multiplayer UI initialized");
+    })
+    .catch(err => {
+      // Reset button state
+      mpButton.textContent = originalText;
+      mpButton.style.opacity = '1';
+      mpButton.disabled = false;
+      
+      // Show error
+      console.error("Failed to initialize multiplayer:", err);
+      alert("Could not initialize multiplayer. Please check your connection and try again.");
+    });
 }
