@@ -53,6 +53,17 @@ export default class Game {
         this.highScore = 0
         this.lastFrameTime = 0
         this.particleSystem = null
+        
+        // Performance monitoring
+        this.frameTimes = []
+        this.frameTimeIndex = 0
+        this.frameTimeWindow = 60 // Store last 60 frames for analysis
+        this.performanceStats = {
+            avgFrameTime: 0,
+            maxFrameTime: 0,
+            minFrameTime: Infinity,
+            frameCount: 0
+        }
 
         // Device detection now handled by ResponsiveManager
         // Default to desktop for initial rendering before ResponsiveManager initializes
@@ -350,6 +361,9 @@ export default class Game {
      * @param {number} timestamp - Current animation timestamp
      */
     gameLoop(timestamp) {
+        // Performance measurement - start time
+        const frameStartTime = performance.now();
+        
         // Request next frame first to ensure smooth animation
         requestAnimationFrame(this.gameLoop.bind(this))
 
@@ -371,6 +385,8 @@ export default class Game {
             if (this.gameState !== this.config.STATE.PLAYING) {
                 // Just render the current state without updating
                 this.render(timestamp)
+                // Performance tracking - measure render-only time
+                this.trackFrameTime(performance.now() - frameStartTime);
                 return;
             }
 
@@ -392,8 +408,51 @@ export default class Game {
             if (this.currentGameMode) {
                 this.currentGameMode.postUpdate();
             }
+            
+            // Performance tracking - measure full frame time
+            this.trackFrameTime(performance.now() - frameStartTime);
         } catch (error) {
             console.error('Error in game loop:', error);
+        }
+    }
+
+    /**
+     * Track frame time for performance monitoring
+     * @param {number} frameTime - Time taken to process this frame in ms
+     */
+    trackFrameTime(frameTime) {
+        // Store frame time in circular buffer
+        this.frameTimes[this.frameTimeIndex] = frameTime;
+        this.frameTimeIndex = (this.frameTimeIndex + 1) % this.frameTimeWindow;
+        
+        // Update performance stats every 60 frames
+        this.performanceStats.frameCount++;
+        if (this.performanceStats.frameCount % 60 === 0) {
+            // Calculate stats from the frame time buffer
+            let sum = 0;
+            let max = 0;
+            let min = Infinity;
+            
+            for (let i = 0; i < this.frameTimes.length; i++) {
+                const time = this.frameTimes[i] || 0;
+                sum += time;
+                max = Math.max(max, time);
+                if (time > 0) { // Only consider valid times for minimum
+                    min = Math.min(min, time);
+                }
+            }
+            
+            // Update stats
+            this.performanceStats.avgFrameTime = sum / this.frameTimes.filter(t => t > 0).length;
+            this.performanceStats.maxFrameTime = max;
+            this.performanceStats.minFrameTime = min === Infinity ? 0 : min;
+            
+            // Log stats if debug mode is enabled
+            if (this.config.isDebugEnabled()) {
+                console.log(`Performance: avg=${this.performanceStats.avgFrameTime.toFixed(2)}ms, ` +
+                    `min=${this.performanceStats.minFrameTime.toFixed(2)}ms, ` +
+                    `max=${this.performanceStats.maxFrameTime.toFixed(2)}ms`);
+            }
         }
     }
 
@@ -792,6 +851,10 @@ export default class Game {
             1000 / Math.max(1, timestamp - this.lastFrameTime)
         )
         this.ctx.fillText(`FPS: ${fps}`, 10, 10)
+        
+        // Display performance stats
+        this.ctx.fillText(`Frame Time: ${this.performanceStats.avgFrameTime.toFixed(1)}ms`, 10, 25)
+        this.ctx.fillText(`Min/Max: ${this.performanceStats.minFrameTime.toFixed(1)}/${this.performanceStats.maxFrameTime.toFixed(1)}ms`, 10, 40)
 
         // Display player position
         this.ctx.fillText(
@@ -799,14 +862,14 @@ export default class Game {
                 this.player.y
             )})`,
             10,
-            25
+            55
         )
 
         // Display obstacle count
         this.ctx.fillText(
             `Obstacles: ${this.obstacleManager.getObstacles().length}`,
             10,
-            40
+            70
         )
 
         // Display particle count
@@ -815,13 +878,13 @@ export default class Game {
             this.ctx.fillText(
                 `Particles: ${stats.activeParticles}/${stats.totalAllocated}`,
                 10,
-                55
+                85
             )
         } else {
             this.ctx.fillText(
                 `Particles: ${this.particles ? this.particles.length : 0}`,
                 10,
-                55
+                85
             )
         }
 
@@ -829,11 +892,18 @@ export default class Game {
         this.ctx.fillText(
             `Scale: ${this.scalingInfo.widthScale.toFixed(2)}x`,
             10,
-            70
+            100
         )
 
         // Display game state
-        this.ctx.fillText(`State: ${this.gameState}`, 10, 85)
+        this.ctx.fillText(`State: ${this.gameState}`, 10, 115)
+        
+        // Display object counts for memory tracking
+        let totalObjects = 1 + // Game instance
+                          (this.obstacleManager ? this.obstacleManager.getObstacles().length : 0) +
+                          (this.particleSystem ? this.particleSystem.getStats().totalAllocated : 0) +
+                          Object.keys(this.remotePlayers).length;
+        this.ctx.fillText(`Total Objects: ~${totalObjects}`, 10, 130);
 
         // Draw player hitbox
         this.ctx.strokeStyle = 'yellow'

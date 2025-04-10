@@ -36,10 +36,11 @@ export default class ParticleSystem {
     }
   }
   
-  /**
-   * Create a new particle object
-   * @returns {Object} A new particle object
-   */
+/**
+ * Manages particle effects in the game
+ * Uses object pooling and device-adaptive settings to optimize performance
+ * Automatically adjusts particle count based on device capabilities
+ */
   createParticle() {
     return {
       x: 0,
@@ -232,6 +233,47 @@ export default class ParticleSystem {
   }
   
   /**
+   * Set the maximum number of particles based on device capability
+   * @param {number} maxParticles - New maximum particles limit
+   */
+  setMaxParticles(maxParticles) {
+    // Update the maximum
+    this.maxParticles = maxParticles;
+    
+    // If we have more active particles than the new maximum,
+    // we need to recycle the excess particles
+    if (this.activeParticles.length > this.maxParticles) {
+      const excessCount = this.activeParticles.length - this.maxParticles;
+      console.log(`Recycling ${excessCount} excess particles to meet new limit of ${this.maxParticles}`);
+      
+      // Recycle the oldest particles (from the beginning of the array)
+      for (let i = 0; i < excessCount; i++) {
+        const oldestParticle = this.activeParticles.shift();
+        this.recycleParticle(oldestParticle);
+      }
+    }
+    
+    // Adjust pool size to match the new maximum (with some buffer)
+    const targetPoolSize = Math.min(this.maxParticles, 200);
+    
+    // If we have too few particles in the pool, create more
+    if (this.particlePool.length < targetPoolSize) {
+      const additionalCount = targetPoolSize - this.particlePool.length;
+      for (let i = 0; i < additionalCount; i++) {
+        this.particlePool.push(this.createParticle());
+      }
+    } 
+    // If we have too many particles in the pool, remove some
+    else if (this.particlePool.length > targetPoolSize * 1.5) {
+      this.particlePool.length = targetPoolSize;
+    }
+    
+    console.log(`ParticleSystem adjusted to maxParticles=${this.maxParticles}, poolSize=${this.particlePool.length}`);
+    
+    return this.maxParticles;
+  }
+  
+  /**
    * Get current system stats
    * @returns {Object} Stats about particle count, pool usage, etc.
    */
@@ -239,7 +281,9 @@ export default class ParticleSystem {
     return {
       activeParticles: this.activeParticles.length,
       poolSize: this.particlePool.length,
-      totalAllocated: this.activeParticles.length + this.particlePool.length
+      totalAllocated: this.activeParticles.length + this.particlePool.length,
+      maxParticles: this.maxParticles,
+      utilizationPercent: Math.round((this.activeParticles.length / this.maxParticles) * 100)
     };
   }
   

@@ -146,8 +146,8 @@ export default class MultiplayerMode extends GameMode {
       // but provides immediate visual feedback
       this.game.player.move();
       
-      // Send input to server
-      this.multiplayerManager.sendInput(inputState);
+      // Network optimization: Only send inputs when they change or periodically as a heartbeat
+      this.throttledInputSend(inputState, timestamp);
     }
     
     // Update remote players (animations, interpolation)
@@ -155,6 +155,48 @@ export default class MultiplayerMode extends GameMode {
     
     // Obstacles are server-authoritative in multiplayer mode
     // They will be updated via network updates
+  }
+  
+  /**
+   * Throttled input sending to reduce network traffic
+   * Only sends inputs when they change or every 100ms as a heartbeat
+   * @param {Object} currentInput - Current input state
+   * @param {number} timestamp - Current timestamp for timing
+   */
+  throttledInputSend(currentInput, timestamp) {
+    // Initialize last input values if not set
+    if (!this.lastSentInput) {
+      this.lastSentInput = { up: false, down: false, left: false, right: false };
+      this.lastInputSendTime = 0;
+    }
+    
+    // Track if input has changed since last send
+    const hasChanged = 
+      currentInput.up !== this.lastSentInput.up ||
+      currentInput.down !== this.lastSentInput.down ||
+      currentInput.left !== this.lastSentInput.left ||
+      currentInput.right !== this.lastSentInput.right;
+      
+    // Time since last send
+    const timeSinceLastSend = timestamp - this.lastInputSendTime;
+    
+    // Send if changed or heartbeat interval elapsed (100ms)
+    if (hasChanged || timeSinceLastSend > 100) {
+      // Track metrics if debug enabled
+      if (this.game.config.isDebugEnabled() && hasChanged) {
+        this.inputChangeCount = (this.inputChangeCount || 0) + 1;
+        if (this.inputChangeCount % 10 === 0) {
+          console.log(`MultiplayerMode: Sent ${this.inputChangeCount} input updates`);
+        }
+      }
+      
+      // Send to server
+      this.multiplayerManager.sendInput(currentInput);
+      
+      // Update tracking values
+      this.lastSentInput = { ...currentInput };
+      this.lastInputSendTime = timestamp;
+    }
   }
   
   /**
