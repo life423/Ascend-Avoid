@@ -1,0 +1,58 @@
+name: Local Development Testing
+
+# This workflow is for testing the application locally
+# It can be run manually to build and test the application in a Docker container
+
+on:
+  workflow_dispatch:
+    inputs:
+      port:
+        description: 'Port to expose the application on'
+        required: true
+        default: '3000'
+        type: string
+
+jobs:
+  local-testing:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci --legacy-peer-deps --ignore-scripts
+      
+      - name: Build application
+        run: npm run build
+        
+      - name: Build Docker image
+        run: docker build -t ascend-avoid:local .
+        
+      - name: Run Docker container
+        run: |
+          docker run -d -p ${{ github.event.inputs.port }}:3000 --name ascend-avoid-test ascend-avoid:local
+          echo "Container started on port ${{ github.event.inputs.port }}"
+          
+      - name: Wait for application to start
+        run: sleep 10
+        
+      - name: Test application
+        run: |
+          export VERIFY_URL=http://localhost:${{ github.event.inputs.port }}
+          export VERIFY_TIMEOUT=30000
+          export VERIFY_RETRIES=3
+          export VERIFY_RETRY_DELAY=5000
+          node scripts/verify-deployment.js
+          
+      - name: Cleanup
+        if: always()
+        run: |
+          docker stop ascend-avoid-test || true
+          docker rm ascend-avoid-test || true

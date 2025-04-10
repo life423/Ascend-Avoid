@@ -1,9 +1,9 @@
 {
-  "name": "ascend-avoid",
-  "version": "1.0.0",
-  "description": "A multiplayer game where players need to ascend and avoid obstacles",
-  "main": "index.html",
-  "type": "module",
+    "name": "ascend-avoid",
+    "version": "1.0.0",
+    "description": "A multiplayer game where players need to ascend and avoid obstacles",
+    "main": "index.html",
+    "type": "module",
   "scripts": {
     "setup": "node install.cjs",
     "postinstall": "node install.cjs",
@@ -15,46 +15,49 @@
     "lint:js": "eslint src/js/**/*.js",
     "test": "jest",
     "test:watch": "jest --watch",
-    "test:coverage": "jest --coverage"
+    "test:coverage": "jest --coverage",
+    "verify-deployment": "node scripts/verify-deployment.js",
+    "verify-deployment:azure": "powershell -Command \"$env:VERIFY_URL='https://ascend-avoid.azurewebsites.net'; node scripts/verify-deployment.js\"",
+    "deploy:local": "powershell -ExecutionPolicy Bypass -File scripts/deploy-local.ps1"
   },
-  "keywords": [
-    "game",
-    "canvas",
-    "javascript",
-    "html5",
-    "responsive"
-  ],
-  "author": "",
-  "license": "MIT",
-  "devDependencies": {
-    "@babel/core": "^7.22.5",
-    "@babel/preset-env": "^7.22.5",
-    "@types/node": "^22.14.0",
-    "@typescript-eslint/eslint-plugin": "^8.29.1",
-    "@typescript-eslint/parser": "^8.29.1",
-    "@vitejs/plugin-legacy": "^6.0.2",
-    "babel-jest": "^29.5.0",
-    "buffer": "^6.0.3",
-    "eslint": "^8.23.0",
-    "http-server": "^14.1.1",
-    "jest": "^29.5.0",
-    "jest-environment-jsdom": "^29.5.0",
-    "process": "^0.11.10",
-    "terser": "^5.14.2",
-    "typescript": "^5.8.3",
-    "vite": "^6.2.5",
-    "vite-plugin-checker": "^0.9.1"
-  },
-  "engines": {
-    "node": ">=16.0.0"
-  },
-  "browserslist": [
-    ">0.2%",
-    "not dead",
-    "not ie <= 11",
-    "not op_mini all"
-  ],
-  "dependencies": {
-    "colyseus.js": "^0.16.15"
-  }
+    "keywords": [
+        "game",
+        "canvas",
+        "javascript",
+        "html5",
+        "responsive"
+    ],
+    "author": "",
+    "license": "MIT",
+    "devDependencies": {
+        "@babel/core": "^7.22.5",
+        "@babel/preset-env": "^7.22.5",
+        "@types/node": "^22.14.0",
+        "@typescript-eslint/eslint-plugin": "^8.29.1",
+        "@typescript-eslint/parser": "^8.29.1",
+        "@vitejs/plugin-legacy": "^6.0.2",
+        "babel-jest": "^29.5.0",
+        "buffer": "^6.0.3",
+        "eslint": "^8.23.0",
+        "http-server": "^14.1.1",
+        "jest": "^29.5.0",
+        "jest-environment-jsdom": "^29.5.0",
+        "process": "^0.11.10",
+        "terser": "^5.14.2",
+        "typescript": "^5.8.3",
+        "vite": "^6.2.5",
+        "vite-plugin-checker": "^0.9.1"
+    },
+    "engines": {
+        "node": ">=16.0.0"
+    },
+    "browserslist": [
+        ">0.2%",
+        "not dead",
+        "not ie <= 11",
+        "not op_mini all"
+    ],
+    "dependencies": {
+        "colyseus.js": "^0.16.15"
+    }
 }

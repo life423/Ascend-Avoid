@@ -129,6 +129,68 @@ graph TD
 
 ---
 
+## 🐳 Containerization & Cloud Deployment
+
+The application is fully containerized and ready for cloud deployment:
+
+### Docker Setup
+
+- **Multi-stage Build**: Optimized for production with minimal image size
+- **Client-Server Architecture**: Separated concerns in a single container
+- **Environment Configuration**: Dynamic environment variables for different deployment targets
+
+```bash
+# Local container testing
+docker-compose up -d
+```
+
+### Azure Cloud Deployment
+
+The game is deployed to Azure Container Apps with a complete CI/CD pipeline:
+
+```mermaid
+graph TD
+    A[GitHub Repository] -->|Push to main| B[GitHub Actions Workflow]
+    B -->|Build| C[Run Tests]
+    C -->|Pass| D[Build Docker Image]
+    D -->|Push| E[Azure Container Registry]
+    E -->|Deploy| F[Azure Container App]
+    F -->|Scale| G[Production Environment]
+```
+
+#### Deployment Infrastructure
+
+- **Container Registry**: Azure Container Registry for secure image hosting
+- **Compute Platform**: Azure Container Apps for scalable container instances
+- **CI/CD**: GitHub Actions workflow for automated deployments
+- **Secrets Management**: Azure Key Vault integration for secure credentials
+
+#### Deployment Process
+
+1. Code is pushed to the main branch
+2. GitHub Actions workflow is triggered automatically
+3. Application is built and tested
+4. Docker image is built and pushed to Azure Container Registry
+5. Azure Container App is updated with the new image
+6. Container app environment scales based on traffic
+
+To deploy manually:
+
+```bash
+# Authenticate with Azure
+az login
+
+# Deploy to Azure Container Apps
+az containerapp up \
+  --name ascend-avoid \
+  --resource-group DefaultResourceGroup-EUS \
+  --image portfoliodrewclarkazure.azurecr.io/ascend-avoid:latest \
+  --target-port 3000 \
+  --ingress external
+```
+
+---
+
 ## 🏆 Architecture Principles
 
 The codebase strictly adheres to:

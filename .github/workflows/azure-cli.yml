@@ -1,0 +1,100 @@
+name: Azure CLI Operations
+
+# This workflow is used for Azure resource management operations
+# It can be triggered manually to check, create, or update Azure resources
+
+on:
+  workflow_dispatch:
+    inputs:
+      operation:
+        description: 'Azure operation to perform'
+        required: true
+        default: 'check-resources'
+        type: choice
+        options:
+          - check-resources
+          - create-resources
+          - update-resources
+
+jobs:
+  azure-cli-ops:
+    runs-on: ubuntu-latest
+    permissions: 
+      id-token: write # Required for requesting the OIDC JWT Token
+      contents: read # Required for checking out the repository
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Azure Login
+        uses: azure/login@v1
+        with:
+          client-id: ${{ secrets.ASCENDAVOID_AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.ASCENDAVOID_AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.ASCENDAVOID_AZURE_SUBSCRIPTION_ID }}
+          
+      - name: Check Azure Resources
+        if: ${{ github.event.inputs.operation == 'check-resources' }}
+        run: |
+          echo "Checking Azure Container Registry..."
+          az acr show --name portfoliodrewclarkazure --resource-group DefaultResourceGroup-EUS || echo "ACR not found"
+          
+          echo "Checking Azure Container App..."
+          az containerapp show --name ascend-avoid --resource-group DefaultResourceGroup-EUS || echo "Container App not found"
+
+      - name: Create Azure Resources
+        if: ${{ github.event.inputs.operation == 'create-resources' }}
+        run: |
+          # Check if ACR exists, create if not
+          if ! az acr show --name portfoliodrewclarkazure --resource-group DefaultResourceGroup-EUS > /dev/null 2>&1; then
+            echo "Creating Azure Container Registry..."
+            az acr create --name portfoliodrewclarkazure --resource-group DefaultResourceGroup-EUS --sku Basic --admin-enabled true
+          else
+            echo "Azure Container Registry already exists."
+          fi
+          
+          # Check if Container App environment exists, create if not
+          if ! az containerapp env show --name ascend-avoid-env --resource-group DefaultResourceGroup-EUS > /dev/null 2>&1; then
+            echo "Creating Container App Environment..."
+            az containerapp env create --name ascend-avoid-env --resource-group DefaultResourceGroup-EUS --location eastus
+          else
+            echo "Container App Environment already exists."
+          fi
+          
+          # Check if Container App exists, create if not
+          if ! az containerapp show --name ascend-avoid --resource-group DefaultResourceGroup-EUS > /dev/null 2>&1; then
+            echo "Creating Container App..."
+            az containerapp create \
+              --name ascend-avoid \
+              --resource-group DefaultResourceGroup-EUS \
+              --environment ascend-avoid-env \
+              --registry-server portfoliodrewclarkazure.azurecr.io \
+              --registry-username ${{ secrets.ASCENDAVOID_REGISTRY_USERNAME }} \
+              --registry-password ${{ secrets.ASCENDAVOID_REGISTRY_PASSWORD }} \
+              --image portfoliodrewclarkazure.azurecr.io/ascend-avoid:latest \
+              --target-port 3000 \
+              --ingress external \
+              --min-replicas 1 \
+              --max-replicas 3
+          else
+            echo "Container App already exists."
+          fi
+
+      - name: Update Azure Resources
+        if: ${{ github.event.inputs.operation == 'update-resources' }}
+        run: |
+          echo "Updating Container App configuration..."
+          az containerapp update \
+            --name ascend-avoid \
+            --resource-group DefaultResourceGroup-EUS \
+            --min-replicas 1 \
+            --max-replicas 3
+          
+          echo "Updating Container App registry settings..."
+          az containerapp registry set \
+            --name ascend-avoid \
+            --resource-group DefaultResourceGroup-EUS \
+            --server portfoliodrewclarkazure.azurecr.io \
+            --username ${{ secrets.ASCENDAVOID_REGISTRY_USERNAME }} \
+            --password ${{ secrets.ASCENDAVOID_REGISTRY_PASSWORD }}
