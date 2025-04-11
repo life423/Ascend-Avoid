@@ -2,8 +2,8 @@
  * Main game controller class that orchestrates all game systems.
  * Refactored to support responsive design across all devices and screen sizes.
  */
-import Player from '/js/objects/Player.js'
 import Background from '/js/objects/Background.js'
+import Player from '/js/objects/Player.js'
 import TouchControls from '/js/ui/TouchControls.js'
 
 // Fallback constants in case imports fail
@@ -14,46 +14,52 @@ const BASE_CANVAS_HEIGHT = 550
 
 // Import our manager classes
 import GameConfig from '/js/core/GameConfig.js'
+import AssetManager from '/js/managers/AssetManager.js'
 import InputManager from '/js/managers/InputManager.js'
 import ObstacleManager from '/js/managers/ObstacleManager.js'
-import UIManager from '/js/ui/UIManager.js'
-import AssetManager from '/js/managers/AssetManager.js'
 import ParticleSystem from '/js/managers/ParticleSystem.js'
+import UIManager from '/js/ui/UIManager.js'
 
 export default class Game {
     /**
      * Creates a new Game instance
      */
     constructor() {
-        console.log('Game constructor called');
-        
+        console.log('Game constructor called')
+
         // Get DOM elements
-        this.canvas = document.getElementById('canvas');
-        console.log('Canvas element:', this.canvas);
-        
+        this.canvas = document.getElementById('canvas')
+        console.log('Canvas element:', this.canvas)
+
         if (this.canvas) {
-            this.ctx = this.canvas.getContext('2d');
-            console.log('Canvas context:', this.ctx);
-            
+            this.ctx = this.canvas.getContext('2d')
+            console.log('Canvas context:', this.ctx)
+
             // Check canvas dimensions
-            console.log('Canvas dimensions:', this.canvas.width, this.canvas.height);
+            console.log(
+                'Canvas dimensions:',
+                this.canvas.width,
+                this.canvas.height
+            )
             if (this.canvas.width === 0 || this.canvas.height === 0) {
-                console.warn('Canvas has zero dimensions - may need explicit sizing');
+                console.warn(
+                    'Canvas has zero dimensions - may need explicit sizing'
+                )
                 // Don't set size here yet - let ResponsiveManager handle it
             }
         } else {
-            console.error('Canvas element not found in DOM!');
+            console.error('Canvas element not found in DOM!')
         }
-        
-        this.scoreElement = document.getElementById('score');
-        this.highScoreElement = document.getElementById('highScore');
+
+        this.scoreElement = document.getElementById('score')
+        this.highScoreElement = document.getElementById('highScore')
 
         // Game state
         this.score = 0
         this.highScore = 0
         this.lastFrameTime = 0
         this.particleSystem = null
-        
+
         // Performance monitoring
         this.frameTimes = []
         this.frameTimeIndex = 0
@@ -62,7 +68,7 @@ export default class Game {
             avgFrameTime: 0,
             maxFrameTime: 0,
             minFrameTime: Infinity,
-            frameCount: 0
+            frameCount: 0,
         }
 
         // Device detection now handled by ResponsiveManager
@@ -156,7 +162,7 @@ export default class Game {
         this.setupTouchControls()
 
         // Initialize the default game mode (single player)
-        await this.initializeGameMode('singlePlayer');
+        await this.initializeGameMode('singlePlayer')
 
         // Hide loading screen
         this.uiManager.hideLoading()
@@ -169,7 +175,7 @@ export default class Game {
 
         console.log('Game initialized successfully')
     }
-    
+
     /**
      * Initialize the specified game mode
      * @param {string} mode - The mode to initialize ('singlePlayer' or 'multiplayer')
@@ -178,46 +184,50 @@ export default class Game {
     async initializeGameMode(mode) {
         // Clean up any existing game mode
         if (this.currentGameMode) {
-            this.currentGameMode.dispose();
-            this.currentGameMode = null;
+            this.currentGameMode.dispose()
+            this.currentGameMode = null
         }
-        
+
         try {
             // Dynamically import the appropriate game mode class
-            let GameModeClass;
-            
+            let GameModeClass
+
             switch (mode) {
                 case 'multiplayer':
                     // Dynamic import of MultiplayerMode
-                    const MultiplayerModeModule = await import('./core/MultiplayerMode.js');
-                    GameModeClass = MultiplayerModeModule.default;
-                    break;
-                    
+                    const MultiplayerModeModule = await import(
+                        './core/MultiplayerMode.js'
+                    )
+                    GameModeClass = MultiplayerModeModule.default
+                    break
+
                 case 'singlePlayer':
                 default:
                     // Dynamic import of SinglePlayerMode
-                    const SinglePlayerModeModule = await import('./core/SinglePlayerMode.js');
-                    GameModeClass = SinglePlayerModeModule.default;
-                    break;
+                    const SinglePlayerModeModule = await import(
+                        './core/SinglePlayerMode.js'
+                    )
+                    GameModeClass = SinglePlayerModeModule.default
+                    break
             }
-            
+
             // Create and initialize the game mode
-            this.currentGameMode = new GameModeClass(this);
-            await this.currentGameMode.initialize();
-            
-            console.log(`Game mode initialized: ${mode}`);
-            return Promise.resolve();
+            this.currentGameMode = new GameModeClass(this)
+            await this.currentGameMode.initialize()
+
+            console.log(`Game mode initialized: ${mode}`)
+            return Promise.resolve()
         } catch (error) {
-            console.error(`Failed to initialize game mode ${mode}:`, error);
+            console.error(`Failed to initialize game mode ${mode}:`, error)
             // Fallback to single player mode if multiplayer fails
             if (mode === 'multiplayer') {
-                console.log('Falling back to single player mode');
-                return this.initializeGameMode('singlePlayer');
+                console.log('Falling back to single player mode')
+                return this.initializeGameMode('singlePlayer')
             }
-            return Promise.reject(error);
+            return Promise.reject(error)
         }
     }
-    
+
     /**
      * Switch to the specified game mode
      * @param {string} mode - The mode to switch to ('singlePlayer' or 'multiplayer')
@@ -226,32 +236,38 @@ export default class Game {
     async switchGameMode(mode) {
         // Show loading indicator during mode switch
         if (this.uiManager) {
-            this.uiManager.showLoading(`Switching to ${mode === 'multiplayer' ? 'multiplayer' : 'single player'} mode...`);
+            this.uiManager.showLoading(
+                `Switching to ${
+                    mode === 'multiplayer' ? 'multiplayer' : 'single player'
+                } mode...`
+            )
         }
-        
+
         try {
             // Initialize the new game mode
-            await this.initializeGameMode(mode);
-            
+            await this.initializeGameMode(mode)
+
             // Reset game state
-            this.resetGame();
-            
+            this.resetGame()
+
             // Hide loading indicator
             if (this.uiManager) {
-                this.uiManager.hideLoading();
+                this.uiManager.hideLoading()
             }
-            
-            return Promise.resolve();
+
+            return Promise.resolve()
         } catch (error) {
-            console.error(`Failed to switch to game mode ${mode}:`, error);
-            
+            console.error(`Failed to switch to game mode ${mode}:`, error)
+
             // Hide loading and show error
             if (this.uiManager) {
-                this.uiManager.hideLoading();
-                this.uiManager.showError(`Failed to switch game mode: ${error.message}`);
+                this.uiManager.hideLoading()
+                this.uiManager.showError(
+                    `Failed to switch game mode: ${error.message}`
+                )
             }
-            
-            return Promise.reject(error);
+
+            return Promise.reject(error)
         }
     }
 
@@ -267,35 +283,37 @@ export default class Game {
             widthScale: widthScale,
             heightScale: heightScale,
             pixelRatio: window.devicePixelRatio || 1,
-            reducedResolution: false
-        };
+            reducedResolution: false,
+        }
 
         // Update device detection
-        this.isDesktop = window.innerWidth >= 1200;
+        this.isDesktop = window.innerWidth >= 1200
 
         // Update game config with new device info
-        this.config.setDesktopMode(this.isDesktop);
+        this.config.setDesktopMode(this.isDesktop)
 
         // Update game elements with new dimensions
         if (this.player) {
-            this.player.resetPosition();
+            this.player.resetPosition()
         }
 
         if (this.background) {
-            this.background.resize();
+            this.background.resize()
         }
 
         if (this.obstacleManager) {
             // Update obstacles
-            const obstacles = this.obstacleManager.getObstacles();
+            const obstacles = this.obstacleManager.getObstacles()
             for (const obstacle of obstacles) {
-                obstacle.calculateHeight();
+                obstacle.calculateHeight()
             }
         }
 
         console.log(
-            `Game resized: isDesktop=${this.isDesktop}, scale=${widthScale.toFixed(2)}`
-        );
+            `Game resized: isDesktop=${
+                this.isDesktop
+            }, scale=${widthScale.toFixed(2)}`
+        )
     }
 
     /**
@@ -324,22 +342,11 @@ export default class Game {
      * Preload all game assets
      */
     async preloadAssets() {
-    // Define game assets to preload with paths starting from root
-    const imageAssets = [
-      { key: 'player', src: '/images/player.png' },
-      { key: 'obstacle', src: '/images/obstacle.png' },
-    ]
+        // Note: We don't need to preload image assets since sprites are
+        // created dynamically by the SpriteManager using Canvas
 
-        // Preload assets (will expand with more assets as needed)
-        try {
-            const result = await this.assetManager.loadAssets(imageAssets, [])
-            if (!result.success) {
-                console.error('Failed to load some game assets')
-            }
-        } catch (error) {
-            console.error('Error loading assets:', error)
-        }
-
+        // Return immediately as there are no assets to load
+        console.log('No external assets to preload - using generated sprites')
         return true
     }
 
@@ -362,8 +369,8 @@ export default class Game {
      */
     gameLoop(timestamp) {
         // Performance measurement - start time
-        const frameStartTime = performance.now();
-        
+        const frameStartTime = performance.now()
+
         // Request next frame first to ensure smooth animation
         requestAnimationFrame(this.gameLoop.bind(this))
 
@@ -386,33 +393,33 @@ export default class Game {
                 // Just render the current state without updating
                 this.render(timestamp)
                 // Performance tracking - measure render-only time
-                this.trackFrameTime(performance.now() - frameStartTime);
-                return;
+                this.trackFrameTime(performance.now() - frameStartTime)
+                return
             }
 
             // Get current input state
-            const inputState = this.inputManager.getInputState();
+            const inputState = this.inputManager.getInputState()
 
             // 1. Update phase - delegate to current game mode
             if (this.currentGameMode) {
-                this.currentGameMode.update(inputState, deltaTime, timestamp);
+                this.currentGameMode.update(inputState, deltaTime, timestamp)
             }
 
             // 2. Update common systems (particles, etc)
-            this.updateCommonSystems(deltaTime, timestamp);
+            this.updateCommonSystems(deltaTime, timestamp)
 
             // 3. Render phase
-            this.render(timestamp);
+            this.render(timestamp)
 
             // 4. Post-update phase (check win/lose conditions)
             if (this.currentGameMode) {
-                this.currentGameMode.postUpdate();
+                this.currentGameMode.postUpdate()
             }
-            
+
             // Performance tracking - measure full frame time
-            this.trackFrameTime(performance.now() - frameStartTime);
+            this.trackFrameTime(performance.now() - frameStartTime)
         } catch (error) {
-            console.error('Error in game loop:', error);
+            console.error('Error in game loop:', error)
         }
     }
 
@@ -422,36 +429,44 @@ export default class Game {
      */
     trackFrameTime(frameTime) {
         // Store frame time in circular buffer
-        this.frameTimes[this.frameTimeIndex] = frameTime;
-        this.frameTimeIndex = (this.frameTimeIndex + 1) % this.frameTimeWindow;
-        
+        this.frameTimes[this.frameTimeIndex] = frameTime
+        this.frameTimeIndex = (this.frameTimeIndex + 1) % this.frameTimeWindow
+
         // Update performance stats every 60 frames
-        this.performanceStats.frameCount++;
+        this.performanceStats.frameCount++
         if (this.performanceStats.frameCount % 60 === 0) {
             // Calculate stats from the frame time buffer
-            let sum = 0;
-            let max = 0;
-            let min = Infinity;
-            
+            let sum = 0
+            let max = 0
+            let min = Infinity
+
             for (let i = 0; i < this.frameTimes.length; i++) {
-                const time = this.frameTimes[i] || 0;
-                sum += time;
-                max = Math.max(max, time);
-                if (time > 0) { // Only consider valid times for minimum
-                    min = Math.min(min, time);
+                const time = this.frameTimes[i] || 0
+                sum += time
+                max = Math.max(max, time)
+                if (time > 0) {
+                    // Only consider valid times for minimum
+                    min = Math.min(min, time)
                 }
             }
-            
+
             // Update stats
-            this.performanceStats.avgFrameTime = sum / this.frameTimes.filter(t => t > 0).length;
-            this.performanceStats.maxFrameTime = max;
-            this.performanceStats.minFrameTime = min === Infinity ? 0 : min;
-            
+            this.performanceStats.avgFrameTime =
+                sum / this.frameTimes.filter(t => t > 0).length
+            this.performanceStats.maxFrameTime = max
+            this.performanceStats.minFrameTime = min === Infinity ? 0 : min
+
             // Log stats if debug mode is enabled
             if (this.config.isDebugEnabled()) {
-                console.log(`Performance: avg=${this.performanceStats.avgFrameTime.toFixed(2)}ms, ` +
-                    `min=${this.performanceStats.minFrameTime.toFixed(2)}ms, ` +
-                    `max=${this.performanceStats.maxFrameTime.toFixed(2)}ms`);
+                console.log(
+                    `Performance: avg=${this.performanceStats.avgFrameTime.toFixed(
+                        2
+                    )}ms, ` +
+                        `min=${this.performanceStats.minFrameTime.toFixed(
+                            2
+                        )}ms, ` +
+                        `max=${this.performanceStats.maxFrameTime.toFixed(2)}ms`
+                )
             }
         }
     }
@@ -463,7 +478,7 @@ export default class Game {
      */
     updateCommonSystems(deltaTime, timestamp) {
         // Update particles
-        this.updateParticles(deltaTime);
+        this.updateParticles(deltaTime)
     }
 
     /**
@@ -522,51 +537,53 @@ export default class Game {
         try {
             // Draw a simple red square to verify canvas is working
             if (this.ctx) {
-                this.ctx.fillStyle = 'red';
-                this.ctx.fillRect(50, 50, 100, 100);
-                console.log('Test red square drawn');
+                this.ctx.fillStyle = 'red'
+                this.ctx.fillRect(50, 50, 100, 100)
+                console.log('Test red square drawn')
             } else {
-                console.error('No canvas context available for rendering');
+                console.error('No canvas context available for rendering')
             }
         } catch (e) {
-            console.error('Error drawing test square:', e);
+            console.error('Error drawing test square:', e)
         }
-        
+
         // Log what we're about to render
         console.log('Rendering frame:', {
             background: this.background ? 'loaded' : 'missing',
             player: this.player ? 'loaded' : 'missing',
-            obstacleCount: this.obstacleManager ? this.obstacleManager.getObstacles().length : 'no manager',
-            gameState: this.gameState
-        });
-        
+            obstacleCount: this.obstacleManager
+                ? this.obstacleManager.getObstacles().length
+                : 'no manager',
+            gameState: this.gameState,
+        })
+
         // Draw background (replaces clearRect)
         if (this.background) {
             try {
-                this.background.update(timestamp);
+                this.background.update(timestamp)
             } catch (e) {
-                console.error('Error updating background:', e);
+                console.error('Error updating background:', e)
             }
         } else {
-            console.warn('No background object available');
+            console.warn('No background object available')
             // Fallback: Clear the canvas manually
             if (this.ctx && this.canvas) {
-                this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
-                this.ctx.fillStyle = '#0a192f'; // Dark blue background
-                this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+                this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height)
+                this.ctx.fillStyle = '#0a192f' // Dark blue background
+                this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height)
             }
         }
 
         // Get obstacles - with error handling
-        let obstacles = [];
+        let obstacles = []
         try {
             if (this.obstacleManager) {
-                obstacles = this.obstacleManager.getObstacles();
+                obstacles = this.obstacleManager.getObstacles()
             } else {
-                console.error('Obstacle manager not available');
+                console.error('Obstacle manager not available')
             }
         } catch (e) {
-            console.error('Error getting obstacles:', e);
+            console.error('Error getting obstacles:', e)
         }
 
         // Draw obstacles
@@ -577,12 +594,12 @@ export default class Game {
         // Draw local player - with error handling
         try {
             if (this.player) {
-                this.player.draw(timestamp);
+                this.player.draw(timestamp)
             } else {
-                console.error('Player object not available for drawing');
+                console.error('Player object not available for drawing')
             }
         } catch (e) {
-            console.error('Error drawing player:', e);
+            console.error('Error drawing player:', e)
         }
 
         // Draw particles
@@ -851,10 +868,20 @@ export default class Game {
             1000 / Math.max(1, timestamp - this.lastFrameTime)
         )
         this.ctx.fillText(`FPS: ${fps}`, 10, 10)
-        
+
         // Display performance stats
-        this.ctx.fillText(`Frame Time: ${this.performanceStats.avgFrameTime.toFixed(1)}ms`, 10, 25)
-        this.ctx.fillText(`Min/Max: ${this.performanceStats.minFrameTime.toFixed(1)}/${this.performanceStats.maxFrameTime.toFixed(1)}ms`, 10, 40)
+        this.ctx.fillText(
+            `Frame Time: ${this.performanceStats.avgFrameTime.toFixed(1)}ms`,
+            10,
+            25
+        )
+        this.ctx.fillText(
+            `Min/Max: ${this.performanceStats.minFrameTime.toFixed(
+                1
+            )}/${this.performanceStats.maxFrameTime.toFixed(1)}ms`,
+            10,
+            40
+        )
 
         // Display player position
         this.ctx.fillText(
@@ -897,13 +924,18 @@ export default class Game {
 
         // Display game state
         this.ctx.fillText(`State: ${this.gameState}`, 10, 115)
-        
+
         // Display object counts for memory tracking
-        let totalObjects = 1 + // Game instance
-                          (this.obstacleManager ? this.obstacleManager.getObstacles().length : 0) +
-                          (this.particleSystem ? this.particleSystem.getStats().totalAllocated : 0) +
-                          Object.keys(this.remotePlayers).length;
-        this.ctx.fillText(`Total Objects: ~${totalObjects}`, 10, 130);
+        let totalObjects =
+            1 + // Game instance
+            (this.obstacleManager
+                ? this.obstacleManager.getObstacles().length
+                : 0) +
+            (this.particleSystem
+                ? this.particleSystem.getStats().totalAllocated
+                : 0) +
+            Object.keys(this.remotePlayers).length
+        this.ctx.fillText(`Total Objects: ~${totalObjects}`, 10, 130)
 
         // Draw player hitbox
         this.ctx.strokeStyle = 'yellow'
