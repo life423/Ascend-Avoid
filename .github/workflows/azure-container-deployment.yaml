@@ -44,6 +44,9 @@ jobs:
           tenant-id: ${{ secrets.ASCENDAVOID_AZURE_TENANT_ID }}
           subscription-id: ${{ secrets.ASCENDAVOID_AZURE_SUBSCRIPTION_ID }}
 
+      - name: Update Azure Container Apps CLI extension
+        run: az extension add --name containerapp --upgrade
+
       - name: Login to Azure Container Registry
         run: az acr login --name ${{ env.ACR_NAME }}
 
@@ -125,8 +128,21 @@ jobs:
           RETRY_COUNT=5
           RETRY_DELAY=30
 
-          # Build the JSON string from the file
-          PROBE_JSON=$(cat health-probe-config.json | jq -c '.probes')
+          # Create a proper ARM-compatible JSON for the update
+          cat > arm-template.json << EOF
+          {
+            "properties": {
+              "template": {
+                "containers": [
+                  {
+                    "name": "${{ env.IMAGE_NAME }}",
+                    "probes": $(cat health-probe-config.json | jq '.probes')
+                  }
+                ]
+              }
+            }
+          }
+          EOF
 
           for i in $(seq 1 $RETRY_COUNT); do
             echo "Attempt $i to set health probes..."
@@ -134,7 +150,7 @@ jobs:
             az containerapp update \
               --name ${{ env.APP_NAME }} \
               --resource-group ${{ env.RESOURCE_GROUP }} \
-              --set "template.containers[0].probes=${PROBE_JSON}" && break
+              --set-json @arm-template.json && break
 
             if [ $i -eq $RETRY_COUNT ]; then
               echo "Failed to set health probes after $RETRY_COUNT attempts."
