@@ -64,12 +64,21 @@ project-root/
 - [x] Converted Player.js to TypeScript
 - [x] Converted GameConfig.js to TypeScript
 - [x] Converted GameMode.js to TypeScript
+- [x] Converted SinglePlayerMode.js to TypeScript
+- [x] Converted MultiplayerMode.js to TypeScript
+- [x] Converted InputManager.js to TypeScript
+- [x] Converted ObstacleManager.js to TypeScript
+- [x] Converted Obstacle.js to TypeScript
+- [x] Converted AssetManager.js to TypeScript
+- [x] Converted UIManager.js to TypeScript
+- [x] Converted Game.js to TypeScript
+- [x] Converted Background.js to TypeScript
+- [x] Converted ParticleSystem.js to TypeScript
+- [x] Converted TouchControls.js to TypeScript
+- [x] Converted MultiplayerUI.js to TypeScript
 
 ### In Progress
-- [ ] Convert SinglePlayerMode.js to TypeScript
-- [ ] Convert MultiplayerMode.js to TypeScript
-- [ ] Convert InputManager.js to TypeScript
-- [ ] Convert ObstacleManager.js to TypeScript
+- [ ] Update import paths throughout the codebase
 
 ### Pending
 - [ ] Convert remaining files to TypeScript
