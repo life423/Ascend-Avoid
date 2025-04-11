@@ -61,7 +61,7 @@ jobs:
             echo "Attempt $i to update the container app..."
             
             # Create health probe configuration file
-            cat > health-probe-config.json <<EOF
+            cat > health-probe-config.json << 'EOL'
 {
   "probes": [
     {
@@ -79,7 +79,7 @@ jobs:
     }
   ]
 }
-EOF
+EOL
             
             # Try to update the container app with proper configuration
             az containerapp update \
