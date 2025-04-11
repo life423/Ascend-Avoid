@@ -125,16 +125,13 @@ jobs:
           RETRY_COUNT=5
           RETRY_DELAY=30
 
-          # Build the JSON string from the file
-          PROBE_JSON=$(cat health-probe-config.json | jq -c '.probes')
-
           for i in $(seq 1 $RETRY_COUNT); do
             echo "Attempt $i to set health probes..."
 
             az containerapp update \
               --name ${{ env.APP_NAME }} \
               --resource-group ${{ env.RESOURCE_GROUP }} \
-              --set template.containers[0].probes="${PROBE_JSON}" && break
+              --yaml-file health-probe-config.json && break
 
             if [ $i -eq $RETRY_COUNT ]; then
               echo "Failed to set health probes after $RETRY_COUNT attempts."
