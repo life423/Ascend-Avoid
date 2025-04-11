@@ -488,27 +488,11 @@ export default class Game {
      * Preload all game assets
      */
     async preloadAssets(): Promise<boolean> {
-        // Define game assets to preload - use public directory paths for static assets
-        const imageAssets: AssetDefinition[] = [
-            { key: 'player', src: '/images/player.png' },
-            { key: 'obstacle', src: '/images/obstacle.png' },
-        ]
+        // Note: We don't need to preload image assets since sprites are
+        // created dynamically by the SpriteManager using Canvas
 
-        // Preload assets (will expand with more assets as needed)
-        try {
-            if (this.assetManager) {
-                const result = await this.assetManager.loadAssets(
-                    imageAssets,
-                    []
-                )
-                if (!result.success) {
-                    console.error('Failed to load some game assets')
-                }
-            }
-        } catch (error) {
-            console.error('Error loading assets:', error)
-        }
-
+        // Return immediately as there are no assets to load
+        console.log('No external assets to preload - using generated sprites')
         return true
     }
 
