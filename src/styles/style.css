@@ -254,21 +254,32 @@ h4 {
     }
 }
 
-/* Force hide touch controls on desktop layout regardless of device */
-body.desktop-layout #touch-controls-container {
+/* Hide touch controls on desktop layout devices WITHOUT touch capabilities */
+body.desktop-layout:not(.touch-device) #touch-controls-container {
     display: none !important; /* Highest specificity to override all other rules */
     visibility: hidden !important; /* Double protection */
     opacity: 0 !important; /* Triple protection */
     pointer-events: none !important; /* Prevent interaction even if somehow visible */
 }
 
-/* But always show touch controls on touch devices regardless of screen size */
+/* Always show touch controls on devices with touch capabilities, regardless of desktop layout class */
 @media (pointer: coarse) {
-    /* Only show on touch devices that are NOT desktop layout */
-    body:not(.desktop-layout) #touch-controls-container {
+    #touch-controls-container {
         display: flex !important;
     }
 }
+
+/* Add touch-device detection script */
+<script>
+    // Detect touch capability and add class
+    document.addEventListener('DOMContentLoaded', function() {
+        if ('ontouchstart' in window || 
+            navigator.maxTouchPoints > 0 || 
+            window.matchMedia("(pointer: coarse)").matches) {
+            document.body.classList.add('touch-device');
+        }
+    });
+</script>
 
 /* Game instructions */
 #instructions {
