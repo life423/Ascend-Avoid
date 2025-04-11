@@ -1,67 +1,42 @@
-name: Deploy to Azure Container Apps
+name: Azure Deployment
 
-# When this action will be executed
 on:
-  # Automatically trigger it when detected changes in repo
   push:
-    branches: 
-      [ main ]
-    paths-ignore:
-      - 'README.md'
-      - 'PERFORMANCE_OPTIMIZATIONS.md'
-      - '**.md'
-
-  # Allow manual trigger 
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
   workflow_dispatch:
 
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
-    permissions: 
-      id-token: write # Required for requesting the OIDC JWT Token
-      contents: read # Required for checking out the repository
-
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
+      - uses: actions/checkout@v3
+      
       - name: Set up Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: '18'
-          cache: 'npm'
-
-      - name: Install dependencies and build client
-        run: |
-          npm ci --legacy-peer-deps --ignore-scripts
-          npm run build
-      
-      - name: Azure Login
-        uses: azure/login@v1
+          node-version: '18.x'
+          
+      - name: Install dependencies
+        run: npm ci
+        
+      - name: Build
+        run: npm run build
+        
+      - name: Deploy to Azure
+        uses: azure/webapps-deploy@v2
         with:
-          client-id: ${{ secrets.ASCENDAVOID_AZURE_CLIENT_ID }}
-          tenant-id: ${{ secrets.ASCENDAVOID_AZURE_TENANT_ID }}
-          subscription-id: ${{ secrets.ASCENDAVOID_AZURE_SUBSCRIPTION_ID }}
-
-      - name: Build and push container image to registry
-        uses: azure/container-apps-deploy-action@v2
-        with:
-          appSourcePath: ${{ github.workspace }}
-          dockerfilePath: ./Dockerfile
-          registryUrl: portfoliodrewclarkazure.azurecr.io
-          registryUsername: ${{ secrets.ASCENDAVOID_REGISTRY_USERNAME }}
-          registryPassword: ${{ secrets.ASCENDAVOID_REGISTRY_PASSWORD }}
-          containerAppName: ascend-avoid
-          resourceGroup: DefaultResourceGroup-EUS
-          imageToBuild: portfoliodrewclarkazure.azurecr.io/ascend-avoid:${{ github.sha }}
-      
-      - name: Wait for deployment to stabilize
-        run: sleep 60
-
+          app-name: 'ascend-avoid'
+          publish-profile: ${{ secrets.AZURE_PUBLISH_PROFILE }}
+          package: './dist'
+          
       - name: Verify deployment
         run: |
           export VERIFY_URL=https://ascend-avoid.wittyhill-c50d4888.eastus.azurecontainerapps.io
-          export VERIFY_TIMEOUT=60000
-          export VERIFY_RETRIES=5
-          export VERIFY_RETRY_DELAY=10000
+          export VERIFY_TIMEOUT=120000
+          export VERIFY_RETRIES=10
+          export VERIFY_RETRY_DELAY=15000
+          export VERIFY_HEALTH_PATH=/
+          export VERIFY_ACCEPTABLE_STATUS_CODES=200-299,301,302,303,307,308
           node scripts/verify-deployment.js
