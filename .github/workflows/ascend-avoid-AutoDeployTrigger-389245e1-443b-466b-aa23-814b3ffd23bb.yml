@@ -41,13 +41,17 @@ jobs:
                   tenant-id: ${{ secrets.ASCENDAVOID_AZURE_TENANT_ID }}
                   subscription-id: ${{ secrets.ASCENDAVOID_AZURE_SUBSCRIPTION_ID }}
 
-            # Build and push Docker image to Azure Container Registry
+            # Build and push Docker image to Azure Container Registry using Azure CLI
             - name: Build and push Docker image to ACR
-              uses: docker/build-push-action@v4
-              with:
-                  context: .
-                  push: true
-                  tags: portfoliodrewclarkazure.azurecr.io/ascend-avoid:${{ github.sha }}
+              run: |
+                # Login to ACR using Azure CLI (already authenticated from previous step)
+                az acr login --name portfoliodrewclarkazure
+                
+                # Build the Docker image
+                docker build -t portfoliodrewclarkazure.azurecr.io/ascend-avoid:${{ github.sha }} .
+                
+                # Push the Docker image
+                docker push portfoliodrewclarkazure.azurecr.io/ascend-avoid:${{ github.sha }}
 
             # Deploy to Azure Web App for Containers
             - name: Deploy to Azure Web App
