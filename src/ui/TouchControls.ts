@@ -325,7 +325,7 @@ export default class TouchControls {
      */
     hide(): void {
         if (this.container) {
-            this.container.style.display = 'none'
+            this.container.style.cssText = 'display: none !important'
         }
     }
 
