@@ -41,67 +41,20 @@ jobs:
                   tenant-id: ${{ secrets.ASCENDAVOID_AZURE_TENANT_ID }}
                   subscription-id: ${{ secrets.ASCENDAVOID_AZURE_SUBSCRIPTION_ID }}
 
-            # Instead of using the container-apps-deploy-action directly, we'll handle the deployment with retries
-            - name: Build and tag Docker image
-              run: |
-                  docker build -t portfoliodrewclarkazure.azurecr.io/ascend-avoid:${{ github.sha }} -f ./Dockerfile .
+            # Build and push Docker image to Azure Container Registry
+            - name: Build and push Docker image to ACR
+              uses: docker/build-push-action@v4
+              with:
+                  context: .
+                  push: true
+                  tags: portfoliodrewclarkazure.azurecr.io/ascend-avoid:${{ github.sha }}
 
-            - name: Login to Azure Container Registry
-              run: |
-                  az acr login --name portfoliodrewclarkazure
-
-            - name: Push Docker image to registry
-              run: |
-                  docker push portfoliodrewclarkazure.azurecr.io/ascend-avoid:${{ github.sha }}
-
-            - name: Deploy to Azure Container App with retry
-              run: |
-                  RETRY_COUNT=5
-                  RETRY_DELAY=30
-
-                  for i in $(seq 1 $RETRY_COUNT); do
-                    echo "Attempt $i to update the container app..."
-                    
-                    # Create health probe configuration file
-                    cat > health-probe-config.json <<EOF
-{
-  "probes": [
-    {
-      "type": "startup",
-      "httpGet": {
-        "path": "/",
-        "port": 3000,
-        "httpHeaders": []
-      },
-      "initialDelaySeconds": 30,
-      "periodSeconds": 10,
-      "timeoutSeconds": 5,
-      "successThreshold": 1,
-      "failureThreshold": 30
-    }
-  ]
-}
-EOF
-                    
-                    # Try to update the container app with proper configuration
-                    az containerapp update \
-                      --name ascend-avoid \
-                      --resource-group DefaultResourceGroup-EUS \
-                      --image portfoliodrewclarkazure.azurecr.io/ascend-avoid:${{ github.sha }} \
-                      --ingress external \
-                      --target-port 3000 \
-                      --transport auto \
-                      --health-probe-config health-probe-config.json && break
-                      
-                    # If we get here, the command failed
-                    if [ $i -eq $RETRY_COUNT ]; then
-                      echo "Failed to update container app after $RETRY_COUNT attempts."
-                      exit 1
-                    fi
-                    
-                    echo "Operation in progress. Waiting $RETRY_DELAY seconds before retry..."
-                    sleep $RETRY_DELAY
-                  done
+            # Deploy to Azure Web App for Containers
+            - name: Deploy to Azure Web App
+              uses: azure/webapps-deploy@v2
+              with:
+                  app-name: 'ascend-avoid'
+                  images: 'portfoliodrewclarkazure.azurecr.io/ascend-avoid:${{ github.sha }}'
 
             - name: Wait for deployment to stabilize
               run: |
