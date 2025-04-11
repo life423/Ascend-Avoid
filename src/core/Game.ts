@@ -441,10 +441,28 @@ export default class Game {
 
     /**
      * Set up mobile touch controls
-     * Touch control visibility is now handled by ResponsiveManager
+     * Only creates and shows touch controls on actual touch devices,
+     * never on desktop layouts
      */
     setupTouchControls(): void {
-        // Create touch controls overlay
+        // Skip touch controls entirely on desktop layout
+        if (document.body.classList.contains('desktop-layout')) {
+            console.log('Desktop layout detected - touch controls disabled')
+            return
+        }
+
+        // Skip touch controls on non-touch devices
+        const isTouchDevice =
+            window.matchMedia('(pointer: coarse)').matches ||
+            'ontouchstart' in window ||
+            navigator.maxTouchPoints > 0
+
+        if (!isTouchDevice) {
+            console.log('Non-touch device detected - touch controls disabled')
+            return
+        }
+
+        // Create touch controls overlay only for touch devices
         this.touchControls = new TouchControls(this)
         this.touchControls.show()
 
