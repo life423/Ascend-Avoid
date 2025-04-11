@@ -11,47 +11,47 @@ env:
   RESOURCE_GROUP: DefaultResourceGroup-EUS
   IMAGE_NAME: ascend-avoid
   ACR_NAME: portfoliodrewclarkazure
-  NODE_VERSION: '18'
+  NODE_VERSION: '20'
 
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
-    
+
     permissions:
       id-token: write
       contents: read
-      
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-      
+
       - name: Set up Node.js ${{ env.NODE_VERSION }}
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: 'npm'
-      
+
       - name: Install dependencies
         run: npm ci --legacy-peer-deps
-      
+
       - name: Build application
         run: npm run build
-      
+
       - name: Azure login
         uses: azure/login@v1
         with:
           client-id: ${{ secrets.ASCENDAVOID_AZURE_CLIENT_ID }}
           tenant-id: ${{ secrets.ASCENDAVOID_AZURE_TENANT_ID }}
           subscription-id: ${{ secrets.ASCENDAVOID_AZURE_SUBSCRIPTION_ID }}
-      
+
       - name: Login to Azure Container Registry
         run: az acr login --name ${{ env.ACR_NAME }}
-      
+
       - name: Build and push Docker image
         run: |
           docker build -t ${{ env.ACR_NAME }}.azurecr.io/${{ env.IMAGE_NAME }}:${{ github.sha }} .
           docker push ${{ env.ACR_NAME }}.azurecr.io/${{ env.IMAGE_NAME }}:${{ github.sha }}
-      
+
       - name: Create health probe config
         run: |
           cat > health-probe-config.json << 'EOF'
@@ -73,40 +73,83 @@ jobs:
             ]
           }
           EOF
-      
-      - name: Deploy to Azure Container App with retry
+
+      - name: Update Container Image (with retry)
         run: |
           RETRY_COUNT=5
           RETRY_DELAY=30
 
           for i in $(seq 1 $RETRY_COUNT); do
-            echo "Attempt $i to update the container app..."
+            echo "Attempt $i to update the container image..."
             
-            # Try to update the container app with proper configuration
             az containerapp update \
               --name ${{ env.APP_NAME }} \
               --resource-group ${{ env.RESOURCE_GROUP }} \
-              --image ${{ env.ACR_NAME }}.azurecr.io/${{ env.IMAGE_NAME }}:${{ github.sha }} \
-              --ingress external \
-              --target-port 3000 \
-              --transport auto \
-              --health-probe-config health-probe-config.json && break
-            
-            # If we get here, the command failed
+              --image ${{ env.ACR_NAME }}.azurecr.io/${{ env.IMAGE_NAME }}:${{ github.sha }} && break
+
             if [ $i -eq $RETRY_COUNT ]; then
-              echo "Failed to update container app after $RETRY_COUNT attempts."
+              echo "Failed to update the container image after $RETRY_COUNT attempts."
               exit 1
             fi
-            
+
             echo "Operation in progress. Waiting $RETRY_DELAY seconds before retry..."
             sleep $RETRY_DELAY
           done
-      
+
+      - name: Update Ingress (with retry)
+        run: |
+          RETRY_COUNT=5
+          RETRY_DELAY=30
+
+          for i in $(seq 1 $RETRY_COUNT); do
+            echo "Attempt $i to configure ingress..."
+            
+            az containerapp ingress update \
+              --name ${{ env.APP_NAME }} \
+              --resource-group ${{ env.RESOURCE_GROUP }} \
+              --type external \
+              --target-port 3000 \
+              --transport auto && break
+
+            if [ $i -eq $RETRY_COUNT ]; then
+              echo "Failed to configure ingress after $RETRY_COUNT attempts."
+              exit 1
+            fi
+
+            echo "Operation in progress. Waiting $RETRY_DELAY seconds before retry..."
+            sleep $RETRY_DELAY
+          done
+
+      - name: Update Health Probes (with retry)
+        run: |
+          RETRY_COUNT=5
+          RETRY_DELAY=30
+
+          # Build the JSON string from the file
+          PROBE_JSON=$(cat health-probe-config.json | jq -c '.probes')
+
+          for i in $(seq 1 $RETRY_COUNT); do
+            echo "Attempt $i to set health probes..."
+
+            az containerapp update \
+              --name ${{ env.APP_NAME }} \
+              --resource-group ${{ env.RESOURCE_GROUP }} \
+              --set "template.containers[0].probes=${PROBE_JSON}" && break
+
+            if [ $i -eq $RETRY_COUNT ]; then
+              echo "Failed to set health probes after $RETRY_COUNT attempts."
+              exit 1
+            fi
+
+            echo "Operation in progress. Waiting $RETRY_DELAY seconds before retry..."
+            sleep $RETRY_DELAY
+          done
+
       - name: Wait for deployment to stabilize
         run: |
           echo "Waiting for deployment to stabilize..."
           sleep 30
-      
+
       - name: Update verification URL in package.json
         run: |
           # Get the app URL
@@ -115,7 +158,8 @@ jobs:
           
           # Update the verify-deployment:azure script with the correct URL
           sed -i "s|https://ascend-avoid.azurewebsites.net|https://$APP_URL|g" package.json
-      
+
       - name: Verify deployment
         run: |
-          npm run verify-deployment:azure || echo "Verification completed with non-zero exit code"
+          echo "Verifying deployment..."
+          npm run verify-deployment:azure
