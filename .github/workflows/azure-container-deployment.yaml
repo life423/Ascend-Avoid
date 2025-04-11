@@ -54,24 +54,21 @@ jobs:
 
       - name: Create health probe config
         run: |
-          cat > health-probe-config.json << 'EOF'
-          {
-            "probes": [
-              {
-                "type": "startup",
-                "httpGet": {
-                  "path": "/",
-                  "port": 3000,
-                  "httpHeaders": []
-                },
-                "initialDelaySeconds": 30,
-                "periodSeconds": 10,
-                "timeoutSeconds": 5,
-                "successThreshold": 1,
-                "failureThreshold": 30
-              }
-            ]
-          }
+          cat > health-probe-config.yaml << 'EOF'
+          properties:
+            template:
+              containers:
+                - name: ${{ env.APP_NAME }}
+                  probes:
+                    - type: startup
+                      httpGet:
+                        path: /
+                        port: 3000
+                      initialDelaySeconds: 30
+                      periodSeconds: 10
+                      timeoutSeconds: 5
+                      successThreshold: 1
+                      failureThreshold: 30
           EOF
 
       - name: Update Container Image (with retry)
