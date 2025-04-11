@@ -62,8 +62,9 @@ jobs:
                   for i in $(seq 1 $RETRY_COUNT); do
                     echo "Attempt $i to update the container app..."
                     
-                    # Create health probe configuration file
-                    cat > health-probe-config.json << EOF
+                    # Create health probe configuration file using heredoc with -
+                    # This allows the EOF to be indented in YAML but will still work in bash
+                    cat > health-probe-config.json <<-EOF
                     {
                       "probes": [
                         {
@@ -81,7 +82,7 @@ jobs:
                         }
                       ]
                     }
-EOF
+                    EOF
                     
                     # Try to update the container app with proper configuration
                     az containerapp update \
