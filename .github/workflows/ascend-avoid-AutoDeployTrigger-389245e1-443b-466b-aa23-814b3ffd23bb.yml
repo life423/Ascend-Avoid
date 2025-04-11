@@ -62,24 +62,26 @@ jobs:
                   for i in $(seq 1 $RETRY_COUNT); do
                     echo "Attempt $i to update the container app..."
                     
-                    # Create health probe configuration file using echo commands instead of heredoc
-                    echo '{' > health-probe-config.json
-                    echo '  "probes": [' >> health-probe-config.json
-                    echo '    {' >> health-probe-config.json
-                    echo '      "type": "startup",' >> health-probe-config.json
-                    echo '      "httpGet": {' >> health-probe-config.json
-                    echo '        "path": "/",' >> health-probe-config.json
-                    echo '        "port": 3000,' >> health-probe-config.json
-                    echo '        "httpHeaders": []' >> health-probe-config.json
-                    echo '      },' >> health-probe-config.json
-                    echo '      "initialDelaySeconds": 30,' >> health-probe-config.json
-                    echo '      "periodSeconds": 10,' >> health-probe-config.json
-                    echo '      "timeoutSeconds": 5,' >> health-probe-config.json
-                    echo '      "successThreshold": 1,' >> health-probe-config.json
-                    echo '      "failureThreshold": 30' >> health-probe-config.json
-                    echo '    }' >> health-probe-config.json
-                    echo '  ]' >> health-probe-config.json
-                    echo '}' >> health-probe-config.json
+                    # Create health probe configuration file
+                    cat > health-probe-config.json <<EOF
+{
+  "probes": [
+    {
+      "type": "startup",
+      "httpGet": {
+        "path": "/",
+        "port": 3000,
+        "httpHeaders": []
+      },
+      "initialDelaySeconds": 30,
+      "periodSeconds": 10,
+      "timeoutSeconds": 5,
+      "successThreshold": 1,
+      "failureThreshold": 30
+    }
+  ]
+}
+EOF
                     
                     # Try to update the container app with proper configuration
                     az containerapp update \
@@ -90,7 +92,7 @@ jobs:
                       --target-port 3000 \
                       --transport auto \
                       --health-probe-config health-probe-config.json && break
-                    
+                      
                     # If we get here, the command failed
                     if [ $i -eq $RETRY_COUNT ]; then
                       echo "Failed to update container app after $RETRY_COUNT attempts."
