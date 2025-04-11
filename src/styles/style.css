@@ -269,18 +269,6 @@ body.desktop-layout:not(.touch-device) #touch-controls-container {
     }
 }
 
-/* Add touch-device detection script */
-<script>
-    // Detect touch capability and add class
-    document.addEventListener('DOMContentLoaded', function() {
-        if ('ontouchstart' in window || 
-            navigator.maxTouchPoints > 0 || 
-            window.matchMedia("(pointer: coarse)").matches) {
-            document.body.classList.add('touch-device');
-        }
-    });
-</script>
-
 /* Game instructions */
 #instructions {
     max-width: 560px;
