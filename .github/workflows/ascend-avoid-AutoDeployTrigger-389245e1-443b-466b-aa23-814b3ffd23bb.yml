@@ -62,11 +62,14 @@ jobs:
                   for i in $(seq 1 $RETRY_COUNT); do
                     echo "Attempt $i to update the container app..."
                     
-                    # Try to update the container app
+                    # Try to update the container app with proper ingress configuration
                     az containerapp update \
                       --name ascend-avoid \
                       --resource-group DefaultResourceGroup-EUS \
-                      --image portfoliodrewclarkazure.azurecr.io/ascend-avoid:${{ github.sha }} && break
+                      --image portfoliodrewclarkazure.azurecr.io/ascend-avoid:${{ github.sha }} \
+                      --ingress external \
+                      --target-port 3000 \
+                      --transport auto && break
                       
                     # If we get here, the command failed
                     if [ $i -eq $RETRY_COUNT ]; then
