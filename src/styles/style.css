@@ -6,14 +6,14 @@
 /* Base styles and CSS variables */
 :root {
     /* Main theme colors */
-    --primary-color: #0CC7C7;
+    --primary-color: #0cc7c7;
     --primary-glow: rgba(0, 200, 200, 0.4);
     --background-dark: #0a1a2f;
     --background-darker: #000510;
     --text-color: #eee;
     --accent-color: rgba(0, 180, 240, 0.6);
     --highlight-color: #bce4ff;
-    
+
     /* Responsive spacing variables - these scale with screen size */
     --padding-small: clamp(3px, 1vw, 5px);
     --padding-medium: clamp(5px, 2vw, 10px);
@@ -21,13 +21,13 @@
     --margin-small: clamp(5px, 1vw, 8px);
     --margin-medium: clamp(10px, 2vw, 15px);
     --margin-large: clamp(15px, 3vw, 20px);
-    
+
     /* Font sizes that scale with viewport */
     --font-small: clamp(14px, 3vw, 16px);
     --font-medium: clamp(16px, 4vw, 18px);
     --font-large: clamp(20px, 5vw, 24px);
     --font-xlarge: clamp(24px, 6vw, 32px);
-    
+
     /* Game elements and controls */
     --button-size: clamp(50px, 15vw, 70px);
     --button-font: clamp(18px, 5vw, 28px);
@@ -45,13 +45,16 @@
 }
 
 /* Core styles */
-*, *::before, *::after {
+*,
+*::before,
+*::after {
     margin: 0;
     padding: 0;
     box-sizing: border-box;
 }
 
-html, body {
+html,
+body {
     width: 100%;
     height: 100%;
     overflow-x: hidden;
@@ -59,11 +62,16 @@ html, body {
 
 body {
     background: var(--background-dark);
-    font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
+    font-family: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue',
+        sans-serif;
     color: var(--text-color);
     padding: var(--padding-medium);
     min-height: 100vh;
-    background: linear-gradient(to bottom, var(--background-dark), var(--background-darker));
+    background: linear-gradient(
+        to bottom,
+        var(--background-dark),
+        var(--background-darker)
+    );
     overscroll-behavior: contain; /* Prevent overscroll effects */
     touch-action: manipulation; /* Speed up clicks on touch devices */
     display: flex;
@@ -82,7 +90,7 @@ canvas {
     max-width: 100%; /* Ensure it never exceeds container width */
     max-height: 80vh; /* Cap height for very tall screens */
     margin: 0 auto;
-    
+
     /* Improves pixel rendering on high-DPI screens when needed */
     image-rendering: auto; /* Default for photos/realistic images */
 }
@@ -105,13 +113,14 @@ h3 {
     color: var(--primary-color);
 }
 
-h4 { 
+h4 {
     display: inline-block;
     margin: 0 var(--margin-small);
     color: var(--text-color);
 }
 
-#score, #highScore {
+#score,
+#highScore {
     color: var(--primary-color);
     font-weight: bold;
     text-shadow: 0 0 5px var(--primary-glow);
@@ -245,9 +254,18 @@ h4 {
     }
 }
 
+/* Force hide touch controls on desktop layout regardless of device */
+body.desktop-layout #touch-controls-container {
+    display: none !important; /* Highest specificity to override all other rules */
+    visibility: hidden !important; /* Double protection */
+    opacity: 0 !important; /* Triple protection */
+    pointer-events: none !important; /* Prevent interaction even if somehow visible */
+}
+
 /* But always show touch controls on touch devices regardless of screen size */
 @media (pointer: coarse) {
-    #touch-controls-container {
+    /* Only show on touch devices that are NOT desktop layout */
+    body:not(.desktop-layout) #touch-controls-container {
         display: flex !important;
     }
 }
@@ -342,14 +360,14 @@ h4 {
         display: grid;
         grid-template-columns: 2fr 1fr;
         grid-template-areas:
-            "header header"
-            "game sidebar";
+            'header header'
+            'game sidebar';
         gap: 30px;
         align-items: start;
         max-width: 1400px;
         margin: 0 auto;
     }
-    
+
     /* Grid area assignments */
     h1 {
         grid-area: header;
@@ -357,7 +375,7 @@ h4 {
         font-size: 42px;
         letter-spacing: 3px;
     }
-    
+
     #wrapper {
         grid-area: game;
         width: 100%;
@@ -366,24 +384,26 @@ h4 {
         aspect-ratio: 3 / 4;
         max-height: 800px;
     }
-    
+
     #game-ui-container {
         grid-area: sidebar;
         display: flex;
         flex-direction: column;
     }
-    
+
     /* Enhanced canvas for desktop */
     canvas {
         width: 100%;
         height: 100%;
         min-height: 550px;
-        box-shadow: 0 0 30px var(--primary-glow), 0 0 60px rgba(0, 180, 240, 0.2);
+        box-shadow: 0 0 30px var(--primary-glow),
+            0 0 60px rgba(0, 180, 240, 0.2);
         border-width: 4px;
     }
-    
+
     /* Sidebar elements styling */
-    #headers, #instructions {
+    #headers,
+    #instructions {
         background: rgba(10, 35, 66, 0.6);
         border-radius: 8px;
         padding: 20px;
@@ -391,13 +411,13 @@ h4 {
         box-shadow: 0 0 25px rgba(0, 180, 240, 0.2);
         width: 100%;
     }
-    
+
     /* Instructions placed first in the visual order */
     #instructions {
         order: 1;
         margin: 0 0 20px 0;
     }
-    
+
     /* Score header re-styling and placed second in the visual order */
     #headers {
         order: 2;
@@ -406,27 +426,28 @@ h4 {
         display: flex;
         flex-direction: column;
     }
-    
+
     #headers h4 {
         margin-bottom: 10px;
         font-size: var(--font-large);
         display: block;
     }
-    
+
     /* Instructions styling */
     #instructions {
         margin-top: 20px;
     }
-    
+
     #instructions h3 {
         font-size: 22px;
     }
-    
-    #instructions p, #instructions li {
+
+    #instructions p,
+    #instructions li {
         font-size: 16px;
         line-height: 1.6;
     }
-    
+
     /* Show keyboard helper on desktop */
     .keyboard-helper {
         margin-top: 30px;
@@ -439,7 +460,7 @@ h4 {
     #wrapper {
         min-width: 800px;
     }
-    
+
     canvas {
         min-height: 700px;
     }
@@ -451,7 +472,7 @@ h4 {
         --font-xlarge: 30px;
         --font-large: 22px;
     }
-    
+
     /* Adjust canvas container for better proportions */
     #wrapper {
         max-height: 65vh;
@@ -465,12 +486,12 @@ h4 {
         --margin-large: 15px;
         --font-xlarge: 28px;
     }
-    
+
     /* Adjust control spacing */
     #touch-controls-container .direction-controls {
         margin-right: 20px;
     }
-    
+
     #touch-controls-container .restart-control {
         margin-left: 20px;
     }
@@ -487,22 +508,22 @@ h4 {
         --font-xlarge: 24px;
         --font-large: 20px;
     }
-    
+
     body {
         padding: var(--padding-small);
     }
-    
+
     h1 {
         font-size: var(--font-xlarge);
         padding-top: var(--padding-medium);
     }
-    
+
     #instructions {
         padding: var(--padding-medium);
         margin: var(--margin-medium) auto;
         font-size: var(--font-small);
     }
-    
+
     #touch-controls-container {
         padding: var(--padding-small) 0;
     }
@@ -513,16 +534,16 @@ h4 {
     #wrapper {
         max-height: 50vh;
     }
-    
+
     h1 {
         font-size: var(--font-large);
         padding-top: var(--padding-small);
     }
-    
+
     #headers {
         padding: var(--padding-small) 0;
     }
-    
+
     /* Arrange touch controls and instructions side by side in landscape */
     #game-ui-container {
         display: flex;
@@ -530,18 +551,19 @@ h4 {
         justify-content: space-between;
         align-items: flex-start;
     }
-    
-    #touch-controls-container, #instructions {
+
+    #touch-controls-container,
+    #instructions {
         flex: 1;
         margin: var(--margin-small);
     }
-    
+
     #instructions {
         max-height: 40vh;
         overflow-y: auto;
         font-size: var(--font-small);
     }
-    
+
     /* Smaller controls for landscape mode */
     :root {
         --button-size: clamp(40px, 8vw, 50px);
@@ -559,13 +581,14 @@ h4 {
         --text-color: #ffffff;
         --highlight-color: #ffffff;
     }
-    
+
     canvas {
         border-width: 4px;
         box-shadow: none;
     }
-    
-    #instructions, #headers {
+
+    #instructions,
+    #headers {
         background: #000000;
         border: 2px solid #ffffff;
         box-shadow: none;
