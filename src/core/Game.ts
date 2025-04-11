@@ -488,10 +488,10 @@ export default class Game {
      * Preload all game assets
      */
     async preloadAssets(): Promise<boolean> {
-        // Define game assets to preload with correct paths
+        // Define game assets to preload - use public directory paths for static assets
         const imageAssets: AssetDefinition[] = [
-            { key: 'player', src: '/src/assets/images/player.png' },
-            { key: 'obstacle', src: '/src/assets/images/obstacle.png' },
+            { key: 'player', src: '/images/player.png' },
+            { key: 'obstacle', src: '/images/obstacle.png' },
         ]
 
         // Preload assets (will expand with more assets as needed)
