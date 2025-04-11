@@ -63,25 +63,25 @@ jobs:
                     echo "Attempt $i to update the container app..."
                     
                     # First, create a temporary JSON file with the health probe configuration
-                    cat > health-probe-config.json << EOF
-                    {
-                      "probes": [
-                        {
-                          "type": "startup",
-                          "httpGet": {
-                            "path": "/",
-                            "port": 3000,
-                            "httpHeaders": []
-                          },
-                          "initialDelaySeconds": 30,
-                          "periodSeconds": 10,
-                          "timeoutSeconds": 5,
-                          "successThreshold": 1,
-                          "failureThreshold": 30
-                        }
-                      ]
-                    }
-                    EOF
+                    cat > health-probe-config.json << 'EOF'
+{
+  "probes": [
+    {
+      "type": "startup",
+      "httpGet": {
+        "path": "/",
+        "port": 3000,
+        "httpHeaders": []
+      },
+      "initialDelaySeconds": 30,
+      "periodSeconds": 10,
+      "timeoutSeconds": 5,
+      "successThreshold": 1,
+      "failureThreshold": 30
+    }
+  ]
+}
+EOF
                     
                     # Try to update the container app with proper configuration
                     az containerapp update \
