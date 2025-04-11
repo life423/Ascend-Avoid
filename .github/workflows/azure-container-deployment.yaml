@@ -128,7 +128,7 @@ jobs:
             az containerapp update \
               --name ${{ env.APP_NAME }} \
               --resource-group ${{ env.RESOURCE_GROUP }} \
-              --yaml-file health-probe-config.json && break
+              --yaml health-probe-config.yaml && break
 
             if [ $i -eq $RETRY_COUNT ]; then
               echo "Failed to set health probes after $RETRY_COUNT attempts."
