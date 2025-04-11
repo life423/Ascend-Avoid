@@ -49,83 +49,24 @@ jobs:
 
       - name: Build and push Docker image
         run: |
-          IMAGE="${{ env.ACR_NAME }}.azurecr.io/${{ env.IMAGE_NAME }}:${{ github.sha }}"
-          docker build -t $IMAGE .
-          docker push $IMAGE
-
-      - name: Validate Docker Image in ACR
-        run: |
-          IMAGE="${{ env.ACR_NAME }}.azurecr.io/${{ env.IMAGE_NAME }}:${{ github.sha }}"
-          echo "Validating image: $IMAGE"
-          az acr repository show-tags --name ${{ env.ACR_NAME }} --repository ${{ env.IMAGE_NAME }} --query "[?@=='${{ github.sha }}']" -o tsv
-
-      - name: Create health probe config
-        run: |
-          cat > health-probe-config.yaml << 'EOF'
-          properties:
-            template:
-              containers:
-                - name: ${{ env.APP_NAME }}
-                  probes:
-                    - type: startup
-                      httpGet:
-                        path: /
-                        port: 3000
-                      initialDelaySeconds: 30
-                      periodSeconds: 10
-                      timeoutSeconds: 5
-                      successThreshold: 1
-                      failureThreshold: 30
-          EOF
-
-      - name: Debug Image Name
-        run: |
-          IMAGE="${{ env.ACR_NAME }}.azurecr.io/${{ env.IMAGE_NAME }}:${{ github.sha }}"
-          echo "Using image: $IMAGE"
+          docker build -t ${{ env.ACR_NAME }}.azurecr.io/${{ env.IMAGE_NAME }}:${{ github.sha }} .
+          docker push ${{ env.ACR_NAME }}.azurecr.io/${{ env.IMAGE_NAME }}:${{ github.sha }}
 
       - name: Update Container Image (with retry)
         run: |
           RETRY_COUNT=5
           RETRY_DELAY=30
 
-          IMAGE="${{ env.ACR_NAME }}.azurecr.io/${{ env.IMAGE_NAME }}:${{ github.sha }}"
-          echo "Updating container app with image: $IMAGE"
-
           for i in $(seq 1 $RETRY_COUNT); do
             echo "Attempt $i to update the container image..."
-            
+
             az containerapp update \
               --name ${{ env.APP_NAME }} \
               --resource-group ${{ env.RESOURCE_GROUP }} \
-              --image $IMAGE && break
+              --image ${{ env.ACR_NAME }}.azurecr.io/${{ env.IMAGE_NAME }}:${{ github.sha }} && break
 
             if [ $i -eq $RETRY_COUNT ]; then
               echo "Failed to update the container image after $RETRY_COUNT attempts."
-              exit 1
-            fi
-
-            echo "Operation in progress. Waiting $RETRY_DELAY seconds before retry..."
-            sleep $RETRY_DELAY
-          done
-
-      - name: Update Health Probes (with retry)
-        run: |
-          RETRY_COUNT=5
-          RETRY_DELAY=30
-
-          IMAGE="${{ env.ACR_NAME }}.azurecr.io/${{ env.IMAGE_NAME }}:${{ github.sha }}"
-          echo "Setting health probes for image: $IMAGE"
-
-          for i in $(seq 1 $RETRY_COUNT); do
-            echo "Attempt $i to set health probes..."
-            
-            az containerapp update \
-              --name ${{ env.APP_NAME }} \
-              --resource-group ${{ env.RESOURCE_GROUP }} \
-              --yaml health-probe-config.yaml && break
-
-            if [ $i -eq $RETRY_COUNT ]; then
-              echo "Failed to set health probes after $RETRY_COUNT attempts."
               exit 1
             fi
 
@@ -140,7 +81,7 @@ jobs:
 
           for i in $(seq 1 $RETRY_COUNT); do
             echo "Attempt $i to configure ingress..."
-            
+
             az containerapp ingress update \
               --name ${{ env.APP_NAME }} \
               --resource-group ${{ env.RESOURCE_GROUP }} \
@@ -150,6 +91,59 @@ jobs:
 
             if [ $i -eq $RETRY_COUNT ]; then
               echo "Failed to configure ingress after $RETRY_COUNT attempts."
+              exit 1
+            fi
+
+            echo "Operation in progress. Waiting $RETRY_DELAY seconds before retry..."
+            sleep $RETRY_DELAY
+          done
+
+      - name: Update Health Probes (with retry)
+        run: |
+          RETRY_COUNT=5
+          RETRY_DELAY=30
+
+          for i in $(seq 1 $RETRY_COUNT); do
+            echo "Attempt $i to set health probes..."
+
+            # Dump current config to JSON
+            az containerapp show \
+              --name ${{ env.APP_NAME }} \
+              --resource-group ${{ env.RESOURCE_GROUP }} \
+              -o json > current_config.json
+
+            # Patch the JSON using jq:
+            #  1) Overwrite the container's image property to ensure the container has an image specified
+            #  2) Overwrite probes with our startup probe definition
+            # Note: We use --arg to safely embed the environment-based image into JSON
+            jq --arg newImage "${{ env.ACR_NAME }}.azurecr.io/${{ env.IMAGE_NAME }}:${{ github.sha }}" '
+              .properties.template.containers[0].image = $newImage
+              |
+              .properties.template.containers[0].probes = [
+                {
+                  "type": "startup",
+                  "httpGet": {
+                    "path": "/",
+                    "port": 3000,
+                    "httpHeaders": []
+                  },
+                  "initialDelaySeconds": 30,
+                  "periodSeconds": 10,
+                  "timeoutSeconds": 5,
+                  "successThreshold": 1,
+                  "failureThreshold": 30
+                }
+              ]
+            ' current_config.json > updated_config.json
+
+            # Apply the patched file with a single containerapp update
+            az containerapp update \
+              --name ${{ env.APP_NAME }} \
+              --resource-group ${{ env.RESOURCE_GROUP }} \
+              --file updated_config.json && break
+
+            if [ $i -eq $RETRY_COUNT ]; then
+              echo "Failed to set health probes after $RETRY_COUNT attempts."
               exit 1
             fi
 
@@ -167,7 +161,7 @@ jobs:
           # Get the app URL
           APP_URL=$(az containerapp show --name ${{ env.APP_NAME }} --resource-group ${{ env.RESOURCE_GROUP }} --query properties.configuration.ingress.fqdn -o tsv)
           echo "Container App URL: https://$APP_URL"
-          
+
           # Update the verify-deployment:azure script with the correct URL
           sed -i "s|https://ascend-avoid.azurewebsites.net|https://$APP_URL|g" package.json
 
