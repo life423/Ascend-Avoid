@@ -103,7 +103,12 @@ export default class TouchControls {
             'ontouchstart' in window ||
             navigator.maxTouchPoints > 0
 
-        if (isTouchDevice) {
+        // Also check for desktop layout class
+        const isDesktopLayout =
+            document.body.classList.contains('desktop-layout')
+
+        // Only show controls if it's a touch device AND NOT in desktop layout mode
+        if (isTouchDevice && !isDesktopLayout) {
             this.show()
             this.resize() // Adjust sizes based on new dimensions
         } else {
