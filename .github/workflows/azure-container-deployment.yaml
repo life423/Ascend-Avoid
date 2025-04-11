@@ -52,6 +52,28 @@ jobs:
           docker build -t ${{ env.ACR_NAME }}.azurecr.io/${{ env.IMAGE_NAME }}:${{ github.sha }} .
           docker push ${{ env.ACR_NAME }}.azurecr.io/${{ env.IMAGE_NAME }}:${{ github.sha }}
       
+      - name: Create health probe config
+        run: |
+          cat > health-probe-config.json << 'EOF'
+          {
+            "probes": [
+              {
+                "type": "startup",
+                "httpGet": {
+                  "path": "/",
+                  "port": 3000,
+                  "httpHeaders": []
+                },
+                "initialDelaySeconds": 30,
+                "periodSeconds": 10,
+                "timeoutSeconds": 5,
+                "successThreshold": 1,
+                "failureThreshold": 30
+              }
+            ]
+          }
+          EOF
+      
       - name: Deploy to Azure Container App with retry
         run: |
           RETRY_COUNT=5
@@ -59,27 +81,6 @@ jobs:
 
           for i in $(seq 1 $RETRY_COUNT); do
             echo "Attempt $i to update the container app..."
-            
-            # Create health probe configuration file
-            cat > health-probe-config.json << 'EOL'
-{
-  "probes": [
-    {
-      "type": "startup",
-      "httpGet": {
-        "path": "/",
-        "port": 3000,
-        "httpHeaders": []
-      },
-      "initialDelaySeconds": 30,
-      "periodSeconds": 10,
-      "timeoutSeconds": 5,
-      "successThreshold": 1,
-      "failureThreshold": 30
-    }
-  ]
-}
-EOL
             
             # Try to update the container app with proper configuration
             az containerapp update \
