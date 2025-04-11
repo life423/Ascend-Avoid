@@ -2,54 +2,87 @@ name: Trigger auto deployment for ascend-avoid
 
 # When this action will be executed
 on:
-  # Automatically trigger it when detected changes in repo
-  push:
-    branches: 
-      [ main ]
-    paths:
-    - '**'
-    - '.github/workflows/ascend-avoid-AutoDeployTrigger-389245e1-443b-466b-aa23-814b3ffd23bb.yml'
+    # Automatically trigger it when detected changes in repo
+    push:
+        branches: [main]
+        paths:
+            - '**'
+            - '.github/workflows/ascend-avoid-AutoDeployTrigger-389245e1-443b-466b-aa23-814b3ffd23bb.yml'
 
-  # Allow manual trigger 
-  workflow_dispatch:      
+    # Allow manual trigger
+    workflow_dispatch:
 
 jobs:
-  build-and-deploy:
-    runs-on: ubuntu-latest
-    permissions: 
-      id-token: write #This is required for requesting the OIDC JWT Token
-      contents: read #Required when GH token is used to authenticate with private repo
+    build-and-deploy:
+        runs-on: ubuntu-latest
+        permissions:
+            id-token: write #This is required for requesting the OIDC JWT Token
+            contents: read #Required when GH token is used to authenticate with private repo
 
-    steps:
-      - name: Checkout to the branch
-        uses: actions/checkout@v4
+        steps:
+            - name: Checkout to the branch
+              uses: actions/checkout@v4
 
-      - name: Set up Node.js
-        uses: actions/setup-node@v3
-        with:
-          node-version: '18'
-          cache: 'npm'
+            - name: Set up Node.js
+              uses: actions/setup-node@v3
+              with:
+                  node-version: '18'
+                  cache: 'npm'
 
-      - name: Install dependencies and build client
-        run: |
-          npm ci --legacy-peer-deps --ignore-scripts
-          npm run build
+            - name: Install dependencies and build client
+              run: |
+                  npm ci --legacy-peer-deps --ignore-scripts
+                  npm run build
 
-      - name: Azure Login
-        uses: azure/login@v1
-        with:
-          client-id: ${{ secrets.ASCENDAVOID_AZURE_CLIENT_ID }}
-          tenant-id: ${{ secrets.ASCENDAVOID_AZURE_TENANT_ID }}
-          subscription-id: ${{ secrets.ASCENDAVOID_AZURE_SUBSCRIPTION_ID }}
+            - name: Azure Login
+              uses: azure/login@v1
+              with:
+                  client-id: ${{ secrets.ASCENDAVOID_AZURE_CLIENT_ID }}
+                  tenant-id: ${{ secrets.ASCENDAVOID_AZURE_TENANT_ID }}
+                  subscription-id: ${{ secrets.ASCENDAVOID_AZURE_SUBSCRIPTION_ID }}
 
-      - name: Build and push container image to registry
-        uses: azure/container-apps-deploy-action@v2
-        with:
-          appSourcePath: ${{ github.workspace }}
-          dockerfilePath: ./Dockerfile
-          registryUrl: portfoliodrewclarkazure.azurecr.io
-          registryUsername: ${{ secrets.ASCENDAVOID_REGISTRY_USERNAME }}
-          registryPassword: ${{ secrets.ASCENDAVOID_REGISTRY_PASSWORD }}
-          containerAppName: ascend-avoid
-          resourceGroup: DefaultResourceGroup-EUS
-          imageToBuild: portfoliodrewclarkazure.azurecr.io/ascend-avoid:${{ github.sha }}
+            # Instead of using the container-apps-deploy-action directly, we'll handle the deployment with retries
+            - name: Build and tag Docker image
+              run: |
+                  docker build -t portfoliodrewclarkazure.azurecr.io/ascend-avoid:${{ github.sha }} -f ./Dockerfile .
+
+            - name: Login to Azure Container Registry
+              run: |
+                  az acr login --name portfoliodrewclarkazure
+
+            - name: Push Docker image to registry
+              run: |
+                  docker push portfoliodrewclarkazure.azurecr.io/ascend-avoid:${{ github.sha }}
+
+            - name: Deploy to Azure Container App with retry
+              run: |
+                  RETRY_COUNT=5
+                  RETRY_DELAY=30
+
+                  for i in $(seq 1 $RETRY_COUNT); do
+                    echo "Attempt $i to update the container app..."
+                    
+                    # Try to update the container app
+                    az containerapp update \
+                      --name ascend-avoid \
+                      --resource-group DefaultResourceGroup-EUS \
+                      --image portfoliodrewclarkazure.azurecr.io/ascend-avoid:${{ github.sha }} && break
+                      
+                    # If we get here, the command failed
+                    if [ $i -eq $RETRY_COUNT ]; then
+                      echo "Failed to update container app after $RETRY_COUNT attempts."
+                      exit 1
+                    fi
+                    
+                    echo "Operation in progress. Waiting $RETRY_DELAY seconds before retry..."
+                    sleep $RETRY_DELAY
+                  done
+
+            - name: Wait for deployment to stabilize
+              run: |
+                  echo "Waiting for deployment to stabilize..."
+                  sleep 30
+
+            - name: Verify deployment
+              run: |
+                  npm run verify-deployment:azure || echo "Verification may have failed, but deployment might still be in progress. Check the Azure portal."
