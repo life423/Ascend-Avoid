@@ -6,8 +6,8 @@
 import { GameObject, InputState, PerformanceStats, ScalingInfo } from '../types'
 
 // Import player and background entities
+import Background from '../entities/Background'
 import Player from '../entities/Player'
-import Background from '../js/objects/Background'
 import TouchControls from '../ui/TouchControls'
 
 // Fallback constants in case imports fail
@@ -44,7 +44,7 @@ interface GameConfigInterface {
 }
 
 // Import our manager classes
-import ParticleSystem from '../js/managers/ParticleSystem'
+import ParticleSystem from '../entities/ParticleSystem'
 import AssetManager from '../managers/AssetManager'
 import InputManager from '../managers/InputManager'
 import ObstacleManager from '../managers/ObstacleManager'
@@ -319,7 +319,7 @@ export default class Game {
                 case 'multiplayer':
                     // Dynamic import of MultiplayerMode
                     const MultiplayerModeModule = (await import(
-                        './MultiplayerMode.js'
+                        './MultiplayerMode'
                     )) as GameModeModule
                     GameModeClass = MultiplayerModeModule.default
                     break
@@ -328,7 +328,7 @@ export default class Game {
                 default:
                     // Dynamic import of SinglePlayerMode
                     const SinglePlayerModeModule = (await import(
-                        './SinglePlayerMode.js'
+                        './SinglePlayerMode'
                     )) as GameModeModule
                     GameModeClass = SinglePlayerModeModule.default
                     break
@@ -488,10 +488,10 @@ export default class Game {
      * Preload all game assets
      */
     async preloadAssets(): Promise<boolean> {
-        // Define game assets to preload with paths starting from root
+        // Define game assets to preload with correct paths
         const imageAssets: AssetDefinition[] = [
-            { key: 'player', src: '/images/player.png' },
-            { key: 'obstacle', src: '/images/obstacle.png' },
+            { key: 'player', src: '/src/assets/images/player.png' },
+            { key: 'obstacle', src: '/src/assets/images/obstacle.png' },
         ]
 
         // Preload assets (will expand with more assets as needed)
