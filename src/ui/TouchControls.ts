@@ -81,8 +81,11 @@ export default class TouchControls {
         this.createControlElements()
         this.setupTouchListeners()
 
-        // Hide controls on desktop/mouse-based devices
-        if (!this.isTouchDevice) {
+        // Hide controls on desktop/mouse-based devices or when desktop layout is forced
+        if (
+            !this.isTouchDevice ||
+            document.body.classList.contains('desktop-layout')
+        ) {
             this.hide()
         }
 
