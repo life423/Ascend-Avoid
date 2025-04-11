@@ -6,7 +6,7 @@
     "type": "module",
   "scripts": {
     "setup": "node install.cjs",
-    "postinstall": "node install.cjs",
+    "prepare": "node install.cjs",
     "dev": "vite",
     "start": "vite",
     "build": "vite build",
