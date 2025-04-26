@@ -1,0 +1,81 @@
+name: Azure Deployment
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18.x'
+          
+      - name: Install dependencies
+        run: npm ci
+        
+      - name: Build
+        run: npm run build
+        
+      - name: Login to Azure
+        uses: azure/login@v1
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+      
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v1
+      
+      - name: Login to ACR
+        uses: docker/login-action@v1
+        with:
+          registry: portfoliodrewclarkazure.azurecr.io
+          username: ${{ secrets.ACR_USERNAME }}
+          password: ${{ secrets.ACR_PASSWORD }}
+      
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v2
+        with:
+          context: .
+          push: true
+          tags: portfoliodrewclarkazure.azurecr.io/ascend-avoid:${{ github.sha }}
+      
+      - name: Deploy to Azure Container App
+        uses: azure/CLI@v1
+        with:
+          inlineScript: |
+            az containerapp update \
+              --name ascend-avoid \
+              --resource-group DefaultResourceGroup-EUS \
+              --image portfoliodrewclarkazure.azurecr.io/ascend-avoid:${{ github.sha }}
+      
+      - name: Configure Health Probes
+        uses: azure/CLI@v1
+        with:
+          inlineScript: |
+            az containerapp update \
+              --name ascend-avoid \
+              --resource-group DefaultResourceGroup-EUS \
+              --probe-startup-http-get-path="/" \
+              --probe-startup-http-get-port=3000 \
+              --probe-startup-initial-delay=30 \
+              --probe-startup-period=10 \
+              --probe-startup-timeout=5 \
+              --probe-startup-success-threshold=1 \
+              --probe-startup-failure-threshold=30
+          
+      - name: Verify deployment
+        run: |
+          export VERIFY_URL=https://ascend-avoid.wittyhill-c50d4888.eastus.azurecontainerapps.io
+          export VERIFY_TIMEOUT=120000
+          export VERIFY_RETRIES=10
+          export VERIFY_RETRY_DELAY=15000
+          export VERIFY_HEALTH_PATH=/
+          export VERIFY_ACCEPTABLE_STATUS_CODES=200-299,301,302,303,307,308
+          node scripts/verify-deployment.js
