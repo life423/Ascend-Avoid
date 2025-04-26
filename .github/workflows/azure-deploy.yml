@@ -54,6 +54,21 @@ jobs:
               --name ascend-avoid \
               --resource-group DefaultResourceGroup-EUS \
               --image portfoliodrewclarkazure.azurecr.io/ascend-avoid:${{ github.sha }}
+      
+      - name: Configure Health Probes
+        uses: azure/CLI@v1
+        with:
+          inlineScript: |
+            az containerapp update \
+              --name ascend-avoid \
+              --resource-group DefaultResourceGroup-EUS \
+              --probe-startup-http-get-path="/" \
+              --probe-startup-http-get-port=3000 \
+              --probe-startup-initial-delay=30 \
+              --probe-startup-period=10 \
+              --probe-startup-timeout=5 \
+              --probe-startup-success-threshold=1 \
+              --probe-startup-failure-threshold=30
           
       - name: Verify deployment
         run: |
