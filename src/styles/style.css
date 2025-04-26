@@ -1,600 +1,94 @@
-/* 
- * Game Styles - Responsive and Performance-Optimized
- * Scales across mobile, tablet, and desktop devices
- */
-
-/* Base styles and CSS variables */
-:root {
-    /* Main theme colors */
-    --primary-color: #0cc7c7;
-    --primary-glow: rgba(0, 200, 200, 0.4);
-    --background-dark: #0a1a2f;
-    --background-darker: #000510;
-    --text-color: #eee;
-    --accent-color: rgba(0, 180, 240, 0.6);
-    --highlight-color: #bce4ff;
-
-    /* Responsive spacing variables - these scale with screen size */
-    --padding-small: clamp(3px, 1vw, 5px);
-    --padding-medium: clamp(5px, 2vw, 10px);
-    --padding-large: clamp(10px, 3vw, 15px);
-    --margin-small: clamp(5px, 1vw, 8px);
-    --margin-medium: clamp(10px, 2vw, 15px);
-    --margin-large: clamp(15px, 3vw, 20px);
-
-    /* Font sizes that scale with viewport */
-    --font-small: clamp(14px, 3vw, 16px);
-    --font-medium: clamp(16px, 4vw, 18px);
-    --font-large: clamp(20px, 5vw, 24px);
-    --font-xlarge: clamp(24px, 6vw, 32px);
-
-    /* Game elements and controls */
-    --button-size: clamp(50px, 15vw, 70px);
-    --button-font: clamp(18px, 5vw, 28px);
-    --border-radius: clamp(4px, 1vw, 8px);
-    --control-spacing: clamp(5px, 2vw, 8px);
-}
-
-/* Accessibility preferences */
-@media (prefers-reduced-motion) {
-    * {
-        animation-duration: 0.001ms !important;
-        animation-iteration-count: 1 !important;
-        transition-duration: 0.001ms !important;
-    }
-}
-
-/* Core styles */
-*,
-*::before,
-*::after {
+* {
     margin: 0;
     padding: 0;
     box-sizing: border-box;
 }
 
-html,
 body {
-    width: 100%;
-    height: 100%;
-    overflow-x: hidden;
+    background: #6D8888;
+    font-family: Arial, Helvetica, sans-serif;
+    color: #333;
+    padding: 10px;
 }
 
-body {
-    background: var(--background-dark);
-    font-family: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue',
-        sans-serif;
-    color: var(--text-color);
-    padding: var(--padding-medium);
-    min-height: 100vh;
-    background: linear-gradient(
-        to bottom,
-        var(--background-dark),
-        var(--background-darker)
-    );
-    overscroll-behavior: contain; /* Prevent overscroll effects */
-    touch-action: manipulation; /* Speed up clicks on touch devices */
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-}
-
-/* Canvas styles - ensures proper rendering on all devices */
 canvas {
     background: black;
-    border: 4px solid var(--primary-color);
-    border-radius: var(--border-radius);
-    box-shadow: 0 0 20px var(--primary-glow);
+    border: 4px solid #9BC7C7;
     touch-action: none; /* Prevents default touch actions like scrolling on canvas */
     display: block;
-    max-width: 100%; /* Ensure it never exceeds container width */
-    max-height: 80vh; /* Cap height for very tall screens */
-    margin: 0 auto;
-
-    /* Improves pixel rendering on high-DPI screens when needed */
-    image-rendering: auto; /* Default for photos/realistic images */
 }
 
-/* Core layout and container styles */
 h1 {
     text-align: center;
     margin: 0;
-    padding-top: var(--padding-large);
-    color: var(--text-color);
-    text-shadow: 0 0 10px var(--accent-color);
-    font-size: var(--font-xlarge);
-    letter-spacing: 2px;
-    font-weight: 700;
+    padding-top: 15px;
+    color: #333;
 }
 
 h3 {
-    margin-top: var(--margin-medium);
-    margin-bottom: var(--margin-small);
-    color: var(--primary-color);
+    margin-top: 20px;
+    margin-bottom: 10px;
 }
 
-h4 {
+h4 { 
     display: inline-block;
-    margin: 0 var(--margin-small);
-    color: var(--text-color);
-}
-
-#score,
-#highScore {
-    color: var(--primary-color);
-    font-weight: bold;
-    text-shadow: 0 0 5px var(--primary-glow);
+    margin: 0 10px;
 }
 
 #headers {
     text-align: center;
-    padding: var(--padding-medium) 0 var(--padding-large);
-    width: 100%;
+    padding: 10px 0 15px;
 }
 
 #wrapper {
     display: flex;
     justify-content: center;
     align-items: center;
-    width: 100%;
     max-width: 100%;
-    min-height: 50vh;
     overflow: hidden;
-    margin: 0 auto;
-    /* Create a fixed aspect ratio container for the game */
-    aspect-ratio: 560 / 550; /* Match BASE_CANVAS dimensions from utils.js */
-    max-height: 80vh;
 }
 
-/* Game elements and controls */
 #canvas {
-    display: block;
-    width: 100%;
-    height: 100%;
-    max-width: 1200px; /* Set a max-width to prevent excessive stretching */
+    max-width: 100%;
+    height: auto;
     margin: 0 auto;
 }
 
-#game-ui-container {
-    width: 100%;
-    max-width: 1200px;
-    margin: 0 auto;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-}
-
-/* Touch controls */
-#touch-controls-container {
-    width: 100%;
-    max-width: 560px;
-    margin: var(--margin-medium) auto;
-    text-align: center;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    flex-wrap: wrap;
-    padding: var(--padding-medium) 0;
-}
-
-#touch-controls-container .control-button {
-    background: rgba(12, 199, 199, 0.3);
-    border: 3px solid var(--primary-color);
-    border-radius: 50%;
-    width: var(--button-size);
-    height: var(--button-size);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    font-size: var(--button-font);
-    color: white;
-    margin: var(--margin-small);
-    user-select: none;
-    touch-action: none;
-    box-shadow: 0 0 10px var(--primary-glow);
-    transition: all 0.1s ease;
-    position: relative;
-    z-index: 10; /* Ensure controls stay above other elements */
-}
-
-#touch-controls-container .control-button.active {
-    background: rgba(12, 199, 199, 0.8);
-    transform: scale(0.95);
-    box-shadow: 0 0 15px var(--primary-glow);
-}
-
-#touch-controls-container .direction-controls {
-    display: grid;
-    grid-template-columns: repeat(3, var(--button-size));
-    grid-template-rows: repeat(3, var(--button-size));
-    grid-gap: var(--control-spacing);
-    margin-right: clamp(15px, 5vw, 40px);
-}
-
-#touch-controls-container .direction-controls .up {
-    grid-column: 2;
-    grid-row: 1;
-}
-
-#touch-controls-container .direction-controls .left {
-    grid-column: 1;
-    grid-row: 2;
-}
-
-#touch-controls-container .direction-controls .right {
-    grid-column: 3;
-    grid-row: 2;
-}
-
-#touch-controls-container .direction-controls .down {
-    grid-column: 2;
-    grid-row: 3;
-}
-
-#touch-controls-container .restart-control {
-    margin-left: clamp(15px, 5vw, 40px);
-}
-
-#touch-controls-container .restart-control .restart {
-    background: rgba(255, 60, 60, 0.3);
-    border-color: rgba(255, 60, 60, 0.8);
-    box-shadow: 0 0 10px rgba(255, 60, 60, 0.4);
-}
-
-#touch-controls-container .restart-control .restart.active {
-    background: rgba(255, 60, 60, 0.8);
-    box-shadow: 0 0 15px rgba(255, 60, 60, 0.7);
-}
-
-/* Responsive control visibility */
-@media (hover: hover) and (pointer: fine) {
-    /* Hide touch controls on devices with mouse/trackpad */
-    #touch-controls-container {
-        display: none;
-    }
-}
-
-/* Hide touch controls on desktop layout devices WITHOUT touch capabilities */
-body.desktop-layout:not(.touch-device) #touch-controls-container {
-    display: none !important; /* Highest specificity to override all other rules */
-    visibility: hidden !important; /* Double protection */
-    opacity: 0 !important; /* Triple protection */
-    pointer-events: none !important; /* Prevent interaction even if somehow visible */
-}
-
-/* Always show touch controls on devices with touch capabilities, regardless of desktop layout class */
-@media (pointer: coarse) {
-    #touch-controls-container {
-        display: flex !important;
-    }
-}
-
-/* Game instructions */
 #instructions {
     max-width: 560px;
-    margin: var(--margin-large) auto;
-    padding: var(--padding-large);
-    background: rgba(10, 35, 66, 0.8);
-    border: 2px solid var(--primary-color);
-    border-radius: var(--border-radius);
-    box-shadow: 0 0 15px var(--primary-glow);
-    width: 100%;
+    margin: 20px auto;
+    padding: 15px;
+    background: #9BC7C7;
+    border-radius: 8px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
 }
 
 #instructions ul {
     padding-left: 20px;
-    margin: var(--margin-small) 0;
+    margin: 10px 0;
 }
 
 #instructions li {
     margin-bottom: 5px;
-    color: var(--highlight-color);
 }
 
 .note {
     font-weight: bold;
-    margin-top: var(--margin-small);
-    color: var(--primary-color);
+    margin-top: 10px;
+    color: #333;
 }
 
-/* Desktop keyboard controls */
-.keyboard-helper {
-    display: flex;
-    justify-content: center;
-    gap: 30px;
-    margin: 20px auto;
-    max-width: 800px;
-    flex-wrap: wrap;
-}
-
-.key-container {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    margin: 0 10px;
-}
-
-.key-row {
-    display: flex;
-    gap: 5px;
-    margin: 5px 0;
-}
-
-.key {
-    width: 40px;
-    height: 40px;
-    background: rgba(0, 0, 0, 0.4);
-    border: 2px solid var(--primary-color);
-    border-radius: 6px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    font-size: 18px;
-    color: white;
-    box-shadow: 0 0 10px var(--primary-glow);
-}
-
-.key.arrows {
-    font-size: 22px;
-}
-
-.key.restart {
-    background: rgba(255, 60, 60, 0.2);
-    border-color: rgba(255, 60, 60, 0.8);
-}
-
-.key-label {
-    margin-top: 8px;
-    font-size: 14px;
-    color: var(--highlight-color);
-}
-
-/* Comprehensive Media Queries for Responsive Design */
-
-/* Large desktops - Full layout with sidebar */
-@media screen and (min-width: 1200px) {
-    /* Desktop grid layout */
-    body.desktop-layout {
-        padding: 20px;
-        display: grid;
-        grid-template-columns: 2fr 1fr;
-        grid-template-areas:
-            'header header'
-            'game sidebar';
-        gap: 30px;
-        align-items: start;
-        max-width: 1400px;
-        margin: 0 auto;
-    }
-
-    /* Grid area assignments */
-    h1 {
-        grid-area: header;
-        margin-bottom: 40px;
-        font-size: 42px;
-        letter-spacing: 3px;
-    }
-
-    #wrapper {
-        grid-area: game;
-        width: 100%;
-        min-width: 600px;
-        min-height: 600px;
-        aspect-ratio: 3 / 4;
-        max-height: 800px;
-    }
-
-    #game-ui-container {
-        grid-area: sidebar;
-        display: flex;
-        flex-direction: column;
-    }
-
-    /* Enhanced canvas for desktop */
-    canvas {
-        width: 100%;
-        height: 100%;
-        min-height: 550px;
-        box-shadow: 0 0 30px var(--primary-glow),
-            0 0 60px rgba(0, 180, 240, 0.2);
-        border-width: 4px;
-    }
-
-    /* Sidebar elements styling */
-    #headers,
-    #instructions {
-        background: rgba(10, 35, 66, 0.6);
-        border-radius: 8px;
-        padding: 20px;
-        border: 2px solid var(--primary-color);
-        box-shadow: 0 0 25px rgba(0, 180, 240, 0.2);
-        width: 100%;
-    }
-
-    /* Instructions placed first in the visual order */
-    #instructions {
-        order: 1;
-        margin: 0 0 20px 0;
-    }
-
-    /* Score header re-styling and placed second in the visual order */
-    #headers {
-        order: 2;
-        margin: 0 0 20px 0;
-        text-align: left;
-        display: flex;
-        flex-direction: column;
-    }
-
-    #headers h4 {
-        margin-bottom: 10px;
-        font-size: var(--font-large);
-        display: block;
-    }
-
-    /* Instructions styling */
-    #instructions {
-        margin-top: 20px;
-    }
-
-    #instructions h3 {
-        font-size: 22px;
-    }
-
-    #instructions p,
-    #instructions li {
-        font-size: 16px;
-        line-height: 1.6;
-    }
-
-    /* Show keyboard helper on desktop */
-    .keyboard-helper {
-        margin-top: 30px;
-        display: flex;
-    }
-}
-
-/* Force larger canvas on larger screens */
-@media screen and (min-width: 1400px) {
-    #wrapper {
-        min-width: 800px;
-    }
-
-    canvas {
-        min-height: 700px;
-    }
-}
-
-/* Tablets and smaller desktops */
-@media screen and (max-width: 1024px) {
-    :root {
-        --font-xlarge: 30px;
-        --font-large: 22px;
-    }
-
-    /* Adjust canvas container for better proportions */
-    #wrapper {
-        max-height: 65vh;
-    }
-}
-
-/* Tablets and large phones (landscape) */
-@media screen and (max-width: 768px) {
-    :root {
-        --padding-medium: 8px;
-        --margin-large: 15px;
-        --font-xlarge: 28px;
-    }
-
-    /* Adjust control spacing */
-    #touch-controls-container .direction-controls {
-        margin-right: 20px;
-    }
-
-    #touch-controls-container .restart-control {
-        margin-left: 20px;
-    }
-}
-
-/* Portrait phones and small tablets */
+/* Media Queries for Responsive Design */
 @media screen and (max-width: 600px) {
-    :root {
-        --padding-small: 3px;
-        --padding-medium: 5px;
-        --padding-large: 10px;
-        --margin-small: 5px;
-        --margin-medium: 10px;
-        --font-xlarge: 24px;
-        --font-large: 20px;
-    }
-
     body {
-        padding: var(--padding-small);
+        padding: 5px;
     }
-
+    
     h1 {
-        font-size: var(--font-xlarge);
-        padding-top: var(--padding-medium);
+        font-size: 24px;
     }
-
+    
     #instructions {
-        padding: var(--padding-medium);
-        margin: var(--margin-medium) auto;
-        font-size: var(--font-small);
+        padding: 10px;
     }
-
-    #touch-controls-container {
-        padding: var(--padding-small) 0;
-    }
-}
-
-/* Landscape mode specific adjustments */
-@media screen and (max-height: 500px) and (orientation: landscape) {
-    #wrapper {
-        max-height: 50vh;
-    }
-
-    h1 {
-        font-size: var(--font-large);
-        padding-top: var(--padding-small);
-    }
-
-    #headers {
-        padding: var(--padding-small) 0;
-    }
-
-    /* Arrange touch controls and instructions side by side in landscape */
-    #game-ui-container {
-        display: flex;
-        flex-direction: row;
-        justify-content: space-between;
-        align-items: flex-start;
-    }
-
-    #touch-controls-container,
-    #instructions {
-        flex: 1;
-        margin: var(--margin-small);
-    }
-
-    #instructions {
-        max-height: 40vh;
-        overflow-y: auto;
-        font-size: var(--font-small);
-    }
-
-    /* Smaller controls for landscape mode */
-    :root {
-        --button-size: clamp(40px, 8vw, 50px);
-        --button-font: clamp(16px, 3vw, 20px);
-    }
-}
-
-/* High contrast mode */
-@media (prefers-contrast: high) {
-    :root {
-        --primary-color: #00ffff;
-        --primary-glow: rgba(0, 255, 255, 0.6);
-        --background-dark: #000000;
-        --background-darker: #000000;
-        --text-color: #ffffff;
-        --highlight-color: #ffffff;
-    }
-
-    canvas {
-        border-width: 4px;
-        box-shadow: none;
-    }
-
-    #instructions,
-    #headers {
-        background: #000000;
-        border: 2px solid #ffffff;
-        box-shadow: none;
-    }
-}
-
-/* Debug Helper - adds a border to help visualize layout problems */
-.debug-border {
-    border: 2px solid red !important;
 }

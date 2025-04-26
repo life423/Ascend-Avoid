@@ -10,7 +10,7 @@ import {
   STATE,
   DESKTOP_SETTINGS,
   KEYS
-} from '../js/shared/constants/gameConstants.js';
+} from '../constants/gameConstants';
 import { GameConfig as GameConfigInterface } from '../types';
 
 interface GameSettings {
@@ -213,7 +213,7 @@ export default class GameConfig implements GameConfigInterface {
    * Get the key mappings
    * @returns The key mappings
    */
-  getKeys(): Record<string, string[]> {
+  getKeys(): Record<string, readonly string[]> {
     return KEYS;
   }
 }

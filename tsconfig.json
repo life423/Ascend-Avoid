@@ -22,12 +22,26 @@
     "noImplicitAny": false,  /* Start with false, enable later */
     "strictNullChecks": false,
     
-    /* Path aliases to match your vite config */
+    /* Path aliases to match the new directory structure */
     "baseUrl": ".",
     "paths": {
-      "@/*": ["src/js/*"]
+      "@/*": ["src/*"],
+      "@core/*": ["src/core/*"],
+      "@entities/*": ["src/entities/*"],
+      "@managers/*": ["src/managers/*"],
+      "@ui/*": ["src/ui/*"],
+      "@utils/*": ["src/utils/*"],
+      "@constants/*": ["src/constants/*"],
+      "@shared/*": ["shared/*"]
     }
   },
-  "include": ["src/**/*.ts", "src/**/*.d.ts", "src/**/*.tsx", "src/**/*.js"],
+  "include": [
+    "src/**/*.ts", 
+    "src/**/*.d.ts", 
+    "src/**/*.tsx",
+    "src/**/*.js",
+    "shared/**/*.ts",
+    "shared/**/*.js"
+  ],
   "exclude": ["node_modules", "dist"]
 }

@@ -4,8 +4,8 @@
  * Now with TypeScript support.
  */
 import { GameObject } from '../types';
-// Note: Import paths may need to be adjusted based on actual locations
-import { OBSTACLE } from '../js/shared/constants/gameConstants';
+// Updated import path to match the new structure
+import { OBSTACLE } from '../constants/gameConstants';
 import { randomIntFromInterval, SCALE_FACTOR, BASE_CANVAS_WIDTH, BASE_CANVAS_HEIGHT } from '../utils/utils';
 import { getSprite } from '../js/sprites';
 

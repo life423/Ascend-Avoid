@@ -84,7 +84,7 @@ export default class MultiplayerMode extends GameMode {
     
     // Dynamically import multiplayer manager to avoid loading it in single-player mode
     try {
-      const MultiplayerManagerModule = await import('../js/multiplayer/MultiplayerManager.js');
+      const MultiplayerManagerModule = await import('../multiplayer/MultiplayerManager');
       const MultiplayerManager = MultiplayerManagerModule.default;
       
       // Create and initialize the multiplayer manager

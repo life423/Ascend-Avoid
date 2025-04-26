@@ -22,6 +22,7 @@ interface ObstacleGameConfig {
 // Import using relative paths to the new TypeScript locations
 // These imports may need to be adjusted based on actual file locations
 import { randomIntFromInterval } from '../utils/utils';
+import ObstacleClass from '../entities/Obstacle';
 
 export default class ObstacleManager {
   private canvas: HTMLCanvasElement;
@@ -74,10 +75,7 @@ export default class ObstacleManager {
     const minY = 20;
     const maxY = this.canvas.height - 50;
     
-    // We'll need to dynamically import the correct Obstacle class
-    // For now, we're assuming it's located at '../entities/Obstacle'
-    // This might need to be adjusted
-    const ObstacleClass = require('../js/Obstacle').default;
+    // Create a new obstacle instance
     
     // Create the obstacle with random initial position
     return new ObstacleClass(

@@ -52,7 +52,7 @@ export interface GameConfig {
   getMaxCars: () => number;
   getMinObstacles: () => number;
   getWinningLine: (canvasHeight: number, baseHeight: number) => number;
-  getKeys: () => Record<string, string[]>;
+  getKeys: () => Record<string, readonly string[]>;
   getObstacleMinWidthRatio: () => number;
   getObstacleMaxWidthRatio: () => number;
   isDebugEnabled: () => boolean;

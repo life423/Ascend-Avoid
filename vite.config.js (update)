@@ -1,0 +1,11 @@
+import { defineConfig } from 'vite';
+import { viteSingleFile } from 'vite-plugin-singlefile';
+import { defineConfig as defineVitestConfig } from 'vitest/config';
+
+export default defineConfig({
+  plugins: [viteSingleFile()],
+  test: {
+    globals: true,
+    environment: 'jsdom'
+  }
+});

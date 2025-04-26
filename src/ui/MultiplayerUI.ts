@@ -2,7 +2,7 @@
  * Handles UI elements for multiplayer mode
  * Converted to TypeScript and organized in ui/ directory.
  */
-import { GAME_CONSTANTS, PLAYER_COLORS } from '../js/shared/constants/gameConstants.js';
+import { GAME_CONSTANTS, PLAYER_COLORS } from '../constants/gameConstants';
 
 // Define interfaces for the MultiplayerUI
 interface Player {
