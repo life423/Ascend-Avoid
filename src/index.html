@@ -1,393 +1,777 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <!-- Node.js environment polyfills - load before anything else -->
-    <script>
-        // Add process polyfill before anything loads
-        window.process = {
-            env: {},
-            nextTick: function(callback) { setTimeout(callback, 0); },
-            browser: true,
-            version: '',
-            platform: 'browser',
-            // Add commonly used properties
-            cwd: function() { return '/' },
-            stdout: { write: function() {} },
-            stderr: { write: function() {} }
-        };
-        console.log("Process polyfill loaded:", typeof window.process);
-    </script>
-    
-    <meta charset="UTF-8">
-    <!-- Responsive viewport meta tag that maintains accessibility -->
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <!-- Mobile web app capable meta tags -->
-    <meta name="mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <!-- Theme color for browser UI elements -->
-    <meta name="theme-color" content="#0a1a2f">
-    
-    <title>Ascend Avoid</title>
-    <link rel="stylesheet" href="styles/style.css">
-    <!-- Preconnect to resources to speed up loading -->
-    <link rel="preconnect" href="https://unpkg.com">
-    
-    <!-- Critical CSS for faster rendering -->
-    <style>
-        /* Critical styles to prevent flash of unstyled content */
-        body {
-            margin: 0;
-            padding: 0;
-            background: var(--primary-dark, #0a192f);
-            color: var(--text-light, #f5f5f5);
-            font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            overscroll-behavior: contain; /* Prevent overscroll bounce effects */
-            touch-action: manipulation; /* Speed up clicks on touch devices */
-        }
-        
-        canvas {
-            display: block;
-            max-width: 100%;
-            touch-action: none; /* Prevents default touch actions like scrolling */
-        }
-        
-        /* Responsive layout for different screen sizes */
-        @media screen and (min-width: 1200px) {
-            body.desktop-layout {
-                max-width: 1400px;
-                margin: 0 auto;
+    <head>
+        <!-- Node.js environment polyfills - load before anything else -->
+        <script>
+            // Add process polyfill before anything loads
+            window.process = {
+                env: {},
+                nextTick: function (callback) {
+                    setTimeout(callback, 0)
+                },
+                browser: true,
+                version: '',
+                platform: 'browser',
+                // Add commonly used properties
+                cwd: function () {
+                    return '/'
+                },
+                stdout: { write: function () {} },
+                stderr: { write: function () {} },
             }
-            .game-content-wrapper {
-                display: flex;
-                flex-direction: row;
-                justify-content: center;
-                align-items: flex-start;
-                gap: 30px;
-                margin: 0 auto;
-                max-width: 1400px;
+            console.log('Process polyfill loaded:', typeof window.process)
+        </script>
+
+        <meta charset="UTF-8" />
+        <!-- Responsive viewport meta tag that prevents scaling and scrolling -->
+        <meta
+            name="viewport"
+            content="width=device-width, initial-scale=1.0"
+        />
+        <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+        <!-- Mobile web app capable meta tags -->
+        <meta name="mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-capable" content="yes" />
+        <meta
+            name="apple-mobile-web-app-status-bar-style"
+            content="black-translucent"
+        />
+        <!-- Theme color for browser UI elements -->
+        <meta name="theme-color" content="#0a1a2f" />
+
+        <title>Ascend Avoid</title>
+        <link rel="stylesheet" href="styles/style.css" />
+        <!-- Preconnect to resources to speed up loading -->
+        <link rel="preconnect" href="https://unpkg.com" />
+
+        <!-- Critical CSS for faster rendering -->
+        <style>
+            /* Critical styles to prevent flash of unstyled content */
+            body {
+                margin: 0;
+                padding: 0;
+                background: var(--primary-dark, #0a192f);
+                color: var(--text-light, #f5f5f5);
+                font-family: system-ui, -apple-system, BlinkMacSystemFont,
+                    'Segoe UI', Roboto, sans-serif;
+                overscroll-behavior: contain; /* Prevent overscroll bounce effects */
+                touch-action: manipulation; /* Speed up clicks on touch devices */
             }
-            .game-content-wrapper #wrapper {
-                width: 60%;
-                max-width: 900px;
+
+            canvas {
+                display: block;
+                max-width: 100%;
+                touch-action: none; /* Prevents default touch actions like scrolling */
             }
-            .game-content-wrapper .sidebar-container {
-                width: 30%;
-                max-width: 400px;
-            background: rgba(23, 42, 70, 0.8);
-            border-radius: 8px;
-            padding: 20px;
-            border: 2px solid var(--accent-primary, #00bcd4);
-            box-shadow: 0 0 25px rgba(0, 188, 212, 0.3);
-                margin-top: 50px;
-            }
-        }
-        
-        /* Loading indicator for initial load */
-        .loader {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: var(--background-dark);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            z-index: 9999;
-        }
-        
-        .loader::after {
-            content: '';
-            width: 50px;
-            height: 50px;
-            border: 3px solid rgba(255, 255, 255, 0.3);
-            border-radius: 50%;
-            border-top-color: var(--accent-primary, #00bcd4);
-            animation: spin 1s ease-in-out infinite;
-        }
-        
-        @keyframes spin {
-            to { transform: rotate(360deg); }
-        }
-    </style>
-    
-    <script>
-        // Initial loading indicator
-        document.addEventListener('DOMContentLoaded', function() {
-            // Remove loader when page is ready
-            const loader = document.querySelector('.loader');
-            if (loader) {
-                setTimeout(() => {
-                    loader.style.opacity = '0';
-                    setTimeout(() => loader.remove(), 300);
-                }, 200);
-            }
-            
-            // Apply desktop layout class if needed
-            if (window.matchMedia("(min-width: 1200px)").matches) {
-                document.body.classList.add('desktop-layout');
-            }
-            
-            // Mark document with screen size class for consistent behavior
-            if (window.matchMedia("(min-width: 768px)").matches) {
-                document.body.classList.add('large-screen');
-                // Force touch controls to be properly handled on initial load
-                window.dispatchEvent(new Event('resize'));
-            }
-            
-            // Listen for orientation changes
-            window.addEventListener('orientationchange', function() {
-                // Allow time for the orientation change to complete
-                setTimeout(function() {
-                    // Force a resize event to update the canvas
-                    window.dispatchEvent(new Event('resize'));
-                }, 200);
-            });
-            
-            // Prevent unwanted browser behaviors on mobile
-            document.addEventListener('touchmove', function(e) {
-                // Prevent overscrolling on game canvas
-                if (e.target.id === 'canvas') {
-                    e.preventDefault();
+
+            /* Responsive layout for different screen sizes */
+            @media screen and (min-width: 1200px) {
+                body.desktop-layout {
+                    max-width: 1400px;
+                    margin: 0 auto;
                 }
-            }, { passive: false });
-        });
-    </script>
-</head>
-<body>
-    <!-- Loading indicator -->
-    <div class="loader"></div>
-    
-    <h1>Ascend Avoid</h1>
-    
-    <!-- This div will be populated by JS for desktop layout -->
-    <div id="desktop-layout-container"></div>
-    
-    <!-- Mobile layout elements - these will be moved by JS on desktop -->
-    <div id="headers">
-        <h4>High Score: <span id="highScore">0</span></h4>
-        <h4>Score: <span id="score">0</span></h4>
-    </div>
-    
-<div id="game-container" class="game-container">
-        <canvas id="canvas" aria-label="Cross the Box game" role="img"></canvas>
-    </div>
-    
-<div id="game-ui-container">
-        <div id="touch-controls-container">
-            <!-- Touch controls will be inserted here by JavaScript -->
-        </div>
-        
-        <!-- Mobile: Guide button to show instructions -->
-        <div id="instructions-toggle" class="mobile-only">
-            <button aria-label="How to play" title="How to play">Guide</button>
-        </div>
-        
-        <!-- Mobile: Collapsible drawer for instructions -->
-        <div id="instructions-drawer" class="mobile-only closed">
-            <div class="drawer-header">
-                <h3>How to Play</h3>
-                <button class="close-drawer" aria-label="Close instructions">×</button>
+                .game-content-wrapper {
+                    /* display: flex; */
+                    /* flex-direction: row; */
+                    /* justify-content: center; */
+                    /* align-items: flex-start; */
+                    gap: 30px;
+                    margin: 0 auto;
+                    max-width: 1400px;
+                }
+                .game-content-wrapper #wrapper {
+                    width: 60%;
+                    max-width: 900px;
+                }
+                .game-content-wrapper .sidebar-container {
+                    width: 30%;
+                    max-width: 400px;
+                    background: rgba(23, 42, 70, 0.8);
+                    border-radius: 8px;
+                    padding: 20px;
+                    border: 2px solid var(--accent-primary, #00bcd4);
+                    box-shadow: 0 0 25px rgba(0, 188, 212, 0.3);
+                    margin-top: 50px;
+                }
+            }
+
+            /* Loading indicator for initial load */
+            .loader {
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: var(--background-dark);
+                display: flex;
+                justify-content: center;
+                /* align-items: center; */
+                z-index: 9999;
+            }
+
+            .loader::after {
+                content: '';
+                width: 50px;
+                height: 50px;
+                border: 3px solid rgba(255, 255, 255, 0.3);
+                border-radius: 50%;
+                border-top-color: var(--accent-primary, #00bcd4);
+                animation: spin 1s ease-in-out infinite;
+            }
+
+            @keyframes spin {
+                to {
+                    transform: rotate(360deg);
+                }
+            }
+        </style>
+
+        <script>
+            // Initial loading indicator
+            document.addEventListener('DOMContentLoaded', function () {
+                // Remove loader when page is ready
+                const loader = document.querySelector('.loader')
+                if (loader) {
+                    setTimeout(() => {
+                        loader.style.opacity = '0'
+                        setTimeout(() => loader.remove(), 300)
+                    }, 200)
+                }
+
+                // Apply desktop layout class if needed
+                if (window.matchMedia('(min-width: 1200px)').matches) {
+                    document.body.classList.add('desktop-layout')
+                }
+
+                // Mark document with screen size class for consistent behavior
+                if (window.matchMedia('(min-width: 768px)').matches) {
+                    document.body.classList.add('large-screen')
+                    // Force touch controls to be properly handled on initial load
+                    window.dispatchEvent(new Event('resize'))
+                }
+
+                // Listen for orientation changes
+                window.addEventListener('orientationchange', function () {
+                    // Allow time for the orientation change to complete
+                    setTimeout(function () {
+                        // Force a resize event to update the canvas
+                        window.dispatchEvent(new Event('resize'))
+                    }, 200)
+                })
+
+                // Comprehensive scroll prevention for all devices
+                // Prevent all scroll events
+                document.addEventListener('scroll', preventScroll, {
+                    passive: false,
+                })
+                document.addEventListener('touchmove', preventScroll, {
+                    passive: false,
+                })
+                document.addEventListener('mousewheel', preventScroll, {
+                    passive: false,
+                })
+                document.addEventListener('wheel', preventScroll, {
+                    passive: false,
+                })
+
+                // Prevent space bar scrolling
+                document.addEventListener('keydown', function (e) {
+                    if (e.code === 'Space' && e.target === document.body) {
+                        e.preventDefault()
+                    }
+                })
+
+                // Function to prevent scrolling except within modal content
+                function preventScroll(e) {
+                    // Allow scrolling only within modal content
+                    if (!e.target.closest('.modal-content')) {
+                        e.preventDefault()
+                    }
+                }
+
+                // Set up scrollable elements within modals
+                const scrollableElements =
+                    document.querySelectorAll('.modal-content')
+                scrollableElements.forEach(elem => {
+                    elem.addEventListener(
+                        'touchmove',
+                        function (e) {
+                            e.stopPropagation()
+                        },
+                        { passive: true }
+                    )
+                })
+            })
+        </script>
+    </head>
+    <body>
+        <!-- Loading indicator -->
+        <div class="loader"></div>
+
+        <!-- Centered content container -->
+        <div class="content-container">
+            <h1>Ascend Avoid</h1>
+            
+            <!-- Score display -->
+            <div id="headers">
+                <h4>High Score: <span id="highScore">0</span></h4>
+                <h4>Score: <span id="score">0</span></h4>
             </div>
-            <div class="drawer-content">
-                <div id="instructions-mobile">
-                    <p>Move the white block to the top without hitting the blue blocks.</p>
-                    <ul>
-                        <li>Touch the direction buttons to move</li>
-                        <li>Tap the restart button to restart the game</li>
-                    </ul>
-                    <p class="note">Game speed increases as you score more points!</p>
-                    <p>Try to beat your high score and challenge your friends in multiplayer mode!</p>
+
+            <!-- Game content wrapper for better layout -->
+            <div class="game-content-wrapper">
+                <!-- Game container -->
+                <div id="game-container" class="game-container">
+                    <canvas
+                        id="canvas"
+                        aria-label="Cross the Box game"
+                        role="img"
+                    ></canvas>
+                </div>
+                
+                <!-- Desktop: Sidebar container for instructions -->
+                <div id="desktop-sidebar" class="desktop-only">
+                    <div id="instructions-desktop">
+                        <h3>How to Play:</h3>
+                        <p>
+                            Move the white block to the top without hitting the blue
+                            blocks.
+                        </p>
+                        <ul>
+                            <li>Use arrow keys or WASD to move</li>
+                            <li>Press 'R' to restart the game</li>
+                        </ul>
+                        <p class="note">
+                            Game speed increases as you score more points!
+                        </p>
+                        <p>
+                            Try to beat your high score and challenge your friends in
+                            multiplayer mode!
+                        </p>
+                    </div>
+                    <div class="desktop-nav-buttons">
+                        <button
+                            id="guide-button-sidebar"
+                            class="nav-button"
+                            aria-label="How to play"
+                        >
+                            Guide
+                        </button>
+                        <button
+                            id="multiplayer-toggle-sidebar"
+                            class="nav-button"
+                            aria-label="Multiplayer mode"
+                        >
+                            Multiplayer
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>
-    </div>
-    
-    <!-- Desktop: Sidebar container for instructions -->
-    <div id="desktop-sidebar" class="desktop-only">
-        <div id="instructions-desktop">
-            <h3>How to Play:</h3>
-            <p>Move the white block to the top without hitting the blue blocks.</p>
-            <ul>
-                <li>Use arrow keys or WASD to move</li>
-                <li>Press 'R' to restart the game</li>
-            </ul>
-            <p class="note">Game speed increases as you score more points!</p>
-            <p>Try to beat your high score and challenge your friends in multiplayer mode!</p>
-        </div>
-    </div>
-    
-    <!-- Game error handling -->
-    <div id="error-container" style="display: none; padding: 20px; background: rgba(255,0,0,0.15); margin: 20px auto; max-width: 500px; border-radius: 8px; border: 1px solid #ff5252; color: #fff;">
-        <h3>Oops! Something went wrong</h3>
-        <p id="error-message">There was a problem loading the game.</p>
-        <button onclick="window.location.reload()">Reload Game</button>
-    </div>
-    
-    <!-- Node.js environment polyfills for browser compatibility -->
-    <script>
-        // Add process polyfill for Node.js compatibility
-        if (typeof window.process === 'undefined') {
-            window.process = {
-                env: {},
-                nextTick: function(callback) { setTimeout(callback, 0); },
-                browser: true,
-                version: '',
-                platform: 'browser'
-            };
-        }
 
-        // Create a complete Buffer polyfill for browser environment
-        if (typeof window.Buffer === 'undefined') {
-            // Constructor function
-            window.Buffer = function(arg, encodingOrOffset, length) {
-                // Handle constructor overloads
-                if (!(this instanceof Buffer)) {
-                    return new Buffer(arg, encodingOrOffset, length);
+        <div id="game-ui-container">
+            <div id="touch-controls-container">
+                <!-- Touch controls will be inserted here by JavaScript -->
+            </div>
+
+            <!-- Floating action menu for game controls -->
+            <div id="floating-menu" class="mobile-only">
+                <div
+                    id="floating-menu-button"
+                    onclick="window.showFloatingMenu(); event.stopPropagation(); return false;"
+                >
+                    <span class="menu-dot"></span>
+                    <span class="menu-dot"></span>
+                    <span class="menu-dot"></span>
+                </div>
+                <div id="floating-menu-items" class="hidden">
+                    <button
+                        id="guide-button"
+                        aria-label="How to play"
+                        title="How to play"
+                    >
+                        Guide
+                    </button>
+                    <button
+                        id="multiplayer-toggle"
+                        aria-label="Multiplayer mode"
+                        title="Multiplayer mode"
+                    >
+                        Multiplayer
+                    </button>
+                </div>
+            </div>
+
+            <!-- Mobile: Game instructions modal -->
+            <div id="instructions-modal" class="mobile-only modal hidden">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h3>How to Play</h3>
+                        <button
+                            class="close-modal"
+                            aria-label="Close instructions"
+                        >
+                            ×
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <div id="instructions-mobile">
+                            <p>
+                                Move the white block to the top without hitting
+                                the blue blocks.
+                            </p>
+                            <ul>
+                                <li>Use the D-pad on the left to move</li>
+                                <li>A button: Fire missile</li>
+                                <li>B button: Activate boost</li>
+                            </ul>
+                            <p class="note">
+                                Game speed increases as you score more points!
+                            </p>
+                            <p>
+                                Try to beat your high score and challenge your
+                                friends in multiplayer mode!
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Game error handling -->
+        <div
+            id="error-container"
+            style="
+                display: none;
+                padding: 20px;
+                background: rgba(255, 0, 0, 0.15);
+                margin: 20px auto;
+                max-width: 500px;
+                border-radius: 8px;
+                border: 1px solid #ff5252;
+                color: #fff;
+            "
+        >
+            <h3>Oops! Something went wrong</h3>
+            <p id="error-message">There was a problem loading the game.</p>
+            <button onclick="window.location.reload()">Reload Game</button>
+        </div>
+
+        <!-- Node.js environment polyfills for browser compatibility -->
+        <script>
+            // Add process polyfill for Node.js compatibility
+            if (typeof window.process === 'undefined') {
+                window.process = {
+                    env: {},
+                    nextTick: function (callback) {
+                        setTimeout(callback, 0)
+                    },
+                    browser: true,
+                    version: '',
+                    platform: 'browser',
                 }
-                
-                // Initialize data based on constructor arguments
-                if (typeof arg === 'number') {
-                    // Create with size
-                    this.data = new Uint8Array(arg);
-                } else if (arg instanceof Uint8Array || Array.isArray(arg)) {
-                    // Create from array
-                    this.data = new Uint8Array(arg);
-                } else if (typeof arg === 'string') {
-                    // Create from string with encoding
-                    const encoding = encodingOrOffset || 'utf8';
-                    if (encoding === 'base64') {
-                        const decoded = atob(arg);
-                        this.data = new Uint8Array(decoded.length);
-                        for (let i = 0; i < decoded.length; i++) {
-                            this.data[i] = decoded.charCodeAt(i);
+            }
+
+            // Create a complete Buffer polyfill for browser environment
+            if (typeof window.Buffer === 'undefined') {
+                // Constructor function
+                window.Buffer = function (arg, encodingOrOffset, length) {
+                    // Handle constructor overloads
+                    if (!(this instanceof Buffer)) {
+                        return new Buffer(arg, encodingOrOffset, length)
+                    }
+
+                    // Initialize data based on constructor arguments
+                    if (typeof arg === 'number') {
+                        // Create with size
+                        this.data = new Uint8Array(arg)
+                    } else if (
+                        arg instanceof Uint8Array ||
+                        Array.isArray(arg)
+                    ) {
+                        // Create from array
+                        this.data = new Uint8Array(arg)
+                    } else if (typeof arg === 'string') {
+                        // Create from string with encoding
+                        const encoding = encodingOrOffset || 'utf8'
+                        if (encoding === 'base64') {
+                            const decoded = atob(arg)
+                            this.data = new Uint8Array(decoded.length)
+                            for (let i = 0; i < decoded.length; i++) {
+                                this.data[i] = decoded.charCodeAt(i)
+                            }
+                        } else {
+                            // Default to UTF-8
+                            const bytes = []
+                            for (let i = 0; i < arg.length; i++) {
+                                bytes.push(arg.charCodeAt(i))
+                            }
+                            this.data = new Uint8Array(bytes)
                         }
                     } else {
-                        // Default to UTF-8
-                        const bytes = [];
-                        for (let i = 0; i < arg.length; i++) {
-                            bytes.push(arg.charCodeAt(i));
-                        }
-                        this.data = new Uint8Array(bytes);
+                        // Default to empty buffer
+                        this.data = new Uint8Array(0)
                     }
-                } else {
-                    // Default to empty buffer
-                    this.data = new Uint8Array(0);
-                }
-                
-                this.length = this.data.length;
-                
-                // Make array-like
-                for (let i = 0; i < this.length; i++) {
-                    this[i] = this.data[i];
-                }
-            };
 
-            // Static methods
-            Buffer.alloc = function(size, fill, encoding) {
-                const buf = new Buffer(size);
-                if (fill !== undefined) {
-                    const fillValue = typeof fill === 'string' ? fill.charCodeAt(0) : fill;
-                    for (let i = 0; i < size; i++) {
-                        buf.data[i] = fillValue;
-                        buf[i] = fillValue;
-                    }
-                }
-                return buf;
-            };
-            
-            Buffer.allocUnsafe = function(size) {
-                return new Buffer(size);
-            };
-            
-            Buffer.from = function(data, encoding) {
-                return new Buffer(data, encoding);
-            };
-            
-            Buffer.isBuffer = function(obj) {
-                return obj instanceof Buffer;
-            };
-            
-            Buffer.byteLength = function(string, encoding) {
-                return new Buffer(string, encoding).length;
-            };
-            
-            // Instance methods
-            Buffer.prototype.toString = function(encoding) {
-                encoding = encoding || 'utf8';
-                if (encoding === 'hex') {
-                    // Hex conversion
-                    let result = '';
+                    this.length = this.data.length
+
+                    // Make array-like
                     for (let i = 0; i < this.length; i++) {
-                        result += this.data[i].toString(16).padStart(2, '0');
+                        this[i] = this.data[i]
                     }
-                    return result;
-                } else {
-                    // Default to UTF-8
-                    return String.fromCharCode.apply(null, this.data);
                 }
-            };
-            
-            Buffer.prototype.slice = function(start, end) {
-                const sliced = this.data.slice(start, end);
-                const result = new Buffer(sliced.length);
-                result.data = sliced;
-                for (let i = 0; i < sliced.length; i++) {
-                    result[i] = sliced[i];
-                }
-                return result;
-            };
-        }
 
-        // Debug environment
-        console.log("Buffer polyfill loaded:", typeof window.Buffer);
-        console.log("Process polyfill loaded:", typeof window.process);
-    </script>
-    
-    <!-- Game scripts - Using Vite entry point -->
-    <script type="module" src="index.ts" onerror="document.getElementById('error-container').style.display='block'; document.getElementById('error-message').textContent='Failed to load game script. Please check your connection and try again.'"></script>
-    
-    <!-- Instructions drawer toggle script -->
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const instructionsToggle = document.getElementById('instructions-toggle');
-            const instructionsDrawer = document.getElementById('instructions-drawer');
-            const closeDrawerBtn = document.querySelector('.close-drawer');
-            
-            if (instructionsToggle && instructionsDrawer && closeDrawerBtn) {
-                instructionsToggle.addEventListener('click', function() {
-                    instructionsDrawer.classList.toggle('closed');
-                });
-                
-                closeDrawerBtn.addEventListener('click', function() {
-                    instructionsDrawer.classList.add('closed');
-                });
-            }
-            
-            // Set up game-content-wrapper for desktop layout
-            if (window.matchMedia("(min-width: 1200px)").matches) {
-                const gameContainer = document.getElementById('game-container');
-                const desktopSidebar = document.getElementById('desktop-sidebar');
-                
-                if (gameContainer && desktopSidebar) {
-                    // Create wrapper if it doesn't exist
-                    let wrapper = document.querySelector('.game-content-wrapper');
-                    if (!wrapper) {
-                        wrapper = document.createElement('div');
-                        wrapper.className = 'game-content-wrapper';
-                        
-                        // Insert wrapper around game container
-                        if (gameContainer.parentNode) {
-                            gameContainer.parentNode.insertBefore(wrapper, gameContainer);
-                            wrapper.appendChild(gameContainer);
-                            wrapper.appendChild(desktopSidebar);
+                // Static methods
+                Buffer.alloc = function (size, fill, encoding) {
+                    const buf = new Buffer(size)
+                    if (fill !== undefined) {
+                        const fillValue =
+                            typeof fill === 'string' ? fill.charCodeAt(0) : fill
+                        for (let i = 0; i < size; i++) {
+                            buf.data[i] = fillValue
+                            buf[i] = fillValue
                         }
                     }
+                    return buf
+                }
+
+                Buffer.allocUnsafe = function (size) {
+                    return new Buffer(size)
+                }
+
+                Buffer.from = function (data, encoding) {
+                    return new Buffer(data, encoding)
+                }
+
+                Buffer.isBuffer = function (obj) {
+                    return obj instanceof Buffer
+                }
+
+                Buffer.byteLength = function (string, encoding) {
+                    return new Buffer(string, encoding).length
+                }
+
+                // Instance methods
+                Buffer.prototype.toString = function (encoding) {
+                    encoding = encoding || 'utf8'
+                    if (encoding === 'hex') {
+                        // Hex conversion
+                        let result = ''
+                        for (let i = 0; i < this.length; i++) {
+                            result += this.data[i].toString(16).padStart(2, '0')
+                        }
+                        return result
+                    } else {
+                        // Default to UTF-8
+                        return String.fromCharCode.apply(null, this.data)
+                    }
+                }
+
+                Buffer.prototype.slice = function (start, end) {
+                    const sliced = this.data.slice(start, end)
+                    const result = new Buffer(sliced.length)
+                    result.data = sliced
+                    for (let i = 0; i < sliced.length; i++) {
+                        result[i] = sliced[i]
+                    }
+                    return result
                 }
             }
-        });
-    </script>
-</body>
+
+            // Debug environment
+            console.log('Buffer polyfill loaded:', typeof window.Buffer)
+            console.log('Process polyfill loaded:', typeof window.process)
+        </script>
+
+        <!-- Game scripts - Using Vite entry point -->
+        <script
+            type="module"
+            src="index.ts"
+            onerror="document.getElementById('error-container').style.display='block'; document.getElementById('error-message').textContent='Failed to load game script. Please check your connection and try again.'"
+        ></script>
+
+        <!-- UI Controls and Navigation Script -->
+        <script>
+            // For direct access from debugging
+            window.showFloatingMenu = function () {
+                const menuItems = document.getElementById('floating-menu-items')
+                if (menuItems) {
+                    menuItems.classList.remove('hidden')
+                    menuItems.style.display = 'flex'
+                    menuItems.style.opacity = '1'
+                    menuItems.style.visibility = 'visible'
+                    menuItems.style.transform = 'scale(1)'
+                    console.log('Menu directly shown via global function')
+                } else {
+                    console.error(
+                        'Menu items not found when trying to show menu'
+                    )
+                }
+            }
+
+            window.hideFloatingMenu = function () {
+                const menuItems = document.getElementById('floating-menu-items')
+                if (menuItems) {
+                    menuItems.classList.add('hidden')
+                    menuItems.style.display = 'none'
+                    console.log('Menu directly hidden via global function')
+                }
+            }
+
+            // Create simple menu management functions
+            const MenuManager = {
+                // Cache DOM elements for reuse
+                elements: {},
+
+                // Initialize all menu functionality
+                init: function () {
+                    console.log('Setting up floating menu and UI controls')
+
+                    // Cache DOM elements
+                    this.elements = {
+                        menuButton: document.getElementById(
+                            'floating-menu-button'
+                        ),
+                        menuItems: document.getElementById(
+                            'floating-menu-items'
+                        ),
+                        guideButton: document.getElementById('guide-button'),
+                        multiplayerToggle:
+                            document.getElementById('multiplayer-toggle'),
+                        guideSidebarBtn:
+                            document.getElementById('guide-button-sidebar'),
+                        multiplayerSidebarBtn: document.getElementById(
+                            'multiplayer-toggle-sidebar'
+                        ),
+                        instructionsModal:
+                            document.getElementById('instructions-modal'),
+                        closeModalBtn: document.querySelector('.close-modal'),
+                    }
+
+                    // Debug elements
+                    Object.entries(this.elements).forEach(([key, element]) => {
+                        if (!element) console.error(`${key} not found`)
+                    })
+
+                    // Log found elements for debugging
+                    console.log('Menu elements:', this.elements)
+
+                    // Make menu button more visible and ensure it's clickable
+                    if (this.elements.menuButton) {
+                        this.elements.menuButton.style.backgroundColor =
+                            '#00bcd4'
+                        this.elements.menuButton.style.zIndex = '2000'
+                    }
+
+                    // Set up event handlers
+                    this.setupEventListeners()
+                },
+
+                // Set up all event listeners
+                setupEventListeners: function () {
+                    const self = this
+                    const {
+                        menuButton,
+                        menuItems,
+                        guideButton,
+                        multiplayerToggle,
+                        guideSidebarBtn,
+                        multiplayerSidebarBtn,
+                        instructionsModal,
+                        closeModalBtn,
+                    } = this.elements
+
+                    // Menu button toggle
+                    if (menuButton) {
+                        // Clean slate - remove any existing listeners
+                        const newMenuButton = menuButton.cloneNode(true)
+                        menuButton.parentNode.replaceChild(
+                            newMenuButton,
+                            menuButton
+                        )
+                        this.elements.menuButton = newMenuButton
+
+                        // Add click handler to toggle menu
+                        newMenuButton.addEventListener('click', function (e) {
+                            e.stopPropagation()
+                            e.preventDefault()
+                            self.toggleMenu()
+                        })
+                        console.log('Menu button event handler attached')
+                    }
+
+                    // Close menu when clicking elsewhere
+                    document.addEventListener('click', function (e) {
+                        if (
+                            menuItems &&
+                            !menuItems.classList.contains('hidden')
+                        ) {
+                            if (!e.target.closest('#floating-menu')) {
+                                self.hideMenu()
+                            }
+                        }
+                    })
+
+                    // Guide button opens instructions (mobile)
+                    if (guideButton) {
+                        guideButton.addEventListener('click', function () {
+                            self.showInstructions()
+                        })
+                    }
+
+                    // Guide button opens instructions (desktop sidebar)
+                    if (guideSidebarBtn) {
+                        guideSidebarBtn.addEventListener('click', function () {
+                            self.showInstructions()
+                        })
+                    }
+
+                    // Desktop sidebar multiplayer toggle
+                    if (multiplayerSidebarBtn) {
+                        multiplayerSidebarBtn.addEventListener('click', function () {
+                            self.toggleMultiplayer()
+                        })
+                    }
+
+                    // Close modal button
+                    if (closeModalBtn && instructionsModal) {
+                        closeModalBtn.addEventListener('click', function () {
+                            self.hideInstructions()
+                        })
+
+                        // Close modal when clicking outside content
+                        instructionsModal.addEventListener(
+                            'click',
+                            function (e) {
+                                if (e.target === instructionsModal) {
+                                    self.hideInstructions()
+                                }
+                            }
+                        )
+                    }
+
+                    // Multiplayer toggle button
+                    if (multiplayerToggle) {
+                        multiplayerToggle.addEventListener(
+                            'click',
+                            function () {
+                                self.toggleMultiplayer()
+                            }
+                        )
+                    }
+                },
+
+                // Toggle menu visibility
+                toggleMenu: function () {
+                    const { menuItems } = this.elements
+                    if (!menuItems) {
+                        console.error(
+                            'Menu items element not found in toggleMenu'
+                        )
+                        return
+                    }
+
+                    const isHidden = menuItems.classList.contains('hidden')
+                    console.log(
+                        'Menu toggle clicked, currently hidden:',
+                        isHidden
+                    )
+
+                    // Apply explicit styles for visibility
+                    if (isHidden) {
+                        menuItems.classList.remove('hidden')
+                        // Force visible with inline styles
+                        menuItems.style.display = 'flex'
+                        menuItems.style.opacity = '1'
+                        menuItems.style.visibility = 'visible'
+                        menuItems.style.transform = 'scale(1)'
+                        console.log(
+                            'Menu should now be visible with inline styles'
+                        )
+                    } else {
+                        menuItems.classList.add('hidden')
+                        // Force hidden with inline styles
+                        setTimeout(() => {
+                            menuItems.style.display = 'none'
+                        }, 300) // Wait for animation
+                        console.log('Menu should now be hidden')
+                    }
+                },
+
+                // Hide menu
+                hideMenu: function () {
+                    const { menuItems } = this.elements
+                    if (menuItems) {
+                        menuItems.classList.add('hidden')
+                    }
+                },
+
+                // Show instructions modal
+                showInstructions: function () {
+                    const { instructionsModal } = this.elements
+                    if (instructionsModal) {
+                        instructionsModal.classList.remove('hidden')
+                        document.body.classList.add('modal-open')
+                        this.hideMenu()
+                    }
+                },
+
+                // Hide instructions modal
+                hideInstructions: function () {
+                    const { instructionsModal } = this.elements
+                    if (instructionsModal) {
+                        instructionsModal.classList.add('hidden')
+                        document.body.classList.remove('modal-open')
+                    }
+                },
+
+                // Toggle multiplayer mode
+                toggleMultiplayer: function () {
+                    const game = window.game
+                    if (game && typeof game.switchGameMode === 'function') {
+                        const newMode = game.isMultiplayerMode
+                            ? 'singlePlayer'
+                            : 'multiplayer'
+                        game.switchGameMode(newMode)
+                            .then(() => {
+                                console.log(`Switched to ${newMode} mode`)
+                                this.hideMenu()
+                            })
+                            .catch(err => {
+                                console.error(
+                                    'Failed to switch game mode:',
+                                    err
+                                )
+                            })
+                    } else {
+                        console.warn(
+                            'Game instance not available or missing switchGameMode method'
+                        )
+                    }
+                },
+            }
+
+            // Initialize when DOM is ready
+            document.addEventListener('DOMContentLoaded', function () {
+                // Wait a moment for full DOM and game to be ready
+                setTimeout(function () {
+                    MenuManager.init()
+                }, 500)
+
+                // Prevent page scrolling on mobile
+                document.addEventListener(
+                    'touchmove',
+                    function (e) {
+                        if (e.target.closest('.modal-content')) {
+                            // Allow scrolling inside modal
+                            return
+                        }
+                        // Prevent scrolling elsewhere
+                        e.preventDefault()
+                    },
+                    { passive: false }
+                )
+            })
+        </script>
+    </body>
 </html>
