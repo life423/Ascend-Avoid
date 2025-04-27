@@ -3,10 +3,12 @@
  * This file serves as the single source of truth for all game constants
  */
 
-// Canvas defaults
+// Canvas defaults - improved aspect ratio
 export const CANVAS = {
-  BASE_WIDTH: 560,
-  BASE_HEIGHT: 550
+  BASE_WIDTH: 600,
+  BASE_HEIGHT: 700,
+  MAX_DESKTOP_WIDTH: 1600,  // Increased maximum width for desktop (especially for large monitors)
+  MAX_MOBILE_WIDTH: 800     // Maximum width for mobile
 };
 
 // Player settings
@@ -71,58 +73,55 @@ export const KEYS = {
   RESTART: ['r', 'R'],
 } as const;
 
-// Player colors for differentiation
+// Player colors for differentiation - improved contrast with dark background
 export const PLAYER_COLORS = [
   "#FF5252", // Red
   "#FF9800", // Orange
   "#FFEB3B", // Yellow
   "#4CAF50", // Green
-  "#2196F3", // Blue
-  "#9C27B0", // Purple
-  "#E91E63", // Pink
   "#00BCD4", // Cyan
-  "#009688", // Teal
-  "#8BC34A", // Light Green
-  "#CDDC39", // Lime
-  "#FFC107", // Amber
-  "#795548", // Brown
-  "#607D8B", // Blue Grey
+  "#64FFDA", // Mint
+  "#E91E63", // Pink
+  "#3F51B5", // Indigo
+  "#00E5FF", // Light Cyan
+  "#76FF03", // Bright Green
+  "#FFC400", // Amber
+  "#F50057", // Pink
+  "#D500F9", // Purple
+  "#00B0FF", // Light Blue
   "#F44336", // Red (darker)
   "#FF5722", // Deep Orange
-  "#673AB7", // Deep Purple
-  "#3F51B5", // Indigo
-  "#03A9F4", // Light Blue
-  "#00BCD4", // Cyan
-  "#009688", // Teal
-  "#4CAF50", // Green
-  "#8BC34A", // Light Green
-  "#CDDC39", // Lime
-  "#FFEB3B", // Yellow
+  "#651FFF", // Deep Purple
+  "#2979FF", // Bright Blue
+  "#18FFFF", // Aqua
+  "#1DE9B6", // Teal
+  "#00E676", // Green
+  "#C6FF00", // Lime
   "#FFC107", // Amber
-  "#FF9800", // Orange
-  "#FF5722", // Deep Orange
-  "#795548", // Brown
-  "#9E9E9E"  // Grey
+  "#FF3D00", // Deep Orange
+  "#FF9100", // Orange
+  "#FFEA00", // Yellow
+  "#76FF03"  // Lime
 ] as const;
 
-// Device-specific settings
+// Device-specific settings - improved for better game feel
 export const DEVICE_SETTINGS = {
   // Desktop settings
   DESKTOP: {
-    PLAYER_SIZE_RATIO: 0.03,
+    PLAYER_SIZE_RATIO: 0.035,
     MIN_STEP: 10,
-    OBSTACLE_MIN_WIDTH_RATIO: 0.06,
-    OBSTACLE_MAX_WIDTH_RATIO: 0.15,
-    BASE_SPEED: 3.0,
+    OBSTACLE_MIN_WIDTH_RATIO: 0.08,
+    OBSTACLE_MAX_WIDTH_RATIO: 0.18,
+    BASE_SPEED: 3.5,
     DIFFICULTY_INCREASE_RATE: 0.18
   },
   // Mobile settings 
   MOBILE: {
-    PLAYER_SIZE_RATIO: 0.04,
-    MIN_STEP: 3,
-    OBSTACLE_MIN_WIDTH_RATIO: 0.08,
-    OBSTACLE_MAX_WIDTH_RATIO: 0.18,
-    BASE_SPEED: 2.0,
+    PLAYER_SIZE_RATIO: 0.045,
+    MIN_STEP: 4,
+    OBSTACLE_MIN_WIDTH_RATIO: 0.1,
+    OBSTACLE_MAX_WIDTH_RATIO: 0.2,
+    BASE_SPEED: 2.5,
     DIFFICULTY_INCREASE_RATE: 0.15
   }
 } as const;

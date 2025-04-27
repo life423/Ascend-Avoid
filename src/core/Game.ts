@@ -9,6 +9,7 @@ import { GameObject, InputState, PerformanceStats, ScalingInfo } from '../types'
 import Background from '../entities/Background'
 import Player from '../entities/Player'
 import TouchControls from '../ui/TouchControls'
+import { CanvasResizer } from '../utils/canvasResizer'
 
 // Fallback constants in case imports fail
 const BASE_CANVAS_WIDTH = 560
@@ -83,6 +84,7 @@ export default class Game {
     // Canvas and rendering context
     canvas: HTMLCanvasElement
     ctx: CanvasRenderingContext2D
+    canvasResizer: CanvasResizer
 
     // UI elements
     scoreElement: HTMLElement | null
@@ -238,15 +240,21 @@ export default class Game {
         // Initialize asset manager and preload assets
         this.assetManager = new AssetManager()
         await this.preloadAssets()
-
-        // Canvas initial setup - actual scaling will be handled by ResponsiveManager
-        // Just initialize with default values for now
+        
+        // Initialize the canvas resizer
+        const gameContainer = document.getElementById('game-container');
+        this.canvasResizer = new CanvasResizer(this.canvas, gameContainer);
+        
+        // Get the scale factor for other game elements
         this.scalingInfo = {
-            widthScale: 1,
-            heightScale: 1,
+            widthScale: this.canvasResizer.getScaleFactor(),
+            heightScale: this.canvasResizer.getScaleFactor(),
             pixelRatio: window.devicePixelRatio || 1,
             reducedResolution: false,
         }
+        
+        // Listen for canvas resize events
+        document.addEventListener('canvasResized', this.onResize.bind(this));
 
         // Create background
         this.background = new Background(this.canvas)
@@ -395,22 +403,28 @@ export default class Game {
     }
 
     /**
-     * Callback for when ResponsiveManager updates the canvas size
-     * Called by ResponsiveManager when screen size or orientation changes
-     * @param widthScale - Scale factor for width
-     * @param heightScale - Scale factor for height
+     * Callback for when canvas or window size changes
+     * Called when the window is resized or orientation changes
      */
-    onResize(widthScale: number, heightScale: number): void {
-        // Store new scaling information for game calculations
-        this.scalingInfo = {
-            widthScale: widthScale,
-            heightScale: heightScale,
-            pixelRatio: window.devicePixelRatio || 1,
-            reducedResolution: false,
+    onResize(): void {
+        if (this.canvasResizer) {
+            // Trigger the canvas resizer to handle the resize
+            this.canvasResizer.resize();
+            
+            // Get the new scale factor
+            const scaleFactor = this.canvasResizer.getScaleFactor();
+            
+            // Update scaling info for other game elements
+            this.scalingInfo = {
+                widthScale: scaleFactor,
+                heightScale: scaleFactor,
+                pixelRatio: window.devicePixelRatio || 1,
+                reducedResolution: false,
+            }
         }
 
         // Update device detection
-        this.isDesktop = window.innerWidth >= 1200
+        this.isDesktop = window.innerWidth >= 1024
 
         // Update game config with new device info
         this.config.setDesktopMode(this.isDesktop)
@@ -433,9 +447,7 @@ export default class Game {
         }
 
         console.log(
-            `Game resized: isDesktop=${
-                this.isDesktop
-            }, scale=${widthScale.toFixed(2)}`
+            `Game resized: isDesktop=${this.isDesktop}, scale=${this.scalingInfo.widthScale.toFixed(2)}`
         )
     }
 
@@ -1132,6 +1144,7 @@ export default class Game {
     dispose(): void {
         // Remove event listeners
         document.removeEventListener('game:restart', this.handleRestartEvent)
+        document.removeEventListener('canvasResized', this.onResize)
 
         // Dispose managers
         if (this.inputManager) {
@@ -1144,6 +1157,11 @@ export default class Game {
 
         if (this.assetManager) {
             this.assetManager.dispose()
+        }
+
+        // Clean up canvas resizer
+        if (this.canvasResizer) {
+            this.canvasResizer.dispose();
         }
 
         // Clean up particle system

@@ -160,7 +160,13 @@ export default class ResponsiveManager {
    * @returns Whether the current viewport is desktop sized
    */
   detectDesktop(): boolean {
-    return window.matchMedia('(min-width: 1200px)').matches;
+    // Check both width and input device type for more accurate detection
+    const isWideScreen = window.matchMedia('(min-width: 1024px)').matches;
+    const hasMouse = window.matchMedia('(pointer: fine)').matches;
+    
+    // Consider a device as desktop if it has a wide screen AND a mouse pointer
+    // This helps differentiate between desktop computers and tablets
+    return isWideScreen && hasMouse;
   }
   
   /**
@@ -173,61 +179,64 @@ export default class ResponsiveManager {
     const parent = this.canvas.parentElement;
     if (!parent) return;
     
-    const parentWidth = parent.clientWidth;
-    const parentHeight = parent.clientHeight;
+    // Get viewport dimensions for proper responsiveness using constants
+    // For desktop screens, allow the game to be much larger
+    const viewportWidth = this.isDesktop ? 
+      Math.min(window.innerWidth - 40, CANVAS.MAX_DESKTOP_WIDTH) : 
+      Math.min(window.innerWidth - 20, CANVAS.MAX_MOBILE_WIDTH);
+    const viewportHeight = window.innerHeight * (this.isDesktop ? 0.8 : 0.7); // Use more of the viewport height on desktop
+    
+    // Use the parent dimensions if available, otherwise use viewport calculations
+    const parentWidth = parent.clientWidth || viewportWidth;
+    const parentHeight = parent.clientHeight || viewportHeight;
     
     // Calculate scaling factors
     const widthScale = parentWidth / this.baseCanvasWidth;
     const heightScale = parentHeight / this.baseCanvasHeight;
     
-    // Determine if we're in a constrained space
-    const isConstrained = widthScale < 0.8 || heightScale < 0.8;
+    // Always maintain the canvas aspect ratio
+    const scale = Math.min(widthScale, heightScale);
     
-    // Calculate canvas dimensions
-    let canvasWidth: number;
-    let canvasHeight: number;
+    // Calculate canvas dimensions preserving aspect ratio
+    const canvasWidth = Math.floor(this.baseCanvasWidth * scale);
+    const canvasHeight = Math.floor(this.baseCanvasHeight * scale);
     
-    if (this.isDesktop) {
-      // On desktop, try to maintain aspect ratio
-      const scale = Math.min(widthScale, heightScale);
-      canvasWidth = this.baseCanvasWidth * scale;
-      canvasHeight = this.baseCanvasHeight * scale;
-    } else {
-      // On mobile, fill the container
-      canvasWidth = parentWidth;
-      canvasHeight = parentHeight;
+    // Make sure canvas has a proper height - at least 300px
+    // This ensures the game remains playable on all devices
+    const minHeight = 300;
+    const finalCanvasHeight = Math.max(canvasHeight, minHeight);
+    const finalCanvasWidth = canvasWidth;
+    
+    // Apply dimensions to canvas with proper aspect ratio - THIS MAKES IT VISUALLY RESPONSIVE
+    this.canvas.style.width = `${finalCanvasWidth}px`;
+    this.canvas.style.height = `${finalCanvasHeight}px`;
+    
+    // Center canvas in parent if parent is larger
+    if (parentWidth > finalCanvasWidth) {
+      this.canvas.style.marginLeft = 'auto';
+      this.canvas.style.marginRight = 'auto';
     }
     
-    // Apply dimensions to canvas
-    this.canvas.style.width = `${canvasWidth}px`;
-    this.canvas.style.height = `${canvasHeight}px`;
+    // CRITICAL: Set the internal canvas dimensions to exactly match the CSS dimensions
+    // This ensures the coordinate space matches what's visually displayed
+    this.canvas.width = finalCanvasWidth;
+    this.canvas.height = finalCanvasHeight;
     
-    // Set canvas resolution
-    const pixelRatio = window.devicePixelRatio || 1;
-    
-    // Reduce resolution for low-end devices or severely constrained spaces
-    const reduceResolution = isConstrained && !this.isDesktop;
-    const effectivePixelRatio = reduceResolution ? 1 : pixelRatio;
-    
-    // Update canvas internal dimensions for correct rendering
-    this.canvas.width = canvasWidth * effectivePixelRatio;
-    this.canvas.height = canvasHeight * effectivePixelRatio;
-    
-    // Scale canvas context to match pixel ratio
+    // Reset any previous transforms - keep 1:1 mapping
     const ctx = this.canvas.getContext('2d');
     if (ctx) {
-      ctx.scale(effectivePixelRatio, effectivePixelRatio);
+      ctx.setTransform(1, 0, 0, 1, 0, 0);
     }
     
-    // Update scaling info
+    // Update scaling info for other parts of the game
     this.scalingInfo = {
-      widthScale: canvasWidth / this.baseCanvasWidth,
-      heightScale: canvasHeight / this.baseCanvasHeight,
-      pixelRatio: effectivePixelRatio,
-      reducedResolution: reduceResolution
+      widthScale: finalCanvasWidth / this.baseCanvasWidth,
+      heightScale: finalCanvasHeight / this.baseCanvasHeight,
+      pixelRatio: 1, // Use 1:1 mapping for coordinates
+      reducedResolution: false
     };
     
-    console.log(`Canvas resized: ${canvasWidth}x${canvasHeight}, scale: ${this.scalingInfo.widthScale.toFixed(2)}`);
+    console.log(`Canvas resized: ${finalCanvasWidth.toFixed(0)}x${finalCanvasHeight.toFixed(0)}, scale: ${this.scalingInfo.widthScale.toFixed(2)}, responsive with 1:1 mapping`);
   }
   
   /**

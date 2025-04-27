@@ -10,6 +10,8 @@ import { SCALE_FACTOR } from '../utils/utils'
 interface ControlButton {
     key: string
     symbol: string
+    label?: string
+    action?: string
 }
 
 // Interface for button element references
@@ -19,6 +21,9 @@ interface ButtonElements {
     left: HTMLElement
     right: HTMLElement
     restart: HTMLElement
+    boost?: HTMLElement
+    missile?: HTMLElement
+    shield?: HTMLElement
     [key: string]: HTMLElement
 }
 
@@ -60,6 +65,9 @@ export default class TouchControls {
             left: { key: 'left', symbol: '◀' },
             right: { key: 'right', symbol: '▶' },
             restart: { key: 'restart', symbol: '⟳' },
+            boost: { key: 'boost', symbol: '⚡', label: 'BOOST', action: 'boost' },
+            missile: { key: 'missile', symbol: '🚀', label: 'FIRE', action: 'missile' },
+            shield: { key: 'shield', symbol: '🛡️', label: 'SHIELD', action: 'shield' }
         }
 
         // Active button state
@@ -117,43 +125,6 @@ export default class TouchControls {
     }
 
     /**
-     * Resize touch controls based on screen size
-     */
-    resize(): void {
-        // If scale factor changed significantly, adjust button sizes
-        if (Math.abs(this.currentScale - SCALE_FACTOR) > 0.05) {
-            this.currentScale = SCALE_FACTOR
-
-            // Calculate new button size based on viewport
-            const buttonSize = Math.max(50, Math.min(70 * SCALE_FACTOR, 100))
-            const fontSize = Math.max(18, Math.min(28 * SCALE_FACTOR, 36))
-
-            // Get all control buttons
-            const buttons = this.container.querySelectorAll('.control-button')
-
-            // Update size and font for all buttons
-            buttons.forEach(button => {
-                ;(button as HTMLElement).style.width = `${buttonSize}px`
-                ;(button as HTMLElement).style.height = `${buttonSize}px`
-                ;(button as HTMLElement).style.fontSize = `${fontSize}px`
-            })
-
-            // Update grid size for direction pad
-            this.directionControls.style.gridTemplateColumns = `repeat(3, ${buttonSize}px)`
-            this.directionControls.style.gridTemplateRows = `repeat(3, ${buttonSize}px)`
-
-            // Adjust spacing based on screen size
-            const spacing = Math.max(5, Math.min(40 * SCALE_FACTOR, 60))
-            this.directionControls.style.marginRight = `${spacing}px`
-            this.restartControl.style.marginLeft = `${spacing}px`
-
-            // Update grid gap
-            const gridGap = Math.max(4, Math.min(8 * SCALE_FACTOR, 12))
-            this.directionControls.style.gridGap = `${gridGap}px`
-        }
-    }
-
-    /**
      * Create DOM elements for touch controls
      */
     private createControlElements(): void {
@@ -167,12 +138,15 @@ export default class TouchControls {
             this.container = document.createElement('div')
             this.container.id = 'touch-controls-container'
             this.container.style.position = 'fixed'
-            this.container.style.bottom = '20px'
+            this.container.style.bottom = '10px'
             this.container.style.left = '0'
             this.container.style.width = '100%'
             this.container.style.display = 'flex'
             this.container.style.justifyContent = 'space-between'
+            this.container.style.alignItems = 'center'
+            this.container.style.padding = '10px'
             this.container.style.zIndex = '1000'
+            this.container.style.pointerEvents = 'none'  // Allow clicks to pass through container
             document.body.appendChild(this.container)
         } else {
             this.container = containerElement
@@ -181,46 +155,155 @@ export default class TouchControls {
         // Make container responsive to viewport size
         this.container.style.maxWidth = '100%'
 
-        // Create directional controls container
+        // Create left side controls
+        const leftControls = document.createElement('div')
+        leftControls.className = 'left-controls'
+        leftControls.style.display = 'flex'
+        leftControls.style.alignItems = 'center'
+        leftControls.style.gap = '20px'
+        leftControls.style.pointerEvents = 'auto'  // Enable pointer events for controls
+
+        // Create action buttons (left of d-pad)
+        const actionButtons = document.createElement('div')
+        actionButtons.className = 'action-buttons'
+        actionButtons.style.display = 'flex'
+        actionButtons.style.flexDirection = 'column'
+        actionButtons.style.gap = '10px'
+
+        // Create d-pad container with grid layout
         this.directionControls = document.createElement('div')
-        this.directionControls.className = 'direction-controls'
+        this.directionControls.className = 'dpad-controls'
+        this.directionControls.style.display = 'grid'
+        this.directionControls.style.gridTemplateAreas = '". up ." "left . right" ". down ."'
+        this.directionControls.style.gap = '5px'
+
+        // Create right side controls
+        const rightControls = document.createElement('div')
+        rightControls.className = 'right-controls'
+        rightControls.style.pointerEvents = 'auto'  // Enable pointer events for controls
 
         // Create restart control container
         this.restartControl = document.createElement('div')
         this.restartControl.className = 'restart-control'
 
+        // Add action buttons on the left
+        for (const action of ['boost', 'missile']) {
+            const button = document.createElement('div')
+            button.className = 'control-button action-button'
+            button.dataset.action = action
+            
+            // Button content with icon and label
+            const buttonIcon = document.createElement('span')
+            buttonIcon.textContent = this.buttons[action].symbol
+            
+            const buttonLabel = document.createElement('span')
+            buttonLabel.className = 'button-label'
+            buttonLabel.textContent = this.buttons[action].label || ''
+            buttonLabel.style.fontSize = '12px'
+            buttonLabel.style.marginTop = '2px'
+            
+            button.appendChild(buttonIcon)
+            button.appendChild(buttonLabel)
+            
+            // Style the button
+            this.styleButton(button)
+            button.style.display = 'flex'
+            button.style.flexDirection = 'column'
+            button.style.alignItems = 'center'
+            
+            actionButtons.appendChild(button)
+        }
+
         // Create directional buttons
         for (const direction of ['up', 'down', 'left', 'right']) {
             const button = document.createElement('div')
-            button.className = `control-button ${direction}`
+            button.className = 'control-button dpad-button'
             button.dataset.key = direction
+            button.dataset.direction = direction
             button.textContent = this.buttons[direction].symbol
+            
+            // Style the button
+            this.styleButton(button)
+            
+            // Position in grid based on direction
+            button.style.gridArea = direction
+            
             this.directionControls.appendChild(button)
         }
+
+        // Add shield button on right side
+        const shieldButton = document.createElement('div')
+        shieldButton.className = 'control-button shield-button'
+        shieldButton.dataset.action = 'shield'
+        
+        const shieldIcon = document.createElement('span')
+        shieldIcon.textContent = this.buttons.shield.symbol
+        
+        const shieldLabel = document.createElement('span')
+        shieldLabel.className = 'button-label'
+        shieldLabel.textContent = this.buttons.shield.label || ''
+        shieldLabel.style.fontSize = '12px'
+        shieldLabel.style.marginTop = '2px'
+        
+        shieldButton.appendChild(shieldIcon)
+        shieldButton.appendChild(shieldLabel)
+        
+        // Style the shield button
+        this.styleButton(shieldButton)
+        shieldButton.style.display = 'flex'
+        shieldButton.style.flexDirection = 'column'
+        shieldButton.style.alignItems = 'center'
+        
+        rightControls.appendChild(shieldButton)
 
         // Create restart button
         const restartButton = document.createElement('div')
         restartButton.className = 'control-button restart'
         restartButton.dataset.key = 'restart'
         restartButton.textContent = this.buttons.restart.symbol
+        
+        // Style the restart button
+        this.styleButton(restartButton)
+        
         this.restartControl.appendChild(restartButton)
+        rightControls.appendChild(this.restartControl)
 
-        // Add controls to the container
-        this.container.appendChild(this.directionControls)
-        this.container.appendChild(this.restartControl)
+        // Assemble the layout
+        leftControls.appendChild(actionButtons)
+        leftControls.appendChild(this.directionControls)
+        
+        this.container.appendChild(leftControls)
+        this.container.appendChild(rightControls)
 
         // Store references to all buttons for easy access
         this.buttonElements = {
-            up: this.directionControls.querySelector('.up') as HTMLElement,
-            down: this.directionControls.querySelector('.down') as HTMLElement,
-            left: this.directionControls.querySelector('.left') as HTMLElement,
-            right: this.directionControls.querySelector(
-                '.right'
-            ) as HTMLElement,
-            restart: this.restartControl.querySelector(
-                '.restart'
-            ) as HTMLElement,
+            up: this.directionControls.querySelector('[data-direction="up"]') as HTMLElement,
+            down: this.directionControls.querySelector('[data-direction="down"]') as HTMLElement,
+            left: this.directionControls.querySelector('[data-direction="left"]') as HTMLElement,
+            right: this.directionControls.querySelector('[data-direction="right"]') as HTMLElement,
+            restart: this.restartControl.querySelector('.restart') as HTMLElement,
+            boost: actionButtons.querySelector('[data-action="boost"]') as HTMLElement,
+            missile: actionButtons.querySelector('[data-action="missile"]') as HTMLElement,
+            shield: rightControls.querySelector('[data-action="shield"]') as HTMLElement
         }
+    }
+
+    /**
+     * Helper method for consistent button styling
+     */
+    private styleButton(button: HTMLElement): void {
+        button.style.width = '60px'
+        button.style.height = '60px'
+        button.style.backgroundColor = 'rgba(0, 188, 212, 0.3)'
+        button.style.border = '3px solid var(--accent-primary, #00bcd4)'
+        button.style.borderRadius = '50%'
+        button.style.display = 'flex'
+        button.style.justifyContent = 'center'
+        button.style.alignItems = 'center'
+        button.style.fontSize = '24px'
+        button.style.color = 'white'
+        button.style.userSelect = 'none'
+        button.style.touchAction = 'none'
     }
 
     /**
@@ -310,6 +393,9 @@ export default class TouchControls {
             // Trigger action based on button
             if (key === 'restart') {
                 this.game.resetGame()
+            } else if (key === 'boost' || key === 'missile' || key === 'shield') {
+                // Future gameplay actions will be implemented here
+                console.log(`Action button pressed: ${key}`)
             } else {
                 this.player.setMovementKey(key, true)
             }
@@ -321,9 +407,59 @@ export default class TouchControls {
                 delete this.activeButtons[key]
 
                 // Stop movement for movement keys
-                if (key !== 'restart') {
+                if (key !== 'restart' && key !== 'boost' && key !== 'missile' && key !== 'shield') {
                     this.player.setMovementKey(key, false)
                 }
+            }
+        }
+    }
+
+    /**
+     * Resize touch controls based on screen size
+     */
+    resize(): void {
+        // If scale factor changed significantly, adjust button sizes
+        if (Math.abs(this.currentScale - SCALE_FACTOR) > 0.05) {
+            this.currentScale = SCALE_FACTOR
+
+            // Calculate new button size based on viewport
+            const buttonSize = Math.max(50, Math.min(70 * SCALE_FACTOR, 100))
+            const fontSize = Math.max(18, Math.min(28 * SCALE_FACTOR, 36))
+            const labelSize = Math.max(10, Math.min(14 * SCALE_FACTOR, 18))
+
+            // Get all control buttons
+            const buttons = this.container.querySelectorAll('.control-button')
+
+            // Update size and font for all buttons
+            buttons.forEach(button => {
+                (button as HTMLElement).style.width = `${buttonSize}px`
+                ;(button as HTMLElement).style.height = `${buttonSize}px`
+                ;(button as HTMLElement).style.fontSize = `${fontSize}px`
+                
+                // Update label size if present
+                const label = button.querySelector('.button-label')
+                if (label) {
+                    (label as HTMLElement).style.fontSize = `${labelSize}px`
+                }
+            })
+
+            // Adjust DPad grid
+            this.directionControls.style.gap = `${Math.max(5, Math.min(10 * SCALE_FACTOR, 15))}px`
+            
+            // Adjust spacing in container
+            const containerPadding = Math.max(5, Math.min(15 * SCALE_FACTOR, 20))
+            this.container.style.padding = `${containerPadding}px`
+            
+            // Adjust gap between action buttons
+            const actionButtons = this.container.querySelector('.action-buttons')
+            if (actionButtons) {
+                (actionButtons as HTMLElement).style.gap = `${Math.max(5, Math.min(15 * SCALE_FACTOR, 20))}px`
+            }
+            
+            // Adjust spacing between controls in left side
+            const leftControls = this.container.querySelector('.left-controls')
+            if (leftControls) {
+                (leftControls as HTMLElement).style.gap = `${Math.max(10, Math.min(30 * SCALE_FACTOR, 40))}px`
             }
         }
     }
@@ -366,7 +502,9 @@ export default class TouchControls {
         if (this.buttonElements) {
             Object.keys(this.buttonElements).forEach(key => {
                 const button = this.buttonElements[key]
-                button.replaceWith(button.cloneNode(true))
+                if (button) {
+                    button.replaceWith(button.cloneNode(true))
+                }
             })
         }
 

@@ -299,34 +299,48 @@ export default class MultiplayerUI {
   private addStyles(): void {
     const style = document.createElement('style');
     style.textContent = `
+      /* Using CSS variables for consistent color scheme */
+      :root {
+        --mp-primary-dark: #0a192f;
+        --mp-primary-light: #172a46;
+        --mp-accent-primary: #00bcd4;
+        --mp-accent-secondary: #64ffda;
+        --mp-text-light: #f5f5f5;
+        --mp-text-dark: #121212;
+        --mp-warning: #ff5252;
+        --mp-success: #4caf50;
+        --mp-neutral: #607d8b;
+      }
+
       .multiplayer-container {
         position: fixed;
         top: 50%;
         left: 50%;
         transform: translate(-50%, -50%);
-        background: rgba(10, 35, 66, 0.9);
-        border: 2px solid #0CC7C7;
-        box-shadow: 0 0 25px rgba(0, 180, 240, 0.5);
+        background: rgba(23, 42, 70, 0.95);
+        border: 2px solid var(--mp-accent-primary);
+        box-shadow: 0 0 25px rgba(0, 188, 212, 0.5);
         border-radius: 8px;
         padding: 20px;
         width: 450px;
         max-height: 80vh;
         overflow-y: auto;
         z-index: 1000;
-        color: white;
-        font-family: Arial, sans-serif;
+        color: var(--mp-text-light);
+        font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;
       }
       
       .multiplayer-lobby h2 {
-        color: #0CC7C7;
+        color: var(--mp-accent-secondary);
         text-align: center;
         margin-top: 0;
+        font-weight: 600;
       }
       
       .multiplayer-form {
         display: flex;
         flex-direction: column;
-        gap: 10px;
+        gap: 12px;
         margin-bottom: 20px;
       }
       
@@ -335,14 +349,22 @@ export default class MultiplayerUI {
         flex-direction: column;
         gap: 5px;
         font-size: 14px;
+        color: var(--mp-accent-secondary);
       }
       
       .multiplayer-form input {
-        padding: 8px;
+        padding: 10px;
         border-radius: 4px;
-        border: 1px solid #0CC7C7;
+        border: 1px solid var(--mp-accent-primary);
         background: rgba(0, 0, 0, 0.3);
-        color: white;
+        color: var(--mp-text-light);
+        transition: border-color 0.2s;
+      }
+      
+      .multiplayer-form input:focus {
+        border-color: var(--mp-accent-secondary);
+        outline: none;
+        box-shadow: 0 0 0 2px rgba(100, 255, 218, 0.25);
       }
       
       .multiplayer-form button {
@@ -351,44 +373,54 @@ export default class MultiplayerUI {
         cursor: pointer;
         font-weight: bold;
         transition: all 0.2s;
+        font-size: 16px;
       }
       
       .connect-button {
-        background: #0CC7C7;
-        color: #0a2342;
+        background: var(--mp-accent-primary);
+        color: var(--mp-text-dark);
         border: none;
       }
       
       .connect-button:hover {
-        background: #0ffafa;
-        box-shadow: 0 0 10px rgba(12, 199, 199, 0.5);
+        background: var(--mp-accent-secondary);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(0, 188, 212, 0.5);
       }
       
       .disconnect-button {
-        background: #ff4757;
-        color: white;
+        background: var(--mp-warning);
+        color: var(--mp-text-light);
         border: none;
       }
       
       .disconnect-button:hover {
-        background: #ff6b81;
-        box-shadow: 0 0 10px rgba(255, 71, 87, 0.5);
+        background: #ff7b7b;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(255, 82, 82, 0.5);
       }
       
       .multiplayer-description {
-        background: rgba(0, 0, 0, 0.2);
-        padding: 10px;
-        border-radius: 4px;
+        background: rgba(23, 42, 70, 0.7);
+        padding: 15px;
+        border-radius: 8px;
         margin-top: 15px;
+        border-left: 3px solid var(--mp-accent-primary);
       }
       
       .multiplayer-description h3 {
-        color: #0CC7C7;
+        color: var(--mp-accent-secondary);
         margin-top: 0;
+        font-size: 18px;
       }
       
       .multiplayer-description ul {
         padding-left: 20px;
+        list-style-type: square;
+      }
+      
+      .multiplayer-description li {
+        margin-bottom: 5px;
       }
       
       .multiplayer-status {
@@ -396,20 +428,23 @@ export default class MultiplayerUI {
         flex-wrap: wrap;
         justify-content: space-between;
         align-items: center;
-        background: rgba(0, 0, 0, 0.2);
-        padding: 10px;
-        border-radius: 4px;
+        background: rgba(23, 42, 70, 0.7);
+        padding: 15px;
+        border-radius: 8px;
         margin-bottom: 15px;
+        border-left: 3px solid var(--mp-accent-primary);
       }
       
       .countdown-display {
-        font-size: 24px;
+        font-size: 28px;
         font-weight: bold;
-        color: #0CC7C7;
+        color: var(--mp-accent-secondary);
+        text-shadow: 0 0 10px rgba(100, 255, 218, 0.5);
       }
       
       .player-count {
         font-size: 14px;
+        color: var(--mp-accent-primary);
       }
       
       .game-status {
@@ -417,17 +452,21 @@ export default class MultiplayerUI {
         text-align: center;
         margin-top: 5px;
         font-weight: bold;
+        padding: 5px 0;
+        color: var(--mp-text-light);
       }
       
       .player-list-container {
-        background: rgba(0, 0, 0, 0.2);
-        padding: 10px;
-        border-radius: 4px;
+        background: rgba(23, 42, 70, 0.7);
+        padding: 15px;
+        border-radius: 8px;
+        border-left: 3px solid var(--mp-accent-primary);
       }
       
       .player-list-container h3 {
-        color: #0CC7C7;
+        color: var(--mp-accent-secondary);
         margin-top: 0;
+        font-size: 18px;
       }
       
       .player-list {
@@ -435,13 +474,19 @@ export default class MultiplayerUI {
         overflow-y: auto;
         padding-left: 0;
         list-style-type: none;
+        margin-top: 10px;
       }
       
       .player-list li {
-        padding: 5px;
+        padding: 8px 10px;
         border-bottom: 1px solid rgba(255, 255, 255, 0.1);
         display: flex;
         align-items: center;
+        transition: background 0.2s;
+      }
+      
+      .player-list li:hover {
+        background: rgba(0, 0, 0, 0.2);
       }
       
       .player-list li:last-child {
@@ -449,47 +494,62 @@ export default class MultiplayerUI {
       }
       
       .player-color-indicator {
-        width: 12px;
-        height: 12px;
+        width: 14px;
+        height: 14px;
         border-radius: 50%;
         display: inline-block;
-        margin-right: 8px;
+        margin-right: 10px;
+        box-shadow: 0 0 5px rgba(255, 255, 255, 0.3);
       }
       
       .player-status {
         margin-left: auto;
         font-size: 12px;
-        padding: 2px 6px;
-        border-radius: 10px;
+        padding: 3px 8px;
+        border-radius: 12px;
+        font-weight: 600;
       }
       
       .player-alive {
-        background: #2ecc71;
-        color: white;
+        background: var(--mp-success);
+        color: var(--mp-text-light);
       }
       
       .player-dead {
-        background: #e74c3c;
-        color: white;
+        background: var(--mp-warning);
+        color: var(--mp-text-light);
       }
       
       .player-spectating {
-        background: #7f8c8d;
-        color: white;
+        background: var(--mp-neutral);
+        color: var(--mp-text-light);
       }
       
       .arena-indicator {
         position: absolute;
-        border: 2px solid rgba(255, 0, 0, 0.5);
-        box-shadow: 0 0 10px rgba(255, 0, 0, 0.3);
+        border: 2px solid rgba(255, 82, 82, 0.7);
+        box-shadow: 0 0 15px rgba(255, 82, 82, 0.5);
         pointer-events: none;
         z-index: 10;
+        border-radius: 4px;
+      }
+      
+      @keyframes pulse {
+        0% { box-shadow: 0 0 15px rgba(255, 82, 82, 0.5); }
+        50% { box-shadow: 0 0 25px rgba(255, 82, 82, 0.8); }
+        100% { box-shadow: 0 0 15px rgba(255, 82, 82, 0.5); }
       }
       
       @media (max-width: 480px) {
         .multiplayer-container {
-          width: 90%;
-          padding: 10px;
+          width: 95%;
+          padding: 15px;
+        }
+        
+        .multiplayer-form input,
+        .multiplayer-form button {
+          padding: 12px 8px;
+          font-size: 16px;
         }
       }
     `;

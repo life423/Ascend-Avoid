@@ -1,3 +1,21 @@
+:root {
+    /* Color palette based on color theory principles */
+    --primary-dark: #0a192f;       /* Dark blue background */
+    --primary-light: #172a46;      /* Lighter blue for accents */
+    --accent-primary: #00bcd4;     /* Teal accent color */
+    --accent-secondary: #64ffda;   /* Mint green accent */
+    --text-light: #f5f5f5;         /* Light text color */
+    --text-dark: #121212;          /* Dark text color */
+    --warning: #ff5252;            /* Red for warnings */
+    --success: #4caf50;            /* Green for success */
+    
+    /* Sizing variables */
+    --border-radius: 8px;
+    --spacing-sm: 8px;
+    --spacing-md: 16px;
+    --spacing-lg: 24px;
+}
+
 * {
     margin: 0;
     padding: 0;
@@ -5,39 +23,54 @@
 }
 
 body {
-    background: #6D8888;
-    font-family: Arial, Helvetica, sans-serif;
-    color: #333;
+    background: var(--primary-dark);
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    color: var(--text-light);
     padding: 10px;
+    line-height: 1.5;
+    min-height: 100vh;
 }
 
 canvas {
     background: black;
-    border: 4px solid #9BC7C7;
+    border: 4px solid var(--accent-primary);
     touch-action: none; /* Prevents default touch actions like scrolling on canvas */
     display: block;
+    box-shadow: 0 0 20px rgba(0, 188, 212, 0.3); /* Subtle glow effect */
 }
 
 h1 {
     text-align: center;
     margin: 0;
     padding-top: 15px;
-    color: #333;
+    color: var(--text-light);
+    text-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    font-size: 2.5rem;
+    background: linear-gradient(to right, var(--accent-primary), var(--accent-secondary));
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
 }
 
 h3 {
     margin-top: 20px;
     margin-bottom: 10px;
+    color: var(--text-dark);
 }
 
 h4 { 
     display: inline-block;
     margin: 0 10px;
+    color: var(--text-light);
+    font-weight: 600;
 }
 
 #headers {
     text-align: center;
     padding: 10px 0 15px;
+    background-color: rgba(23, 42, 70, 0.7);
+    border-radius: var(--border-radius);
+    margin-bottom: var(--spacing-md);
 }
 
 #wrapper {
@@ -46,36 +79,80 @@ h4 {
     align-items: center;
     max-width: 100%;
     overflow: hidden;
+    padding: var(--spacing-md) 0;
+    margin-bottom: var(--spacing-md);
+}
+
+.game-container {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin: 0 auto;
+  overflow: hidden;
+  padding: var(--spacing-md) 0;
+  margin-bottom: var(--spacing-md);
 }
 
 #canvas {
     max-width: 100%;
     height: auto;
     margin: 0 auto;
+    border-radius: var(--border-radius);
 }
 
 #instructions {
     max-width: 560px;
     margin: 20px auto;
-    padding: 15px;
-    background: #9BC7C7;
-    border-radius: 8px;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    padding: var(--spacing-lg);
+    background: #172a46; /* Darker than primary light for better contrast */
+    color: var(--text-light);
+    border-radius: var(--border-radius);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+    border-left: 4px solid var(--accent-primary);
+}
+
+#instructions h3 {
+    color: var(--accent-secondary);
+    font-size: 1.3rem;
 }
 
 #instructions ul {
     padding-left: 20px;
-    margin: 10px 0;
+    margin: var(--spacing-md) 0;
 }
 
 #instructions li {
-    margin-bottom: 5px;
+    margin-bottom: var(--spacing-sm);
+    list-style-type: square;
 }
 
 .note {
     font-weight: bold;
-    margin-top: 10px;
-    color: #333;
+    margin-top: var(--spacing-md);
+    color: var(--accent-secondary);
+    padding: var(--spacing-sm);
+    background-color: rgba(100, 255, 218, 0.15);
+    border-radius: var(--border-radius);
+    display: inline-block;
+}
+
+/* Multiplayer button styling */
+.multiplayer-button {
+    background: var(--accent-primary) !important;
+    color: var(--text-dark) !important;
+    border: none !important;
+    padding: 10px 15px !important;
+    border-radius: var(--border-radius) !important;
+    font-weight: bold !important;
+    cursor: pointer !important;
+    transition: all 0.2s ease !important;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3) !important;
+}
+
+.multiplayer-button:hover {
+    transform: translateY(-2px) !important;
+    box-shadow: 0 6px 8px rgba(0, 188, 212, 0.6) !important;
 }
 
 /* Media Queries for Responsive Design */
@@ -85,10 +162,30 @@ h4 {
     }
     
     h1 {
-        font-size: 24px;
+        font-size: 1.8rem;
     }
     
     #instructions {
-        padding: 10px;
+        padding: var(--spacing-md);
+        margin: var(--spacing-md) auto;
+    }
+    
+    canvas {
+        border-width: 2px;
+    }
+}
+
+@media screen and (min-width: 1024px) {
+    body {
+        padding: var(--spacing-md);
+    }
+    
+    #wrapper {
+        padding: var(--spacing-lg) 0;
+    }
+    
+    h1 {
+        font-size: 3rem;
+        margin-bottom: var(--spacing-md);
     }
 }

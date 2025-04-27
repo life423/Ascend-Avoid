@@ -37,17 +37,11 @@
     <!-- Critical CSS for faster rendering -->
     <style>
         /* Critical styles to prevent flash of unstyled content */
-        :root {
-            --primary-color: #0CC7C7;
-            --primary-glow: rgba(0, 200, 200, 0.4);
-            --background-dark: #0a1a2f;
-        }
-        
         body {
             margin: 0;
             padding: 0;
-            background: var(--background-dark);
-            color: #fff;
+            background: var(--primary-dark, #0a192f);
+            color: var(--text-light, #f5f5f5);
             font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             overscroll-behavior: contain; /* Prevent overscroll bounce effects */
             touch-action: manipulation; /* Speed up clicks on touch devices */
@@ -81,11 +75,11 @@
             .game-content-wrapper .sidebar-container {
                 width: 30%;
                 max-width: 400px;
-                background: rgba(10, 35, 66, 0.6);
-                border-radius: 8px;
-                padding: 20px;
-                border: 2px solid #0CC7C7;
-                box-shadow: 0 0 25px rgba(0, 180, 240, 0.2);
+            background: rgba(23, 42, 70, 0.8);
+            border-radius: 8px;
+            padding: 20px;
+            border: 2px solid var(--accent-primary, #00bcd4);
+            box-shadow: 0 0 25px rgba(0, 188, 212, 0.3);
                 margin-top: 50px;
             }
         }
@@ -110,7 +104,7 @@
             height: 50px;
             border: 3px solid rgba(255, 255, 255, 0.3);
             border-radius: 50%;
-            border-top-color: var(--primary-color);
+            border-top-color: var(--accent-primary, #00bcd4);
             animation: spin 1s ease-in-out infinite;
         }
         
@@ -170,7 +164,7 @@
         <h4>Score: <span id="score">0</span></h4>
     </div>
     
-    <div id="wrapper">
+<div id="game-container" class="game-container">
         <canvas id="canvas" aria-label="Cross the Box game" role="img"></canvas>
     </div>
     
@@ -179,20 +173,21 @@
             <!-- Touch controls will be inserted here by JavaScript -->
         </div>
         
-        <div id="instructions">
-            <h3>How to Play:</h3>
-            <p>Move the white block to the top without hitting the blue blocks.</p>
-            <ul>
-                <li>Use arrow keys or WASD to move on desktop</li>
-                <li>Touch the direction buttons on mobile devices</li>
-                <li>Press 'R' or the restart button to restart the game</li>
-            </ul>
-            <p class="note">Game speed increases as you score more points!</p>
-        </div>
+    <div id="instructions">
+        <h3>How to Play:</h3>
+        <p>Move the white block to the top without hitting the blue blocks.</p>
+        <ul>
+            <li>Use arrow keys or WASD to move on desktop</li>
+            <li>Touch the direction buttons on mobile devices</li>
+            <li>Press 'R' or the restart button to restart the game</li>
+        </ul>
+        <p class="note">Game speed increases as you score more points!</p>
+        <p>Try to beat your high score and challenge your friends in multiplayer mode!</p>
+    </div>
     </div>
     
     <!-- Game error handling -->
-    <div id="error-container" style="display: none; padding: 20px; background: rgba(255,0,0,0.2); margin: 20px auto; max-width: 500px; border-radius: 8px; border: 1px solid red;">
+    <div id="error-container" style="display: none; padding: 20px; background: rgba(255,0,0,0.15); margin: 20px auto; max-width: 500px; border-radius: 8px; border: 1px solid #ff5252; color: #fff;">
         <h3>Oops! Something went wrong</h3>
         <p id="error-message">There was a problem loading the game.</p>
         <button onclick="window.location.reload()">Reload Game</button>
