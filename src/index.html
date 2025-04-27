@@ -130,6 +130,13 @@
                 document.body.classList.add('desktop-layout');
             }
             
+            // Mark document with screen size class for consistent behavior
+            if (window.matchMedia("(min-width: 768px)").matches) {
+                document.body.classList.add('large-screen');
+                // Force touch controls to be properly handled on initial load
+                window.dispatchEvent(new Event('resize'));
+            }
+            
             // Listen for orientation changes
             window.addEventListener('orientationchange', function() {
                 // Allow time for the orientation change to complete

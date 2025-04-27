@@ -207,6 +207,33 @@ h4 {
     }
 }
 
+@media screen and (min-width: 768px) {
+    /* Enhanced rules to completely hide touch controls on larger screens */
+    #touch-controls-container {
+        display: none !important;
+        visibility: hidden !important; 
+        opacity: 0 !important;
+        pointer-events: none !important;
+        position: absolute !important;
+        left: -9999px !important;
+        height: 0 !important;
+        width: 0 !important;
+        overflow: hidden !important;
+        z-index: -1 !important;
+    }
+    
+    /* Adjust instructions to fill space where controls would be on mobile */
+    #instructions {
+        max-height: none; /* Remove height limit that's used on mobile */
+        margin-top: var(--spacing-md);
+    }
+    
+    /* Ensure game container has proper spacing */
+    .game-container {
+        margin-bottom: var(--spacing-md);
+    }
+}
+
 @media screen and (min-width: 1024px) {
     body {
         padding: var(--spacing-md);
@@ -219,5 +246,12 @@ h4 {
     h1 {
         font-size: 3rem;
         margin-bottom: var(--spacing-md);
+    }
+    
+    /* Improved instructions layout on desktop */
+    #instructions {
+        max-width: 760px;
+        margin: var(--spacing-lg) auto;
+        padding: var(--spacing-lg);
     }
 }

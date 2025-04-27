@@ -111,12 +111,16 @@ export default class TouchControls {
             'ontouchstart' in window ||
             navigator.maxTouchPoints > 0
 
-        // Also check for desktop layout class
-        const isDesktopLayout =
-            document.body.classList.contains('desktop-layout')
+        // Check if screen is small enough to warrant touch controls
+        const isSmallScreen = window.innerWidth < 768; // 768px is a common tablet/mobile breakpoint
 
-        // Only show controls if it's a touch device AND NOT in desktop layout mode
-        if (isTouchDevice && !isDesktopLayout) {
+        // Also check for desktop layout class or large-screen class
+        const isLargeDisplay = 
+            document.body.classList.contains('desktop-layout') || 
+            document.body.classList.contains('large-screen');
+
+        // Only show controls if it's a touch device AND a small screen AND NOT on a large display
+        if (isTouchDevice && isSmallScreen && !isLargeDisplay) {
             this.show()
             this.resize() // Adjust sizes based on new dimensions
         } else {
@@ -475,7 +479,19 @@ export default class TouchControls {
      */
     hide(): void {
         if (this.container) {
+            // First set display to none
             this.container.style.cssText = 'display: none !important'
+            
+            // For larger screens, completely remove from DOM instead of just hiding
+            if (window.innerWidth >= 768) {
+                // Use setTimeout to avoid any potential race conditions
+                setTimeout(() => {
+                    if (this.container && this.container.parentNode) {
+                        this.container.parentNode.removeChild(this.container)
+                        console.log('Touch controls removed from DOM for larger screen')
+                    }
+                }, 100)
+            }
         }
     }
 
@@ -484,7 +500,18 @@ export default class TouchControls {
      */
     show(): void {
         if (this.container) {
+            // If container is in the DOM, just show it
             this.container.style.display = 'flex'
+        } else {
+            // If container was removed from DOM, recreate it
+            console.log('Touch controls container was removed, recreating for small screen')
+            this.createControlElements()
+            this.setupTouchListeners()
+            
+            if (this.container) {
+                this.container.style.display = 'flex'
+                this.resize() // Re-apply proper sizing
+            }
         }
     }
 
