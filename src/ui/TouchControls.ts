@@ -105,13 +105,8 @@ export default class TouchControls {
      * Handle window resize and adjust controls for the screen size
      */
     handleResize(): void {
-        // Check if device is touch-enabled (focusing on input method, not screen size)
-        const isTouchDevice =
-            window.matchMedia('(pointer: coarse)').matches ||
-            'ontouchstart' in window ||
-            navigator.maxTouchPoints > 0
-
-        // Check if screen is small enough to warrant touch controls
+        // Always show touch controls on small screens regardless of touch support
+        // This ensures they're available on all mobile devices
         const isSmallScreen = window.innerWidth < 768; // 768px is a common tablet/mobile breakpoint
 
         // Also check for desktop layout class or large-screen class
@@ -119,17 +114,20 @@ export default class TouchControls {
             document.body.classList.contains('desktop-layout') || 
             document.body.classList.contains('large-screen');
 
-        // Only show controls if it's a touch device AND a small screen AND NOT on a large display
-        if (isTouchDevice && isSmallScreen && !isLargeDisplay) {
-            this.show()
-            this.resize() // Adjust sizes based on new dimensions
+        // Show controls if it's a small screen AND NOT on a large display
+        if (isSmallScreen && !isLargeDisplay) {
+            console.log('Showing touch controls on small screen');
+            this.show();
+            this.resize(); // Adjust sizes based on new dimensions
         } else {
-            this.hide()
+            console.log('Hiding touch controls on large screen');
+            this.hide();
         }
     }
 
     /**
-     * Create DOM elements for touch controls
+     * Create DOM elements for touch controls in GameBoy style layout
+     * D-pad on left, two action buttons on right
      */
     private createControlElements(): void {
         // Get the container for controls
@@ -137,93 +135,44 @@ export default class TouchControls {
             'touch-controls-container'
         )
         if (!containerElement) {
-            console.error('Touch controls container not found, creating one')
+            console.log('Touch controls container not found, creating one')
             // Create the container if it doesn't exist
             this.container = document.createElement('div')
             this.container.id = 'touch-controls-container'
-            this.container.style.position = 'relative'  // Changed from fixed to relative
+            this.container.style.position = 'fixed'  // Changed to fixed positioning
+            this.container.style.bottom = '0'
+            this.container.style.left = '0'
+            this.container.style.right = '0'
             this.container.style.width = '100%'
             this.container.style.display = 'flex'
             this.container.style.justifyContent = 'space-between'
             this.container.style.alignItems = 'center'
-            this.container.style.padding = '10px'
+            this.container.style.padding = '10px 10px 30px 10px'  // Extra padding at bottom
             this.container.style.zIndex = '1000'
-            this.container.style.pointerEvents = 'none'  // Allow clicks to pass through container
+            this.container.style.pointerEvents = 'none' // Parent container doesn't intercept clicks
+            this.container.style.background = 'linear-gradient(to top, rgba(10, 25, 47, 0.8), transparent)' // Gradient background
             
-            // Place the controls container right after the game-container
-            const gameContainer = document.getElementById('game-container')
-            if (gameContainer && gameContainer.nextSibling) {
-                document.body.insertBefore(this.container, gameContainer.nextSibling)
-            } else {
-                // Fallback to appending to body
-                document.body.appendChild(this.container)
-            }
+            document.body.appendChild(this.container)
         } else {
             this.container = containerElement
         }
 
-        // Make container responsive to viewport size
-        this.container.style.maxWidth = '100%'
-
-        // Create left side controls
+        // Create left side controls (D-pad)
         const leftControls = document.createElement('div')
         leftControls.className = 'left-controls'
         leftControls.style.display = 'flex'
+        leftControls.style.justifyContent = 'center'  // Center in its area
         leftControls.style.alignItems = 'center'
-        leftControls.style.gap = '20px'
-        leftControls.style.pointerEvents = 'auto'  // Enable pointer events for controls
-
-        // Create action buttons (left of d-pad)
-        const actionButtons = document.createElement('div')
-        actionButtons.className = 'action-buttons'
-        actionButtons.style.display = 'flex'
-        actionButtons.style.flexDirection = 'column'
-        actionButtons.style.gap = '10px'
-
-        // Create d-pad container with grid layout
+        leftControls.style.flex = '1'
+        leftControls.style.pointerEvents = 'auto' // Enable pointer events for controls
+        
+        // Create d-pad container with grid layout (GameBoy style)
         this.directionControls = document.createElement('div')
         this.directionControls.className = 'dpad-controls'
         this.directionControls.style.display = 'grid'
         this.directionControls.style.gridTemplateAreas = '". up ." "left . right" ". down ."'
         this.directionControls.style.gap = '5px'
-
-        // Create right side controls
-        const rightControls = document.createElement('div')
-        rightControls.className = 'right-controls'
-        rightControls.style.pointerEvents = 'auto'  // Enable pointer events for controls
-
-        // Create restart control container
-        this.restartControl = document.createElement('div')
-        this.restartControl.className = 'restart-control'
-
-        // Add action buttons on the left
-        for (const action of ['boost', 'missile']) {
-            const button = document.createElement('div')
-            button.className = 'control-button action-button'
-            button.dataset.action = action
-            
-            // Button content with icon and label
-            const buttonIcon = document.createElement('span')
-            buttonIcon.textContent = this.buttons[action].symbol
-            
-            const buttonLabel = document.createElement('span')
-            buttonLabel.className = 'button-label'
-            buttonLabel.textContent = this.buttons[action].label || ''
-            buttonLabel.style.fontSize = '12px'
-            buttonLabel.style.marginTop = '2px'
-            
-            button.appendChild(buttonIcon)
-            button.appendChild(buttonLabel)
-            
-            // Style the button
-            this.styleButton(button)
-            button.style.display = 'flex'
-            button.style.flexDirection = 'column'
-            button.style.alignItems = 'center'
-            
-            actionButtons.appendChild(button)
-        }
-
+        
         // Create directional buttons
         for (const direction of ['up', 'down', 'left', 'right']) {
             const button = document.createElement('div')
@@ -240,48 +189,60 @@ export default class TouchControls {
             
             this.directionControls.appendChild(button)
         }
+        
+        leftControls.appendChild(this.directionControls)
 
-        // Add shield button on right side
-        const shieldButton = document.createElement('div')
-        shieldButton.className = 'control-button shield-button'
-        shieldButton.dataset.action = 'shield'
+        // Create right side controls (action buttons in GameBoy layout)
+        const rightControls = document.createElement('div')
+        rightControls.className = 'right-controls'
+        rightControls.style.display = 'flex'
+        rightControls.style.justifyContent = 'center'  // Center in its area
+        rightControls.style.alignItems = 'center'
+        rightControls.style.flex = '1'
+        rightControls.style.pointerEvents = 'auto' // Enable pointer events for controls
         
-        const shieldIcon = document.createElement('span')
-        shieldIcon.textContent = this.buttons.shield.symbol
-        
-        const shieldLabel = document.createElement('span')
-        shieldLabel.className = 'button-label'
-        shieldLabel.textContent = this.buttons.shield.label || ''
-        shieldLabel.style.fontSize = '12px'
-        shieldLabel.style.marginTop = '2px'
-        
-        shieldButton.appendChild(shieldIcon)
-        shieldButton.appendChild(shieldLabel)
-        
-        // Style the shield button
-        this.styleButton(shieldButton)
-        shieldButton.style.display = 'flex'
-        shieldButton.style.flexDirection = 'column'
-        shieldButton.style.alignItems = 'center'
-        
-        rightControls.appendChild(shieldButton)
+        // Create action buttons container
+        const actionButtons = document.createElement('div')
+        actionButtons.className = 'action-buttons'
+        actionButtons.style.display = 'flex'
+        actionButtons.style.gap = '15px'
 
-        // Create restart button
-        const restartButton = document.createElement('div')
-        restartButton.className = 'control-button restart'
-        restartButton.dataset.key = 'restart'
-        restartButton.textContent = this.buttons.restart.symbol
+        // Create two action buttons: boost and missile (GameBoy A and B style)
+        for (const action of ['boost', 'missile']) {
+            const button = document.createElement('div')
+            button.className = 'control-button action-button'
+            button.dataset.action = action
+            
+            // Button content with icon and label
+            const buttonIcon = document.createElement('span')
+            buttonIcon.textContent = this.buttons[action].symbol
+            
+            const buttonLabel = document.createElement('span')
+            buttonLabel.className = 'button-label'
+            buttonLabel.textContent = action === 'boost' ? 'B' : 'A' // GameBoy style labels
+            buttonLabel.style.fontSize = '14px'
+            buttonLabel.style.fontWeight = 'bold'
+            buttonLabel.style.marginTop = '2px'
+            
+            button.appendChild(buttonIcon)
+            button.appendChild(buttonLabel)
+            
+            // Style the button
+            this.styleButton(button)
+            button.style.display = 'flex'
+            button.style.flexDirection = 'column'
+            button.style.alignItems = 'center'
+            
+            actionButtons.appendChild(button)
+        }
         
-        // Style the restart button
-        this.styleButton(restartButton)
+        // Add action buttons to right controls
+        rightControls.appendChild(actionButtons)
         
-        this.restartControl.appendChild(restartButton)
-        rightControls.appendChild(this.restartControl)
+        // No restart button anymore
+        this.restartControl = document.createElement('div'); // Empty div as placeholder
 
         // Assemble the layout
-        leftControls.appendChild(actionButtons)
-        leftControls.appendChild(this.directionControls)
-        
         this.container.appendChild(leftControls)
         this.container.appendChild(rightControls)
 
@@ -291,10 +252,10 @@ export default class TouchControls {
             down: this.directionControls.querySelector('[data-direction="down"]') as HTMLElement,
             left: this.directionControls.querySelector('[data-direction="left"]') as HTMLElement,
             right: this.directionControls.querySelector('[data-direction="right"]') as HTMLElement,
-            restart: this.restartControl.querySelector('.restart') as HTMLElement,
             boost: actionButtons.querySelector('[data-action="boost"]') as HTMLElement,
             missile: actionButtons.querySelector('[data-action="missile"]') as HTMLElement,
-            shield: rightControls.querySelector('[data-action="shield"]') as HTMLElement
+            restart: null as unknown as HTMLElement, // No restart button but keep the property
+            shield: null as unknown as HTMLElement
         }
     }
 
@@ -302,8 +263,8 @@ export default class TouchControls {
      * Helper method for consistent button styling
      */
     private styleButton(button: HTMLElement): void {
-        button.style.width = '60px'
-        button.style.height = '60px'
+        button.style.width = '65px'
+        button.style.height = '65px'
         button.style.backgroundColor = 'rgba(0, 188, 212, 0.3)'
         button.style.border = '3px solid var(--accent-primary, #00bcd4)'
         button.style.borderRadius = '50%'
@@ -314,15 +275,22 @@ export default class TouchControls {
         button.style.color = 'white'
         button.style.userSelect = 'none'
         button.style.touchAction = 'none'
+        button.style.boxShadow = '0 3px 5px rgba(0,0,0,0.3)'
     }
 
     /**
      * Set up touch event listeners for all control buttons
      */
     private setupTouchListeners(): void {
-        // For each button, add event listeners
+        // For each button, add event listeners - check that button exists first
         Object.keys(this.buttonElements).forEach(key => {
             const button = this.buttonElements[key]
+            
+            // Skip if button doesn't exist (like removed shield button)
+            if (!button) {
+                console.log(`Skipping event listeners for missing button: ${key}`);
+                return; 
+            }
 
             // Touch start - activate button
             button.addEventListener(
@@ -384,7 +352,7 @@ export default class TouchControls {
 
     /**
      * Handle button activation state
-     * @param key - The button key (up, down, left, right, restart)
+     * @param key - The button key (up, down, left, right, restart, boost, missile)
      * @param isActive - Whether to activate or deactivate the button
      * @param touchId - Touch identifier to keep track of which touch is on which button
      */
@@ -394,6 +362,12 @@ export default class TouchControls {
         touchId: number
     ): void {
         const button = this.buttonElements[key]
+        
+        // Skip if button doesn't exist
+        if (!button) {
+            console.log(`Cannot activate non-existent button: ${key}`);
+            return;
+        }
 
         if (isActive) {
             // Activate button
@@ -403,8 +377,8 @@ export default class TouchControls {
             // Trigger action based on button
             if (key === 'restart') {
                 this.game.resetGame()
-            } else if (key === 'boost' || key === 'missile' || key === 'shield') {
-                // Future gameplay actions will be implemented here
+            } else if (key === 'boost' || key === 'missile') {
+                // GameBoy style buttons - only boost and missile
                 console.log(`Action button pressed: ${key}`)
             } else {
                 this.player.setMovementKey(key, true)
@@ -417,7 +391,7 @@ export default class TouchControls {
                 delete this.activeButtons[key]
 
                 // Stop movement for movement keys
-                if (key !== 'restart' && key !== 'boost' && key !== 'missile' && key !== 'shield') {
+                if (key !== 'restart' && key !== 'boost' && key !== 'missile') {
                     this.player.setMovementKey(key, false)
                 }
             }

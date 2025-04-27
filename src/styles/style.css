@@ -147,16 +147,22 @@ h4 {
 }
 
 #instructions-toggle button {
-    width: 45px;
-    height: 45px;
-    border-radius: 50%;
+    padding: 10px 20px;
+    border-radius: var(--border-radius);
     background: var(--accent-primary);
     color: var(--text-dark);
-    font-size: 24px;
+    font-size: 16px;
     font-weight: bold;
     border: none;
     box-shadow: 0 2px 10px rgba(0,0,0,0.3);
     cursor: pointer;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+#instructions-toggle button:active {
+    transform: translateY(2px);
+    box-shadow: 0 1px 5px rgba(0,0,0,0.3);
 }
 
 #instructions-drawer {
@@ -372,8 +378,20 @@ h4 {
     }
     
     #instructions-toggle button {
-        width: 40px;
-        height: 40px;
-        font-size: 20px;
+        padding: 8px 16px;
+        font-size: 14px;
+    }
+}
+
+/* For very small screens, make the guide button more compact */
+@media screen and (max-width: 400px) {
+    #instructions-toggle {
+        bottom: 15px;
+        right: 15px;
+    }
+    
+    #instructions-toggle button {
+        padding: 6px 12px;
+        font-size: 12px;
     }
 }

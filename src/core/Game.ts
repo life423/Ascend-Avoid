@@ -452,44 +452,39 @@ export default class Game {
     }
 
     /**
-     * Set up mobile touch controls
-     * Only creates and shows touch controls on actual touch devices,
-     * never on desktop layouts
+     * Set up touch controls for mobile screens
+     * Always creates touch controls for small screens
      */
     setupTouchControls(): void {
-        // Skip touch controls entirely on desktop layout
-        if (document.body.classList.contains('desktop-layout')) {
-            console.log('Desktop layout detected - touch controls disabled')
-            return
-        }
-
-        // Skip touch controls on non-touch devices
-        const isTouchDevice =
-            window.matchMedia('(pointer: coarse)').matches ||
-            'ontouchstart' in window ||
-            navigator.maxTouchPoints > 0
-
-        if (!isTouchDevice) {
-            console.log('Non-touch device detected - touch controls disabled')
-            return
-        }
-
-        // Create touch controls overlay only for touch devices
+        // Always create touch controls - they will be shown/hidden based on screen size
         this.touchControls = new TouchControls(this)
-        this.touchControls.show()
-
+        
+        // Check screen size to determine if controls should be shown
+        const isSmallScreen = window.innerWidth < 768
+        const isLargeDisplay = document.body.classList.contains('desktop-layout') ||
+                              document.body.classList.contains('large-screen')
+        
+        // Only show on small screens not in desktop mode
+        if (isSmallScreen && !isLargeDisplay) {
+            console.log('Small screen detected, showing touch controls')
+            this.touchControls.show()
+        } else {
+            console.log('Large screen or desktop layout detected, hiding touch controls')
+        }
+        
         // Register touch buttons with input manager
         if (this.inputManager && this.touchControls.buttonElements) {
-            for (const [direction, button] of Object.entries(
-                this.touchControls.buttonElements
-            )) {
-                this.inputManager.registerTouchButton(
-                    button as HTMLElement,
-                    direction
-                )
+            for (const [direction, button] of Object.entries(this.touchControls.buttonElements)) {
+                // Skip null buttons (like shield which we removed)
+                if (button) {
+                    this.inputManager.registerTouchButton(
+                        button as HTMLElement,
+                        direction
+                    )
+                }
             }
         }
-
+        
         // Set up canvas touch events
         if (this.inputManager) {
             this.inputManager.setupTouchControls(this.canvas)
@@ -510,14 +505,21 @@ export default class Game {
 
     /**
      * Handle restart event from input manager
+     * Can be triggered by keyboard or touch controls
      */
     handleRestartEvent(): void {
-        // Only handle restart events in GAME_OVER state
+        // Only handle restart events in specific states
         if (this.gameState === this.config.STATE.GAME_OVER) {
+            // Complete reset from game over state
             this.completeReset()
         } else if (this.gameState === this.config.STATE.PLAYING) {
-            // In playing state, just reset the current game
+            // In playing state, just reset positions but continue playing
             this.resetGame()
+        }
+        
+        // Trigger any UI updates needed
+        if (this.uiManager) {
+            this.uiManager.hideGameOver(); // Hide game over UI if visible
         }
     }
 
