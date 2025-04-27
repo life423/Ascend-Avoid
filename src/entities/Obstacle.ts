@@ -268,11 +268,13 @@ export default class Obstacle implements GameObject {
     /**
      * Collision detection with player
      * @param player - The player object to check against
+     * @param deltaTime - Optional time since last frame for continuous detection
      * @returns Whether the player is colliding with this obstacle
      */
-    detectCollision(player: GameObject): boolean {
-        // Use reduced hitbox for better gameplay experience
-        const hitboxReduction = 0.2; // 20% reduction
+    detectCollision(player: GameObject, deltaTime?: number): boolean {
+        // Reduced hitbox for better gameplay experience but not too small
+        // Reduced from 20% to 10% for more accurate collisions
+        const hitboxReduction = 0.1; // 10% reduction
 
         // Player hitbox
         const pLeft = player.x + player.width * hitboxReduction;
@@ -289,12 +291,55 @@ export default class Obstacle implements GameObject {
         // Check if hitboxes overlap
         const colliding =
             oLeft < pRight && oRight > pLeft && oTop < pBottom && oBottom > pTop;
+            
+        // Additional check for near misses to improve collision detection for fast movements
+        let nearMiss = false;
+        const proximityThreshold = 5; // pixels
+        
+        // Consider it a near miss if objects are within proximityThreshold pixels
+        if (!colliding && deltaTime) {
+            nearMiss = 
+                oLeft - proximityThreshold < pRight && 
+                oRight + proximityThreshold > pLeft && 
+                oTop - proximityThreshold < pBottom && 
+                oBottom + proximityThreshold > pTop;
+                
+            // If moving quickly, do continuous collision check (avoid tunneling)
+            if (nearMiss && this.speed * deltaTime > proximityThreshold) {
+                // Approximate previous positions
+                const prevPlayerX = player.x - ((player as any).vx || 0) * deltaTime;
+                const prevPlayerY = player.y - ((player as any).vy || 0) * deltaTime;
+                const prevObstacleX = this.x - this.speed * deltaTime;
+                
+                // Check if paths crossed
+                const pathsCrossed = 
+                    (prevPlayerX + player.width > prevObstacleX) && 
+                    (prevPlayerX < prevObstacleX + this.width) &&
+                    (prevPlayerY + player.height > this.y) && 
+                    (prevPlayerY < this.y + this.height);
+                    
+                if (pathsCrossed) {
+                    console.log('Continuous collision detected (prevented tunneling)');
+                    return true;
+                }
+            }
+        }
 
-        // Visual feedback for debugging
-        if ((window as any).DEBUG_COLLISIONS) {
+        // Visual feedback for debugging - always show for now to help diagnose issues
+        const debugCollisions = true; // Set to true for easier debugging or (window as any).DEBUG_COLLISIONS;
+        if (debugCollisions) {
             // Draw hitboxes for debugging
             const ctx = this.canvas.getContext('2d')!;
-            ctx.strokeStyle = colliding ? 'red' : 'lime';
+            
+            // Determine color based on collision state
+            if (colliding) {
+                ctx.strokeStyle = 'red';  // Collision
+            } else if (nearMiss) {
+                ctx.strokeStyle = 'yellow';  // Near miss
+            } else {
+                ctx.strokeStyle = 'lime';  // No collision
+            }
+            
             ctx.lineWidth = 2;
 
             // Player hitbox
@@ -312,6 +357,15 @@ export default class Obstacle implements GameObject {
                 this.width * (1 - 2 * hitboxReduction),
                 this.height * (1 - 2 * hitboxReduction)
             );
+            
+            // Draw connecting line for near misses
+            if (nearMiss) {
+                ctx.beginPath();
+                ctx.moveTo(pLeft + player.width/2, pTop + player.height/2);
+                ctx.lineTo(oLeft + this.width/2, oTop + this.height/2);
+                ctx.strokeStyle = 'rgba(255, 255, 0, 0.5)';
+                ctx.stroke();
+            }
         }
 
         // Set collision state (for explosion animation)

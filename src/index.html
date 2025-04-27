@@ -175,22 +175,48 @@
         <canvas id="canvas" aria-label="Cross the Box game" role="img"></canvas>
     </div>
     
-    <div id="game-ui-container">
+<div id="game-ui-container">
         <div id="touch-controls-container">
             <!-- Touch controls will be inserted here by JavaScript -->
         </div>
         
-    <div id="instructions">
-        <h3>How to Play:</h3>
-        <p>Move the white block to the top without hitting the blue blocks.</p>
-        <ul>
-            <li>Use arrow keys or WASD to move on desktop</li>
-            <li>Touch the direction buttons on mobile devices</li>
-            <li>Press 'R' or the restart button to restart the game</li>
-        </ul>
-        <p class="note">Game speed increases as you score more points!</p>
-        <p>Try to beat your high score and challenge your friends in multiplayer mode!</p>
+        <!-- Mobile: Floating "?" button to show instructions -->
+        <div id="instructions-toggle" class="mobile-only">
+            <button aria-label="How to play" title="How to play">?</button>
+        </div>
+        
+        <!-- Mobile: Collapsible drawer for instructions -->
+        <div id="instructions-drawer" class="mobile-only closed">
+            <div class="drawer-header">
+                <h3>How to Play</h3>
+                <button class="close-drawer" aria-label="Close instructions">×</button>
+            </div>
+            <div class="drawer-content">
+                <div id="instructions-mobile">
+                    <p>Move the white block to the top without hitting the blue blocks.</p>
+                    <ul>
+                        <li>Touch the direction buttons to move</li>
+                        <li>Tap the restart button to restart the game</li>
+                    </ul>
+                    <p class="note">Game speed increases as you score more points!</p>
+                    <p>Try to beat your high score and challenge your friends in multiplayer mode!</p>
+                </div>
+            </div>
+        </div>
     </div>
+    
+    <!-- Desktop: Sidebar container for instructions -->
+    <div id="desktop-sidebar" class="desktop-only">
+        <div id="instructions-desktop">
+            <h3>How to Play:</h3>
+            <p>Move the white block to the top without hitting the blue blocks.</p>
+            <ul>
+                <li>Use arrow keys or WASD to move</li>
+                <li>Press 'R' to restart the game</li>
+            </ul>
+            <p class="note">Game speed increases as you score more points!</p>
+            <p>Try to beat your high score and challenge your friends in multiplayer mode!</p>
+        </div>
     </div>
     
     <!-- Game error handling -->
@@ -322,5 +348,46 @@
     
     <!-- Game scripts - Using Vite entry point -->
     <script type="module" src="index.ts" onerror="document.getElementById('error-container').style.display='block'; document.getElementById('error-message').textContent='Failed to load game script. Please check your connection and try again.'"></script>
+    
+    <!-- Instructions drawer toggle script -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const instructionsToggle = document.getElementById('instructions-toggle');
+            const instructionsDrawer = document.getElementById('instructions-drawer');
+            const closeDrawerBtn = document.querySelector('.close-drawer');
+            
+            if (instructionsToggle && instructionsDrawer && closeDrawerBtn) {
+                instructionsToggle.addEventListener('click', function() {
+                    instructionsDrawer.classList.toggle('closed');
+                });
+                
+                closeDrawerBtn.addEventListener('click', function() {
+                    instructionsDrawer.classList.add('closed');
+                });
+            }
+            
+            // Set up game-content-wrapper for desktop layout
+            if (window.matchMedia("(min-width: 1200px)").matches) {
+                const gameContainer = document.getElementById('game-container');
+                const desktopSidebar = document.getElementById('desktop-sidebar');
+                
+                if (gameContainer && desktopSidebar) {
+                    // Create wrapper if it doesn't exist
+                    let wrapper = document.querySelector('.game-content-wrapper');
+                    if (!wrapper) {
+                        wrapper = document.createElement('div');
+                        wrapper.className = 'game-content-wrapper';
+                        
+                        // Insert wrapper around game container
+                        if (gameContainer.parentNode) {
+                            gameContainer.parentNode.insertBefore(wrapper, gameContainer);
+                            wrapper.appendChild(gameContainer);
+                            wrapper.appendChild(desktopSidebar);
+                        }
+                    }
+                }
+            }
+        });
+    </script>
 </body>
 </html>

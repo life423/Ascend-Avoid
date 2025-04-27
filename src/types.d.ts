@@ -25,6 +25,10 @@ export interface GameObject {
   height: number;
   active?: boolean;
   
+  // Optional velocity properties for collision detection
+  vx?: number;
+  vy?: number;
+  
   // Optional common methods
   update?: (deltaTime: number, timestamp?: number) => void;
   render?: (ctx: CanvasRenderingContext2D, timestamp?: number) => void;

@@ -24,6 +24,10 @@ export default class Player implements GameObject {
   private movementKeys: Record<string, boolean>;
   private canMove: Record<string, boolean>;
   
+  // Velocity for collision detection
+  vx: number = 0;
+  vy: number = 0;
+  
   /**
    * Creates a new Player instance
    * @param canvas - The game canvas
@@ -134,9 +138,18 @@ export default class Player implements GameObject {
     // Calculate scaled winning line position
     const scaledWinningLine = GAME.WINNING_LINE * (this.canvas.height / BASE_CANVAS_HEIGHT);
     
+    // Store previous position for velocity calculation
+    const prevX = this.x;
+    const prevY = this.y;
+    
+    // Reset velocity
+    this.vx = 0;
+    this.vy = 0;
+    
     // Move up - Allow player to reach the winning line
     if (this.movementKeys.up && this.canMove.up && this.y > scaledWinningLine - (this.height / 2)) {
       this.y -= moveY;
+      this.vy = -moveY;
       this.canMove.up = false;
     }
     if (!this.movementKeys.up) {
@@ -146,6 +159,7 @@ export default class Player implements GameObject {
     // Move down
     if (this.movementKeys.down && this.canMove.down && this.y + this.height <= this.canvas.height - (10 * SCALE_FACTOR)) {
       this.y += moveY;
+      this.vy = moveY;
       this.canMove.down = false;
     }
     if (!this.movementKeys.down) {
@@ -155,6 +169,7 @@ export default class Player implements GameObject {
     // Move right
     if (this.movementKeys.right && this.canMove.right && this.x < this.canvas.width - this.width - (5 * SCALE_FACTOR)) {
       this.x += moveX;
+      this.vx = moveX;
       this.canMove.right = false;
     }
     if (!this.movementKeys.right) {
@@ -164,6 +179,7 @@ export default class Player implements GameObject {
     // Move left
     if (this.movementKeys.left && this.canMove.left && this.x > (5 * SCALE_FACTOR)) {
       this.x -= moveX;
+      this.vx = -moveX;
       this.canMove.left = false;
     }
     if (!this.movementKeys.left) {

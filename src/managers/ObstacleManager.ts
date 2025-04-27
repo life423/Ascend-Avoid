@@ -8,7 +8,7 @@ import { ScalingInfo, GameObject } from '../types';
 // Interface for the Obstacle instance
 interface Obstacle extends GameObject {
   calculateHeight: () => void;
-  detectCollision: (player: GameObject) => boolean;
+  detectCollision: (player: GameObject, deltaTime?: number) => boolean;
   update: (timestamp: number, score: number, scalingInfo?: ScalingInfo) => void;
 }
 
@@ -186,11 +186,12 @@ export default class ObstacleManager {
   /**
    * Check for collisions between player and obstacles
    * @param player - The player object to check against
+   * @param deltaTime - Optional time since last frame for continuous detection
    * @returns The obstacle that was hit, or null if no collision
    */
-  checkCollisions(player: GameObject): Obstacle | null {
+  checkCollisions(player: GameObject, deltaTime?: number): Obstacle | null {
     for (const obstacle of this.obstacles) {
-      if (obstacle.detectCollision(player)) {
+      if (obstacle.detectCollision(player, deltaTime)) {
         return obstacle;
       }
     }

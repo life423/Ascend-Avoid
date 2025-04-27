@@ -27,7 +27,7 @@ interface ParticleOptions {
 
 interface ObstacleManager {
   update: (timestamp: number, score: number, scalingInfo: ScalingInfo) => void;
-  checkCollisions: (player: Player) => Obstacle | null;
+  checkCollisions: (player: Player, deltaTime?: number) => Obstacle | null;
   reset: () => void;
   addObstacle: () => void;
   getObstacles: () => Obstacle[];
@@ -104,8 +104,8 @@ export default class SinglePlayerMode extends GameMode {
     if (this.game.obstacleManager) {
       this.game.obstacleManager.update(timestamp, this.game.score, this.game.scalingInfo);
       
-      // Check for collisions
-      const collision = this.game.obstacleManager.checkCollisions(this.game.player);
+      // Check for collisions with continuous collision detection (pass deltaTime)
+      const collision = this.game.obstacleManager.checkCollisions(this.game.player, deltaTime);
       if (collision) {
         this.handleCollision(collision);
       }

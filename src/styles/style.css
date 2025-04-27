@@ -109,30 +109,115 @@ h4 {
     border-radius: var(--border-radius);
 }
 
-#instructions {
-    max-width: 560px;
-    margin: 20px auto;
-    padding: var(--spacing-lg);
+/* Desktop Sidebar Instructions */
+#desktop-sidebar {
     background: #172a46; /* Darker than primary light for better contrast */
     color: var(--text-light);
     border-radius: var(--border-radius);
     box-shadow: 0 4px 8px rgba(0,0,0,0.3);
     border-left: 4px solid var(--accent-primary);
+    padding: var(--spacing-lg);
+    max-width: 300px;
+    width: 30%;
+    margin-top: 50px;
 }
 
-#instructions h3 {
+#instructions-desktop h3 {
     color: var(--accent-secondary);
     font-size: 1.3rem;
+    margin-top: 0;
 }
 
-#instructions ul {
+#instructions-desktop ul {
     padding-left: 20px;
     margin: var(--spacing-md) 0;
 }
 
-#instructions li {
+#instructions-desktop li {
     margin-bottom: var(--spacing-sm);
     list-style-type: square;
+}
+
+/* Mobile Instructions Drawer */
+#instructions-toggle {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    z-index: 100;
+}
+
+#instructions-toggle button {
+    width: 45px;
+    height: 45px;
+    border-radius: 50%;
+    background: var(--accent-primary);
+    color: var(--text-dark);
+    font-size: 24px;
+    font-weight: bold;
+    border: none;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+    cursor: pointer;
+}
+
+#instructions-drawer {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: #172a46;
+    color: var(--text-light);
+    border-top-left-radius: var(--border-radius);
+    border-top-right-radius: var(--border-radius);
+    box-shadow: 0 -5px 15px rgba(0,0,0,0.3);
+    transition: transform 0.3s ease-in-out;
+    z-index: 200;
+    max-height: 70vh;
+    overflow-y: auto;
+}
+
+#instructions-drawer.closed {
+    transform: translateY(100%);
+}
+
+.drawer-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px;
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+}
+
+.drawer-header h3 {
+    margin: 0;
+    color: var(--accent-secondary);
+}
+
+.close-drawer {
+    background: transparent;
+    border: none;
+    color: var(--text-light);
+    font-size: 24px;
+    cursor: pointer;
+    padding: 5px 10px;
+}
+
+.drawer-content {
+    padding: var(--spacing-md);
+}
+
+#instructions-mobile ul {
+    padding-left: 20px;
+    margin: var(--spacing-md) 0;
+}
+
+#instructions-mobile li {
+    margin-bottom: var(--spacing-sm);
+    list-style-type: square;
+}
+
+/* Legacy instructions style for backward compatibility */
+#instructions {
+    display: none; /* Hide the old instructions */
 }
 
 .note {
@@ -247,11 +332,48 @@ h4 {
         font-size: 3rem;
         margin-bottom: var(--spacing-md);
     }
+}
+
+/* Responsive visibility classes */
+.mobile-only {
+    display: none;
+}
+
+.desktop-only {
+    display: none;
+}
+
+/* Media query for desktop screens */
+@media screen and (min-width: 1200px) {
+    .desktop-only {
+        display: block;
+    }
     
-    /* Improved instructions layout on desktop */
-    #instructions {
-        max-width: 760px;
-        margin: var(--spacing-lg) auto;
-        padding: var(--spacing-lg);
+    .game-content-wrapper {
+        display: flex;
+        justify-content: center;
+        align-items: flex-start;
+        gap: 30px;
+    }
+    
+    #game-container {
+        width: 70%;
+    }
+}
+
+/* Media query for mobile screens */
+@media screen and (max-width: 1199px) {
+    .mobile-only {
+        display: block;
+    }
+    
+    #desktop-sidebar {
+        display: none;
+    }
+    
+    #instructions-toggle button {
+        width: 40px;
+        height: 40px;
+        font-size: 20px;
     }
 }
