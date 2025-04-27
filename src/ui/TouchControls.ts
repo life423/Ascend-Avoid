@@ -334,19 +334,29 @@ export default class TouchControls {
                 { passive: false }
             )
 
-            // Touch leave - deactivate button if touch moves out
+            // Touch move - deactivate button if touch moves out (replaces non-standard touchleave)
             button.addEventListener(
-                'touchleave',
+                'touchmove',
                 (e: TouchEvent) => {
-                    e.preventDefault()
-                    this.handleButtonActivation(
-                        key,
-                        false,
-                        e.changedTouches[0].identifier
-                    )
+                    e.preventDefault();
+                    // Check if touch has moved outside of button
+                    const touch = e.changedTouches[0];
+                    const buttonRect = button.getBoundingClientRect();
+                    if (
+                        touch.clientX < buttonRect.left ||
+                        touch.clientX > buttonRect.right ||
+                        touch.clientY < buttonRect.top ||
+                        touch.clientY > buttonRect.bottom
+                    ) {
+                        this.handleButtonActivation(
+                            key,
+                            false,
+                            touch.identifier
+                        );
+                    }
                 },
                 { passive: false }
-            )
+            );
         })
     }
 

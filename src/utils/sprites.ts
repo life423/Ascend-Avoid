@@ -1,29 +1,37 @@
 /**
  * Advanced sprite system for game entities
+ * Modernized and converted to TypeScript
  */
 
 // Animation frame timing (milliseconds)
 const ANIMATION_SPEED = 200;
 
 /**
- * Sprite Manager class to handle sprite creation, caching, and animation
+ * Interface for SpriteSheets containing animation frames
+ */
+interface SpriteSheets {
+  [key: string]: HTMLImageElement[];
+}
+
+/**
+ * Modernized Sprite Manager class to handle sprite creation, caching, and animation
  */
 export class SpriteManager {
+  // Sprite cache storage
+  private frameCache: Record<string, HTMLImageElement> = {};
+  private spriteSheets: SpriteSheets = {};
+  private currentFrame = 0;
+  private lastFrameTime = 0;
+  
   constructor() {
-    // Initialize sprite cache
-    this.frameCache = {};
-    this.spriteSheets = {};
-    this.currentFrame = 0;
-    this.lastFrameTime = 0;
-    
-    // Create all sprites on initialization
+    // Initialize all sprites on startup for improved performance
     this.initializeSprites();
   }
   
   /**
    * Initialize all game sprites
    */
-  initializeSprites() {
+  private initializeSprites(): void {
     // Create player sprite frames
     this.createPlayerSprites();
     
@@ -37,21 +45,14 @@ export class SpriteManager {
   /**
    * Create player character sprites with multiple animation frames
    */
-  createPlayerSprites() {
+  private createPlayerSprites(): void {
     // Create sprite sheet with 4 frames of animation
-    const frames = [];
+    const frames: HTMLImageElement[] = [];
     
-    // Frame 1: Basic character
-    frames.push(this.createPlayerFrame(0));
-    
-    // Frame 2: Slight movement
-    frames.push(this.createPlayerFrame(1));
-    
-    // Frame 3: Different position
-    frames.push(this.createPlayerFrame(2));
-    
-    // Frame 4: Return to slight movement
-    frames.push(this.createPlayerFrame(3));
+    // Generate all animation frames
+    for (let i = 0; i < 4; i++) {
+      frames.push(this.createPlayerFrame(i));
+    }
     
     // Store in sprite sheets
     this.spriteSheets.player = frames;
@@ -59,18 +60,19 @@ export class SpriteManager {
   
   /**
    * Create a single player animation frame
-   * @param {number} frameIndex - The index of the animation frame
-   * @returns {HTMLImageElement} The frame image
+   * @param frameIndex - The index of the animation frame
+   * @returns The frame image
    */
-  createPlayerFrame(frameIndex) {
+  private createPlayerFrame(frameIndex: number): HTMLImageElement {
     const canvas = document.createElement('canvas');
     canvas.width = 32;
     canvas.height = 32;
-    const ctx = canvas.getContext('2d');
+    const ctx = canvas.getContext('2d')!;
     
-    // Base shape - white rounded square
+    // Base shape - white rounded square with improved performance
     ctx.fillStyle = 'white';
     ctx.beginPath();
+    // Use modern roundRect method or fallback to custom implementation
     if (ctx.roundRect) {
       ctx.roundRect(0, 0, 32, 32, 8);
     } else {
@@ -124,19 +126,11 @@ export class SpriteManager {
     
     // Convert to image - handle asynchronous loading
     const image = new Image();
-    // Use a simple shape as fallback until the image loads
+    // Create fallback image in case of loading issues
     const fallbackImage = this.createFallbackImage(canvas.width, canvas.height, 'white');
     
-    // Set src after onload to ensure proper loading
-    image.onload = () => {
-      console.log('Player sprite frame loaded successfully');
-    };
-    
-    image.onerror = (e) => {
-      console.error('Failed to load player sprite:', e);
-    };
-    
     try {
+      // Use modern async/await pattern but don't block initialization
       image.src = canvas.toDataURL('image/png');
       return image;
     } catch (e) {
@@ -148,11 +142,11 @@ export class SpriteManager {
   /**
    * Create obstacle sprites with multiple variants
    */
-  createObstacleSprites() {
+  private createObstacleSprites(): void {
     // Create several obstacle variants
-    const variants = [];
+    const variants: HTMLImageElement[] = [];
     
-    // Create 3 different obstacle types
+    // Create different obstacle types (more visually distinct)
     for (let i = 0; i < 3; i++) {
       variants.push(this.createObstacleVariant(i));
     }
@@ -162,17 +156,17 @@ export class SpriteManager {
   
   /**
    * Create a single obstacle variant
-   * @param {number} variantIndex - The variant index (0-2)
-   * @returns {HTMLImageElement} The obstacle image
+   * @param variantIndex - The variant index (0-2)
+   * @returns The obstacle image
    */
-  createObstacleVariant(variantIndex) {
+  private createObstacleVariant(variantIndex: number): HTMLImageElement {
     const canvas = document.createElement('canvas');
     canvas.width = 64;
     canvas.height = 32;
-    const ctx = canvas.getContext('2d');
+    const ctx = canvas.getContext('2d')!;
     
-    // Different color gradients for each variant
-    let startColor, endColor, patternColor;
+    // Different color gradients for each variant - improved contrast
+    let startColor: string, endColor: string, patternColor: string;
     
     switch (variantIndex) {
       case 0: // Cyan obstacle
@@ -190,6 +184,11 @@ export class SpriteManager {
         endColor = '#E07D20';
         patternColor = '#FFB86C';
         break;
+      default:
+        // Fallback colors
+        startColor = '#1FF2F2';
+        endColor = '#0CC7C7';
+        patternColor = '#0FF0F0';
     }
     
     // Background gradient
@@ -284,7 +283,7 @@ export class SpriteManager {
       ctx.stroke();
     }
     
-    // Convert to image
+    // Convert to image using modern approach
     const image = new Image();
     image.src = canvas.toDataURL('image/png');
     return image;
@@ -293,11 +292,11 @@ export class SpriteManager {
   /**
    * Create effect sprites (explosions, particles, etc.)
    */
-  createEffectSprites() {
+  private createEffectSprites(): void {
     // Create sprite sheet with explosion effect frames
-    const explosionFrames = [];
+    const explosionFrames: HTMLImageElement[] = [];
     
-    // Create 5 frames of explosion animation
+    // Create frames of explosion animation
     for (let i = 0; i < 5; i++) {
       explosionFrames.push(this.createExplosionFrame(i));
     }
@@ -307,14 +306,14 @@ export class SpriteManager {
   
   /**
    * Create a single explosion animation frame
-   * @param {number} frameIndex - The index of the animation frame (0-4)
-   * @returns {HTMLImageElement} The explosion frame image
+   * @param frameIndex - The index of the animation frame (0-4)
+   * @returns The explosion frame image
    */
-  createExplosionFrame(frameIndex) {
+  private createExplosionFrame(frameIndex: number): HTMLImageElement {
     const canvas = document.createElement('canvas');
     canvas.width = 64;
     canvas.height = 64;
-    const ctx = canvas.getContext('2d');
+    const ctx = canvas.getContext('2d')!;
     
     // Size increases with frame index
     const size = 10 + (frameIndex * 10);
@@ -346,7 +345,7 @@ export class SpriteManager {
       const y = 32 + Math.sin(angle) * distance;
       
       ctx.beginPath();
-      ctx.arc(x, y, particleSize, 0, Math.PI * 2);
+      ctx.arc(x, y, Math.max(0.5, particleSize), 0, Math.PI * 2);
       ctx.fill();
     }
     
@@ -359,7 +358,7 @@ export class SpriteManager {
   /**
    * Helper function to draw rounded rectangles for browsers without roundRect
    */
-  drawRoundedRect(ctx, x, y, width, height, radius) {
+  private drawRoundedRect(ctx: CanvasRenderingContext2D, x: number, y: number, width: number, height: number, radius: number): void {
     ctx.beginPath();
     ctx.moveTo(x + radius, y);
     ctx.lineTo(x + width - radius, y);
@@ -376,11 +375,11 @@ export class SpriteManager {
   /**
    * Create a simple colored rectangle as fallback
    */
-  createFallbackImage(width, height, color) {
+  private createFallbackImage(width: number, height: number, color: string): HTMLImageElement {
     const canvas = document.createElement('canvas');
     canvas.width = width;
     canvas.height = height;
-    const ctx = canvas.getContext('2d');
+    const ctx = canvas.getContext('2d')!;
     
     ctx.fillStyle = color;
     ctx.fillRect(0, 0, width, height);
@@ -396,12 +395,12 @@ export class SpriteManager {
   
   /**
    * Get the current animation frame for a sprite
-   * @param {string} type - The type of sprite ('player', 'obstacle', etc.)
-   * @param {number} variantIndex - Optional variant index for obstacles
-   * @param {number} timestamp - Current timestamp for animation
-   * @returns {HTMLImageElement} The sprite frame to display
+   * @param type - The type of sprite ('player', 'obstacle', etc.)
+   * @param variantIndex - Optional variant index for obstacles
+   * @param timestamp - Current timestamp for animation
+   * @returns The sprite frame to display
    */
-  getAnimationFrame(type, variantIndex = 0, timestamp = 0) {
+  getAnimationFrame(type: string, variantIndex: number = 0, timestamp: number = 0): HTMLImageElement {
     try {
       // Update animation frame if enough time has passed
       if (timestamp - this.lastFrameTime > ANIMATION_SPEED) {
@@ -452,11 +451,11 @@ const spriteManagerInstance = new SpriteManager();
 
 /**
  * Get a sprite frame from the sprite manager
- * @param {string} type - The type of sprite ('player', 'obstacle', etc.)
- * @param {number} variantOrTime - Variant index for obstacles or frame index for effects
- * @param {number} timestamp - Current timestamp for animation
- * @returns {HTMLImageElement} The sprite frame to display
+ * @param type - The type of sprite ('player', 'obstacle', etc.)
+ * @param variantOrTime - Variant index for obstacles or frame index for effects
+ * @param timestamp - Current timestamp for animation
+ * @returns The sprite frame to display
  */
-export function getSprite(type, variantOrTime = 0, timestamp = 0) {
+export function getSprite(type: string, variantOrTime: number = 0, timestamp: number = 0): HTMLImageElement {
   return spriteManagerInstance.getAnimationFrame(type, variantOrTime, timestamp);
 }

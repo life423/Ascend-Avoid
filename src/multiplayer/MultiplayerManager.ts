@@ -121,11 +121,16 @@ export default class MultiplayerManager {
   init(): MultiplayerManager {
     // Import Colyseus client from npm package
     try {
-      // Dynamic import to load on demand
+      // Modern dynamic import approach
       import('colyseus.js').then(ColyseusModule => {
         const { Client } = ColyseusModule;
         this.client = new Client(this.serverAddress);
         console.log('Multiplayer client initialized');
+      }).catch(err => {
+        console.error('Failed to load Colyseus client:', err);
+        if (this.onConnectionError) {
+          this.onConnectionError('Failed to load multiplayer client: ' + err.message);
+        }
       });
     } catch (e) {
       console.error('Failed to load Colyseus client:', e);

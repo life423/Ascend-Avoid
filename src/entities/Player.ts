@@ -2,9 +2,9 @@
  * Player class representing the player entity in the game.
  * Updated with TypeScript support.
  */
-import { GAME, PLAYER } from '../js/shared/constants/gameConstants.js';
-import { getSprite } from '../js/sprites.js';
-import { SCALE_FACTOR, BASE_CANVAS_WIDTH, BASE_CANVAS_HEIGHT } from '../js/utils/utils.js';
+import { GAME, PLAYER } from '../constants/gameConstants';
+import { getSprite } from '../utils/sprites';
+import { SCALE_FACTOR, BASE_CANVAS_WIDTH, BASE_CANVAS_HEIGHT } from '../utils/utils';
 import { GameObject, InputState } from '../types';
 
 export default class Player implements GameObject {

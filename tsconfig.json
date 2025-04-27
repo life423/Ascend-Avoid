@@ -17,10 +17,13 @@
     "allowJs": true,
     "checkJs": false,
     
-    /* Type Checking */
-    "strict": false,         /* Start with false for gradual migration */
-    "noImplicitAny": false,  /* Start with false, enable later */
-    "strictNullChecks": false,
+    /* Type Checking - Gradual migration approach */
+    "strict": false,         /* We'll enable specific checks instead of full strict mode */
+    "noImplicitAny": false,  /* Too many errors for now, enable later */
+    "strictNullChecks": false, /* Too many null errors, enable after fixes */
+    "noImplicitThis": true, /* This one is easier to fix and helpful */
+    "alwaysStrict": true,   /* Ensure 'use strict' is always emitted */
+    "strictFunctionTypes": true, /* Check function parameter and return types */
     
     /* Path aliases to match the new directory structure */
     "baseUrl": ".",
@@ -32,7 +35,7 @@
       "@ui/*": ["src/ui/*"],
       "@utils/*": ["src/utils/*"],
       "@constants/*": ["src/constants/*"],
-      "@shared/*": ["shared/*"]
+      "@server/*": ["server/*"]
     }
   },
   "include": [
@@ -40,8 +43,8 @@
     "src/**/*.d.ts", 
     "src/**/*.tsx",
     "src/**/*.js",
-    "shared/**/*.ts",
-    "shared/**/*.js"
+    "server/**/*.ts",
+    "server/**/*.js"
   ],
   "exclude": ["node_modules", "dist"]
 }

@@ -7,7 +7,7 @@ import { GameObject } from '../types';
 // Updated import path to match the new structure
 import { OBSTACLE } from '../constants/gameConstants';
 import { randomIntFromInterval, SCALE_FACTOR, BASE_CANVAS_WIDTH, BASE_CANVAS_HEIGHT } from '../utils/utils';
-import { getSprite } from '../js/sprites';
+import { getSprite } from '../utils/sprites';
 
 export default class Obstacle implements GameObject {
     // Canvas related properties
