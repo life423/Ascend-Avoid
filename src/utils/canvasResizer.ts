@@ -24,9 +24,17 @@ export class CanvasResizer {
    * Resizes canvas to fit the available space while maintaining aspect ratio
    */
   resize(): void {
-    // Get available width (respecting max width constraints)
+    // Get available space (both width and height)
     const containerWidth = this.container.clientWidth;
+    const windowHeight = window.innerHeight;
     const isDesktop = window.innerWidth >= 1024;
+    
+    // Consider both vertical and horizontal constraints
+    // Leave some margin for other UI elements (headers, instructions, etc.)
+    // On mobile, use less height to ensure controls are visible
+    const availableHeight = isDesktop 
+      ? windowHeight * 0.85  // Desktop: Use 85% of viewport height
+      : windowHeight * 0.6;  // Mobile: Use 60% of viewport height to leave room for controls
     
     // Calculate target width based on device and constraints
     let targetWidth = Math.min(
@@ -34,11 +42,18 @@ export class CanvasResizer {
       isDesktop ? CANVAS.MAX_DESKTOP_WIDTH : CANVAS.MAX_MOBILE_WIDTH
     );
     
+    // Calculate height based on aspect ratio
+    let targetHeight = targetWidth * this.aspectRatio;
+    
+    // If height exceeds available height, recalculate based on height constraint
+    if (targetHeight > availableHeight) {
+      targetHeight = availableHeight;
+      targetWidth = targetHeight / this.aspectRatio;
+    }
+    
     // Ensure minimum reasonable size
     targetWidth = Math.max(targetWidth, 300);
-    
-    // Calculate height based on aspect ratio
-    const targetHeight = targetWidth * this.aspectRatio;
+    targetHeight = Math.max(targetHeight, 300);
     
     // Apply dimensions to canvas
     this.canvas.width = targetWidth;
@@ -47,6 +62,8 @@ export class CanvasResizer {
     // Update CSS dimensions to match
     this.canvas.style.width = `${targetWidth}px`;
     this.canvas.style.height = `${targetHeight}px`;
+    
+    console.log(`Canvas resized: ${Math.round(targetWidth)}×${Math.round(targetHeight)}, ratio: ${this.aspectRatio.toFixed(2)}`);
     
     // Dispatch resize event for other components to react
     const resizeEvent = new CustomEvent('canvasResized', {

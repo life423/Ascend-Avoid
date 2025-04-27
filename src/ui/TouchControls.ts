@@ -137,9 +137,7 @@ export default class TouchControls {
             // Create the container if it doesn't exist
             this.container = document.createElement('div')
             this.container.id = 'touch-controls-container'
-            this.container.style.position = 'fixed'
-            this.container.style.bottom = '10px'
-            this.container.style.left = '0'
+            this.container.style.position = 'relative'  // Changed from fixed to relative
             this.container.style.width = '100%'
             this.container.style.display = 'flex'
             this.container.style.justifyContent = 'space-between'
@@ -147,7 +145,15 @@ export default class TouchControls {
             this.container.style.padding = '10px'
             this.container.style.zIndex = '1000'
             this.container.style.pointerEvents = 'none'  // Allow clicks to pass through container
-            document.body.appendChild(this.container)
+            
+            // Place the controls container right after the game-container
+            const gameContainer = document.getElementById('game-container')
+            if (gameContainer && gameContainer.nextSibling) {
+                document.body.insertBefore(this.container, gameContainer.nextSibling)
+            } else {
+                // Fallback to appending to body
+                document.body.appendChild(this.container)
+            }
         } else {
             this.container = containerElement
         }

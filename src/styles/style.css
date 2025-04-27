@@ -85,6 +85,7 @@ h4 {
 
 .game-container {
   width: 100%;
+  height: 85vh; /* Use a percentage of viewport height */
   display: flex;
   justify-content: center;
   align-items: center;
@@ -94,9 +95,16 @@ h4 {
   margin-bottom: var(--spacing-md);
 }
 
+@media screen and (min-width: 1200px) {
+  .game-container {
+    height: calc(100vh - 150px); /* Account for header and other elements */
+    max-height: 90vh; /* Don't exceed 90% of viewport height */
+  }
+}
+
 #canvas {
     max-width: 100%;
-    height: auto;
+    max-height: 100%;
     margin: 0 auto;
     border-radius: var(--border-radius);
 }
@@ -162,16 +170,40 @@ h4 {
     }
     
     h1 {
-        font-size: 1.8rem;
+        font-size: 1.5rem;
+        padding-top: 5px;
+        margin-bottom: 5px;
+    }
+    
+    #headers {
+        padding: 5px 0;
+        margin-bottom: 5px;
+    }
+    
+    .game-container {
+        height: 60vh; /* Smaller height on mobile to leave room for controls */
+        padding: 5px 0;
+        margin-bottom: 5px;
     }
     
     #instructions {
-        padding: var(--spacing-md);
-        margin: var(--spacing-md) auto;
+        padding: var(--spacing-sm);
+        margin: 5px auto;
+        max-height: 25vh; /* Limit height to ensure controls are visible */
+        overflow-y: auto; /* Make scrollable if needed */
     }
     
     canvas {
         border-width: 2px;
+    }
+    
+    /* Ensure touch controls are visible */
+    #touch-controls-container {
+        position: relative;
+        display: flex;
+        justify-content: center;
+        padding: 5px 0;
+        z-index: 10; /* Make sure controls are above other elements */
     }
 }
 
