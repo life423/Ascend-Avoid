@@ -7,27 +7,8 @@
 import Game from './core/Game';
 import ResponsiveManager from './managers/ResponsiveManager';
 
-// Add buffer polyfill for Colyseus (needed for multiplayer)
-import { Buffer } from 'buffer';
-
-// Polyfills for Node.js modules
-if (typeof window !== 'undefined') {
-  if (typeof window.Buffer === 'undefined') {
-    console.log('Buffer not available in browser, adding polyfill for multiplayer');
-    window.Buffer = Buffer;
-  }
-
-  // Process polyfill for any libraries that might need it
-  if (typeof window.process === 'undefined') {
-    window.process = {
-      env: {},
-      nextTick: function(callback) { setTimeout(callback, 0); },
-      browser: true,
-      version: '',
-      platform: 'browser'
-    } as any;
-  }
-}
+// Node.js polyfills now handled by vite-plugin-node-polyfills
+// No manual Buffer or process polyfills needed
 
 // Helper function for device detection
 function detectDevice() {

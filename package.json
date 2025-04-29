@@ -48,6 +48,7 @@
         "typescript": "^5.8.3",
         "vite": "^6.2.5",
         "vite-plugin-checker": "^0.9.1",
+        "vite-plugin-node-polyfills": "^0.23.0",
         "vitest": "^3.1.2"
     },
     "engines": {
@@ -60,6 +61,7 @@
         "not op_mini all"
     ],
     "dependencies": {
+        "buffer": "^6.0.3",
         "colyseus.js": "^0.16.15",
         "cors": "^2.8.5",
         "express": "^4.19.2"
