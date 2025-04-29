@@ -8,8 +8,8 @@ import { GameObject, InputState, PerformanceStats, ScalingInfo } from '../types'
 // Import player and background entities
 import Background from '../entities/Background'
 import Player from '../entities/Player'
+import ResponsiveManager from '../managers/ResponsiveManager'
 import TouchControls from '../ui/TouchControls'
-import { CanvasResizer } from '../utils/canvasResizer'
 
 // Fallback constants in case imports fail
 const BASE_CANVAS_WIDTH = 560
@@ -84,7 +84,7 @@ export default class Game {
     // Canvas and rendering context
     canvas: HTMLCanvasElement
     ctx: CanvasRenderingContext2D
-    canvasResizer: CanvasResizer
+    responsiveManager: ResponsiveManager
 
     // UI elements
     scoreElement: HTMLElement | null
@@ -240,21 +240,16 @@ export default class Game {
         // Initialize asset manager and preload assets
         this.assetManager = new AssetManager()
         await this.preloadAssets()
-        
-        // Initialize the canvas resizer
-        const gameContainer = document.getElementById('game-container');
-        this.canvasResizer = new CanvasResizer(this.canvas, gameContainer);
-        
-        // Get the scale factor for other game elements
-        this.scalingInfo = {
-            widthScale: this.canvasResizer.getScaleFactor(),
-            heightScale: this.canvasResizer.getScaleFactor(),
-            pixelRatio: window.devicePixelRatio || 1,
-            reducedResolution: false,
-        }
-        
-        // Listen for canvas resize events
-        document.addEventListener('canvasResized', this.onResize.bind(this));
+
+        // Initialize the responsive manager
+        this.responsiveManager = new ResponsiveManager(this)
+        this.responsiveManager.init(this.canvas)
+
+        // Get the scaling info from the responsive manager
+        this.scalingInfo = this.responsiveManager.getScalingInfo()
+
+        // Set callback for resize events
+        this.responsiveManager.onResize = this.onResize.bind(this)
 
         // Create background
         this.background = new Background(this.canvas)
@@ -406,22 +401,9 @@ export default class Game {
      * Callback for when canvas or window size changes
      * Called when the window is resized or orientation changes
      */
-    onResize(): void {
-        if (this.canvasResizer) {
-            // Trigger the canvas resizer to handle the resize
-            this.canvasResizer.resize();
-            
-            // Get the new scale factor
-            const scaleFactor = this.canvasResizer.getScaleFactor();
-            
-            // Update scaling info for other game elements
-            this.scalingInfo = {
-                widthScale: scaleFactor,
-                heightScale: scaleFactor,
-                pixelRatio: window.devicePixelRatio || 1,
-                reducedResolution: false,
-            }
-        }
+    onResize(widthScale?: number, heightScale?: number, isDesktop?: boolean): void {
+        // Get updated scaling info from responsive manager
+        this.scalingInfo = this.responsiveManager.getScalingInfo();
 
         // Update device detection
         this.isDesktop = window.innerWidth >= 1024
@@ -447,7 +429,9 @@ export default class Game {
         }
 
         console.log(
-            `Game resized: isDesktop=${this.isDesktop}, scale=${this.scalingInfo.widthScale.toFixed(2)}`
+            `Game resized: isDesktop=${
+                this.isDesktop
+            }, scale=${this.scalingInfo.widthScale.toFixed(2)}`
         )
     }
 
@@ -458,23 +442,28 @@ export default class Game {
     setupTouchControls(): void {
         // Always create touch controls - they will be shown/hidden based on screen size
         this.touchControls = new TouchControls(this)
-        
+
         // Check screen size to determine if controls should be shown
         const isSmallScreen = window.innerWidth < 768
-        const isLargeDisplay = document.body.classList.contains('desktop-layout') ||
-                              document.body.classList.contains('large-screen')
-        
+        const isLargeDisplay =
+            document.body.classList.contains('desktop-layout') ||
+            document.body.classList.contains('large-screen')
+
         // Only show on small screens not in desktop mode
         if (isSmallScreen && !isLargeDisplay) {
             console.log('Small screen detected, showing touch controls')
             this.touchControls.show()
         } else {
-            console.log('Large screen or desktop layout detected, hiding touch controls')
+            console.log(
+                'Large screen or desktop layout detected, hiding touch controls'
+            )
         }
-        
+
         // Register touch buttons with input manager
         if (this.inputManager && this.touchControls.buttonElements) {
-            for (const [direction, button] of Object.entries(this.touchControls.buttonElements)) {
+            for (const [direction, button] of Object.entries(
+                this.touchControls.buttonElements
+            )) {
                 // Skip null buttons (like shield which we removed)
                 if (button) {
                     this.inputManager.registerTouchButton(
@@ -484,7 +473,7 @@ export default class Game {
                 }
             }
         }
-        
+
         // Set up canvas touch events
         if (this.inputManager) {
             this.inputManager.setupTouchControls(this.canvas)
@@ -516,10 +505,10 @@ export default class Game {
             // In playing state, just reset positions but continue playing
             this.resetGame()
         }
-        
+
         // Trigger any UI updates needed
         if (this.uiManager) {
-            this.uiManager.hideGameOver(); // Hide game over UI if visible
+            this.uiManager.hideGameOver() // Hide game over UI if visible
         }
     }
 
@@ -1146,7 +1135,6 @@ export default class Game {
     dispose(): void {
         // Remove event listeners
         document.removeEventListener('game:restart', this.handleRestartEvent)
-        document.removeEventListener('canvasResized', this.onResize)
 
         // Dispose managers
         if (this.inputManager) {
@@ -1161,9 +1149,9 @@ export default class Game {
             this.assetManager.dispose()
         }
 
-        // Clean up canvas resizer
-        if (this.canvasResizer) {
-            this.canvasResizer.dispose();
+        // Clean up responsive manager
+        if (this.responsiveManager) {
+            this.responsiveManager.dispose();
         }
 
         // Clean up particle system

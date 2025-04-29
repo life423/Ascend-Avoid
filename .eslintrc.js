@@ -4,14 +4,23 @@ module.exports = {
     es2021: true,
     node: true
   },
-  extends: 'eslint:recommended',
+  extends: [
+    'eslint:recommended',
+    'plugin:@typescript-eslint/recommended'
+  ],
+  parser: '@typescript-eslint/parser',
   parserOptions: {
     ecmaVersion: 'latest',
-    sourceType: 'module'
+    sourceType: 'module',
+    project: './tsconfig.json'
   },
+  plugins: [
+    '@typescript-eslint'
+  ],
   rules: {
     // Error prevention
-    'no-unused-vars': ['warn', { argsIgnorePattern: '^_' }],
+    'no-unused-vars': 'off', // Use TypeScript version instead
+    '@typescript-eslint/no-unused-vars': ['warn', { argsIgnorePattern: '^_' }],
     'no-console': ['warn', { allow: ['info', 'warn', 'error'] }],
     'no-debugger': 'warn',
     'no-duplicate-case': 'error',
@@ -19,15 +28,30 @@ module.exports = {
     'no-extra-semi': 'warn',
     'no-irregular-whitespace': 'warn',
     
+    // TypeScript specific
+    '@typescript-eslint/explicit-function-return-type': 'off',
+    '@typescript-eslint/no-explicit-any': 'warn',
+    '@typescript-eslint/no-non-null-assertion': 'warn',
+    '@typescript-eslint/no-empty-interface': 'warn',
+    '@typescript-eslint/ban-ts-comment': ['warn', {
+      'ts-ignore': 'allow-with-description',
+      'ts-nocheck': 'allow-with-description'
+    }],
+    
     // Style consistency
-    'indent': ['warn', 2, { SwitchCase: 1 }],
+    'indent': 'off', // Use TypeScript version
+    '@typescript-eslint/indent': ['warn', 2, { SwitchCase: 1 }],
     'linebreak-style': ['warn', 'unix'],
-    'quotes': ['warn', 'single', { avoidEscape: true }],
-    'semi': ['warn', 'always'],
-    'comma-dangle': ['warn', 'never'],
+    'quotes': 'off', // Use TypeScript version
+    '@typescript-eslint/quotes': ['warn', 'single', { avoidEscape: true }],
+    'semi': 'off', // Use TypeScript version
+    '@typescript-eslint/semi': ['warn', 'always'],
+    'comma-dangle': 'off', // Use TypeScript version
+    '@typescript-eslint/comma-dangle': ['warn', 'never'],
     'arrow-spacing': ['warn', { before: true, after: true }],
     'block-spacing': ['warn', 'always'],
-    'comma-spacing': ['warn', { before: false, after: true }],
+    'comma-spacing': 'off', // Use TypeScript version
+    '@typescript-eslint/comma-spacing': ['warn', { before: false, after: true }],
     'keyword-spacing': ['warn', { before: true, after: true }],
     'space-before-blocks': ['warn', 'always'],
     
@@ -44,12 +68,21 @@ module.exports = {
   },
   overrides: [
     {
-      // Relax rules for the main game file
-      files: ['app.js'],
+      // Relax rules for test files
+      files: ['**/*.test.ts', 'tests/**/*.ts'],
       rules: {
-        'no-unused-vars': 'off', // Game code might use state vars
+        '@typescript-eslint/no-explicit-any': 'off',
+        'no-console': 'off',
+        '@typescript-eslint/no-non-null-assertion': 'off'
+      }
+    },
+    {
+      // Relax rules for the main game files
+      files: ['src/core/Game.ts', 'src/multiplayer/MultiplayerManager.ts'],
+      rules: {
         'no-console': 'off',     // Console is used for debugging game
-        'max-depth': 'off'       // Game loop can be deeply nested
+        'max-depth': 'off',      // Game loop can be deeply nested
+        'complexity': ['warn', 20]  // Game logic can be more complex
       }
     }
   ]

@@ -211,18 +211,33 @@ npm -v   # Must be ≥ 8.0.0
 ### Installation
 
 ```bash
-# Clone repository
-git clone https://github.com/yourusername/ascend-avoid.git
-cd ascend-avoid
-
 # Install dependencies
 npm install
 
-# Start development server
+# Start both client & server (recommended for full experience)
+npm start
+
+# Start only the client
 npm run dev
 
-# For multiplayer testing
-npm run server
+# Start only the server
+npm run dev:server
+```
+
+### Development Commands
+
+```bash
+# Run tests
+npm test
+
+# Check types
+npm run type-check
+
+# Lint code
+npm run lint
+
+# Build for production
+npm run build:all
 ```
 
 ---
