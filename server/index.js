@@ -8,7 +8,9 @@ import { monitor } from "@colyseus/monitor";
 
 // Import our game room
 import { GameRoom } from "./rooms/GameRoom.js";
-import { GAME_CONSTANTS, SERVER } from "./constants/serverConstants.js";
+import { GAME_CONSTANTS } from "./constants/serverConstants.js";
+import config from "./config.js";
+import logger from "./utils/logger.js";
 
 // Create the Express app
 const app = express();
@@ -31,8 +33,8 @@ const httpServer = createServer(app);
 const gameServer = new Server({
   transport: new WebSocketTransport({
     server: httpServer,
-    pingInterval: 5000, // Ping clients every 5 seconds
-    pingMaxRetries: 3 // Allow max 3 missed pings before considering connection lost
+    pingInterval: config.pingInterval,
+    pingMaxRetries: config.pingMaxRetries
   })
 });
 
@@ -45,16 +47,11 @@ app.get("/", (req, res) => {
 gameServer.define(GAME_CONSTANTS.GAME.ROOM_NAME, GameRoom)
   .enableRealtimeListing();
 
-// Register colyseus monitor (available at /colyseus)
-app.use("/colyseus", monitor());
+// Register colyseus monitor 
+app.use(config.monitorPath, monitor());
 
 // Start the server
-const port = process.env.PORT || 3001;
+const port = config.port;
 gameServer.listen(port);
 
-console.log(`
-🎮 Last Player Standing Multiplayer Server
----------------------------------------
-Server is running on http://localhost:${port}
-Monitor dashboard: http://localhost:${port}/colyseus
-`);
+logger.info(`\n🎮 Last Player Standing Multiplayer Server\n---------------------------------------\nServer is running on http://localhost:${port}\nMonitor dashboard: http://localhost:${port}${config.monitorPath}`);
