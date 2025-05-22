@@ -3,6 +3,7 @@ const { Room } = pkg;
 import { GameState } from "../schema/GameState";
 import { GAME_CONSTANTS, PLAYER_COLORS } from "../constants/serverConstants";
 import { Client } from "colyseus";
+import logger from "../utils/logger";
 
 /**
  * Type definitions for room messages
@@ -38,14 +39,14 @@ class GameRoom extends Room<GameState> {
     this.maxClients = GAME_CONSTANTS.GAME.MAX_PLAYERS;
     this.autoDispose = false; // Don't dispose room automatically when empty
 
-    console.log("Last Player Standing Game Room created");
+    logger.info("Last Player Standing Game Room created");
   }
 
   /**
    * Initialize room state when created
    */
   onCreate(options: JoinOptions = {}): void {
-    console.log("Creating Last Player Standing Game Room");
+    logger.info("Creating Last Player Standing Game Room");
 
     // Initialize room state with GameState schema
     this.setState(new GameState());
@@ -63,7 +64,7 @@ class GameRoom extends Room<GameState> {
     // Set up message handlers
     this.setupMessageHandlers();
 
-    console.log(`Room ready. Arena size: ${this.state.arenaWidth}x${this.state.arenaHeight}`);
+    logger.info(`Room ready. Arena size: ${this.state.arenaWidth}x${this.state.arenaHeight}`);
   }
 
   /**
@@ -96,7 +97,7 @@ class GameRoom extends Room<GameState> {
     this.onMessage("restartGame", (client) => {
       // Only allow restart when game is over
       if (this.state.gameState === GAME_CONSTANTS.STATE.GAME_OVER as string) {
-        console.log("Game restart requested by:", client.sessionId);
+        logger.info("Game restart requested by:", client.sessionId);
         this.state.resetGame();
       }
     });
@@ -106,7 +107,7 @@ class GameRoom extends Room<GameState> {
    * Handle client joining the room
    */
   onJoin(client: Client, options: JoinOptions = {}): void {
-    console.log(`Player ${client.sessionId} joined`);
+    logger.info(`Player ${client.sessionId} joined`);
 
     // Create player in game state
     const player = this.state.createPlayer(client.sessionId);
@@ -122,14 +123,14 @@ class GameRoom extends Room<GameState> {
       name: player.name
     });
 
-    console.log(`Current players: ${this.state.totalPlayers}`);
+    logger.info(`Current players: ${this.state.totalPlayers}`);
   }
 
   /**
    * Handle client leaving the room
    */
   onLeave(client: Client, consented: boolean): void {
-    console.log(`Player ${client.sessionId} left`);
+    logger.info(`Player ${client.sessionId} left`);
 
     // Remove player from game state
     this.state.removePlayer(client.sessionId);
@@ -142,7 +143,7 @@ class GameRoom extends Room<GameState> {
     // Check win condition (in case only one player remains)
     this.state.checkWinCondition();
 
-    console.log(`Current players: ${this.state.totalPlayers}`);
+    logger.info(`Current players: ${this.state.totalPlayers}`);
   }
 
   /**
@@ -162,7 +163,7 @@ class GameRoom extends Room<GameState> {
    * Clean up when room is disposed
    */
   onDispose(): void {
-    console.log("Last Player Standing Game Room disposed");
+    logger.info("Last Player Standing Game Room disposed");
 
     // Clear update interval
     if (this.updateInterval) {
