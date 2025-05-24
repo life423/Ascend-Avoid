@@ -5,11 +5,8 @@
 
 // Import core game components
 import Game from './core/Game';
-import ResponsiveManager from './managers/ResponsiveManager';
 import { setupResponsiveCanvas, setupOrientationHandling } from './utils/responsiveCanvas';
-
-// Node.js polyfills now handled by vite-plugin-node-polyfills
-// No manual Buffer or process polyfills needed
+import { CANVAS } from './constants/gameConstants';
 
 // Helper function for device detection
 function detectDevice() {
@@ -39,14 +36,14 @@ document.addEventListener('DOMContentLoaded', () => {
   if (deviceInfo.isDesktop) {
     body.classList.add('desktop-layout');
   }
-  if (deviceInfo.isLandscape) {
-    body.classList.add('landscape');
-  } else {
-    body.classList.add('portrait');
-  }
   
-  // Set up responsive canvas
-  const canvasContainer = setupResponsiveCanvas('canvas', 'game-container');
+  // Set up responsive canvas with options from game constants
+  const responsiveCanvas = setupResponsiveCanvas('canvas', 'game-container', {
+    baseWidth: CANVAS.BASE_WIDTH,
+    baseHeight: CANVAS.BASE_HEIGHT,
+    maxWidth: deviceInfo.isDesktop ? CANVAS.MAX_DESKTOP_WIDTH : CANVAS.MAX_MOBILE_WIDTH,
+    debug: true
+  });
   
   // Set up orientation handling
   setupOrientationHandling();
@@ -57,25 +54,9 @@ document.addEventListener('DOMContentLoaded', () => {
   // Initialize the game
   const game = new Game();
   
-  // Get the canvas element
-  const canvas = document.getElementById('canvas') as HTMLCanvasElement;
-  
-  // Initialize ResponsiveManager with the game instance
-  const responsiveManager = new ResponsiveManager(game);
-  
-  // Initialize with canvas
-  if (responsiveManager && canvas) {
-    responsiveManager.init(canvas);
-    console.log('ResponsiveManager initialized with canvas');
-  } else {
-    console.error('Failed to initialize ResponsiveManager:', 
-      !responsiveManager ? 'ResponsiveManager not found' : 'Canvas not found');
-  }
-  
   // Store references for debugging and future use
   (window as any).game = game;
-  (window as any).responsiveManager = responsiveManager;
-  (window as any).canvasContainer = canvasContainer;
+  (window as any).responsiveCanvas = responsiveCanvas;
   
   // Remove loading indicator after initialization
   if (loader) {

@@ -3,23 +3,33 @@
  * Handles canvas sizing and aspect ratio maintenance
  */
 
-// Base game dimensions (design target)
-const BASE_WIDTH = 800;
-const BASE_HEIGHT = 600;
-const BASE_ASPECT_RATIO = BASE_WIDTH / BASE_HEIGHT;
+// Define interfaces for type safety
+interface ScalingInfo {
+  widthScale: number;
+  heightScale: number;
+  pixelRatio: number;
+}
 
-// Canvas container interface
-interface CanvasContainer {
-  updateCanvasSize(): void;
+interface ResponsiveCanvasOptions {
+  baseWidth?: number;
+  baseHeight?: number;
+  maxWidth?: number;
+  maxHeight?: number;
+  debug?: boolean;
 }
 
 /**
  * Creates a responsive canvas that maintains aspect ratio
  * @param canvasId - The ID of the canvas element
  * @param containerId - The ID of the container element
+ * @param options - Configuration options
  * @returns An object with methods to control the canvas
  */
-export function setupResponsiveCanvas(canvasId: string, containerId: string): CanvasContainer {
+export function setupResponsiveCanvas(
+  canvasId: string,
+  containerId: string,
+  options: ResponsiveCanvasOptions = {}
+) {
   const canvas = document.getElementById(canvasId) as HTMLCanvasElement;
   const container = document.getElementById(containerId) as HTMLElement;
   
@@ -30,10 +40,16 @@ export function setupResponsiveCanvas(canvasId: string, containerId: string): Ca
     };
   }
   
+  // Default options with fallbacks
+  const baseWidth = options.baseWidth || 800;
+  const baseHeight = options.baseHeight || 600;
+  const baseAspectRatio = baseWidth / baseHeight;
+  const debug = options.debug || false;
+  
   /**
    * Updates the canvas size based on container dimensions
    */
-  function updateCanvasSize(): void {
+  function updateCanvasSize(): ScalingInfo {
     // Get container dimensions
     const containerWidth = container.clientWidth;
     const containerHeight = container.clientHeight;
@@ -41,14 +57,14 @@ export function setupResponsiveCanvas(canvasId: string, containerId: string): Ca
     
     let canvasWidth, canvasHeight;
     
-    if (containerAspectRatio > BASE_ASPECT_RATIO) {
+    if (containerAspectRatio > baseAspectRatio) {
       // Container is wider than our target aspect ratio
-      canvasHeight = Math.min(containerHeight, BASE_HEIGHT);
-      canvasWidth = canvasHeight * BASE_ASPECT_RATIO;
+      canvasHeight = Math.min(containerHeight, options.maxHeight || containerHeight);
+      canvasWidth = canvasHeight * baseAspectRatio;
     } else {
       // Container is taller than our target aspect ratio
-      canvasWidth = Math.min(containerWidth, BASE_WIDTH);
-      canvasHeight = canvasWidth / BASE_ASPECT_RATIO;
+      canvasWidth = Math.min(containerWidth, options.maxWidth || containerWidth);
+      canvasHeight = canvasWidth / baseAspectRatio;
     }
     
     // Set canvas display size
@@ -66,22 +82,30 @@ export function setupResponsiveCanvas(canvasId: string, containerId: string): Ca
       ctx.scale(pixelRatio, pixelRatio);
     }
     
-    // Store scaling information for game objects
-    canvas.scalingInfo = {
-      widthScale: canvasWidth / BASE_WIDTH,
-      heightScale: canvasHeight / BASE_HEIGHT,
+    // Calculate scaling information
+    const scalingInfo: ScalingInfo = {
+      widthScale: canvasWidth / baseWidth,
+      heightScale: canvasHeight / baseHeight,
       pixelRatio: pixelRatio
     };
     
+    // Store scaling information on canvas for easy access
+    (canvas as any).scalingInfo = scalingInfo;
+    
     // Update game scaling if game is initialized
-    if (window.game && window.game.onResize) {
+    if (window.game && typeof window.game.onResize === 'function') {
       window.game.onResize(
-        canvasWidth / BASE_WIDTH,
-        canvasHeight / BASE_HEIGHT
+        scalingInfo.widthScale,
+        scalingInfo.heightScale,
+        window.innerWidth >= 1024
       );
     }
     
-    console.log(`Canvas resized: ${Math.round(canvasWidth)}x${Math.round(canvasHeight)}, ratio: ${pixelRatio}`);
+    if (debug) {
+      console.log(`Canvas resized: ${Math.round(canvasWidth)}x${Math.round(canvasHeight)}, ratio: ${pixelRatio}`);
+    }
+    
+    return scalingInfo;
   }
   
   // Set up event listeners
@@ -91,10 +115,11 @@ export function setupResponsiveCanvas(canvasId: string, containerId: string): Ca
   });
   
   // Initial sizing
-  updateCanvasSize();
+  const initialScaling = updateCanvasSize();
   
   return {
-    updateCanvasSize
+    updateCanvasSize,
+    getScalingInfo: () => (canvas as any).scalingInfo || initialScaling
   };
 }
 
@@ -113,24 +138,29 @@ export function setupOrientationHandling(): void {
     if (e.matches) {
       document.body.classList.remove('landscape');
       document.body.classList.add('portrait');
+      
+      // Show orientation message on mobile devices
+      if (window.innerWidth < 768) {
+        document.body.classList.add('show-orientation-message');
+      }
     } else {
       document.body.classList.remove('portrait');
       document.body.classList.add('landscape');
+      document.body.classList.remove('show-orientation-message');
     }
   });
+  
+  // Initial setup for orientation message
+  if (isPortrait && window.innerWidth < 768) {
+    document.body.classList.add('show-orientation-message');
+  }
 }
 
-// Add TypeScript interface augmentation for canvas element
+// Add TypeScript interface augmentation for global objects
 declare global {
-  interface HTMLCanvasElement {
-    scalingInfo?: {
-      widthScale: number;
-      heightScale: number;
-      pixelRatio: number;
-    };
-  }
-  
   interface Window {
-    game?: any;
+    game?: {
+      onResize?: (widthScale: number, heightScale: number, isDesktop: boolean) => void;
+    };
   }
 }

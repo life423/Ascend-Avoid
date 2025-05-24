@@ -48,7 +48,7 @@ REM Start the client in a new window
 start cmd /k "title Ascend Avoid - Client && color 0B && echo Starting client... && npm run dev"
 
 REM Start the server in a new window
-start cmd /k "title Ascend Avoid - Server && color 0A && echo Starting server... && cd server && node --loader ts-node/esm index.ts"
+start cmd /k "title Ascend Avoid - Server && color 0A && echo Starting server... && cd server && node --loader ts-node/esm index.js"
 
 echo [SUCCESS] Game components started in separate windows.
 echo.
