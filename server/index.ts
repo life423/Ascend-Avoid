@@ -7,10 +7,10 @@ import cors from "cors";
 import { monitor } from "@colyseus/monitor";
 
 // Import our game room
-import { GameRoom } from "./rooms/GameRoom";
-import { GAME_CONSTANTS } from "./constants/serverConstants";
-import config from "./config";
-import logger from "./utils/logger";
+import { GameRoom } from "./rooms/GameRoom.js";
+import { GAME_CONSTANTS } from "./constants/serverConstants.js";
+import config from "./config.js";
+import logger from "./utils/logger.js";
 
 // Create the Express app
 const app = express();

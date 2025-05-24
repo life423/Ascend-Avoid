@@ -1,261 +1,39 @@
-# ASCEND & AVOID
+# Ascend Avoid
 
-<div align="center">
+A multiplayer game where players need to ascend and avoid obstacles.
 
-![Ascend & Avoid Logo](https://via.placeholder.com/500x100/0a192f/00ffff?text=ASCEND+%26+AVOID)
+## How to Run the Game
 
-[![Build Status](https://img.shields.io/badge/build-passing-brightgreen.svg)](https://github.com/yourusername/ascend-avoid)
-[![Code Coverage](https://img.shields.io/badge/coverage-94%25-brightgreen.svg)](https://github.com/yourusername/ascend-avoid)
-[![Dependencies](https://img.shields.io/badge/dependencies-up%20to%20date-brightgreen.svg)](https://github.com/yourusername/ascend-avoid)
-[![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
-[![Node Version](https://img.shields.io/badge/node-%3E%3D16.0.0-blue.svg)](package.json)
-[![TypeScript](https://img.shields.io/badge/TypeScript-Ready-blue.svg)](tsconfig.json)
+### Windows
 
-</div>
+Double-click `start.bat` to start both client and server in separate windows.
 
-## 🚀 Overview
+### Manual Start
 
-**Ascend & Avoid** is a high-performance, real-time multiplayer arcade game built on cutting-edge web technologies. Players navigate through dynamically generated obstacles in a race to the top, competing against up to 30 simultaneous players in a fast-paced environment.
+1. **Client**: In one terminal
+   ```
+   npm run dev
+   ```
 
-The project demonstrates expertise in:
+2. **Server**: In another terminal
+   ```
+   cd server
+   node --loader ts-node/esm index.ts
+   ```
 
-- **Advanced Canvas Rendering Techniques** with optimized frame-by-frame calculations
-- **Real-time Networking** using WebSockets with delta compression
-- **Scalable Architecture** following Domain-Driven Design principles
-- **Cross-platform Compatibility** from mobile to desktop with responsive design
+## Game Controls
 
----
+- Use arrow keys or WASD to move
+- Press 'R' to restart the game
+- Click the "Multiplayer" button to switch to multiplayer mode
 
-## 🏗️ Architecture
+## Troubleshooting
 
-The application follows a **Clean Architecture** approach with strict separation of concerns:
+If you encounter any issues:
 
-![Architecture Diagram](https://via.placeholder.com/800x400/0a192f/00ffff?text=Architecture+Diagram)
-
-### Core Domains
-
-| Domain | Responsibility | Key Patterns |
-|--------|----------------|--------------|
-| **Game Core** | Core game mechanics and rules | Entity-Component, State Pattern |
-| **Rendering** | Canvas drawing and animations | Strategy Pattern, Command Pattern |
-| **Input** | User interaction handling | Observer Pattern, Adapter Pattern |
-| **Networking** | Multiplayer synchronization | CQRS, Event Sourcing |
-| **UI** | Interface rendering and state management | MVC, Composite Pattern |
-
-### Technical Highlights
-
-- **Event-driven Architecture** for loose coupling between components
-- **Optimized Object Pooling** for garbage-collection-free gameplay
-- **WebWorker Parallelization** for physics calculations
-- **Adaptive Performance Scaling** based on device capabilities
-
----
-
-## 🛠️ Technologies
-
-<div align="center">
-
-![JavaScript](https://img.shields.io/badge/javascript-%23323330.svg?style=for-the-badge&logo=javascript&logoColor=%23F7DF1E)
-![HTML5](https://img.shields.io/badge/html5-%23E34F26.svg?style=for-the-badge&logo=html5&logoColor=white)
-![CSS3](https://img.shields.io/badge/css3-%231572B6.svg?style=for-the-badge&logo=css3&logoColor=white)
-![Vite](https://img.shields.io/badge/vite-%23646CFF.svg?style=for-the-badge&logo=vite&logoColor=white)
-![Node.js](https://img.shields.io/badge/node.js-6DA55F?style=for-the-badge&logo=node.js&logoColor=white)
-![WebSockets](https://img.shields.io/badge/websockets-010101?style=for-the-badge&logo=socket.io&logoColor=white)
-
-</div>
-
-### Frontend Stack
-
-- **Rendering Engine**: Custom-built Canvas API abstraction layer
-- **Module Bundling**: Vite with hot module replacement
-- **State Management**: Custom implementation with Proxy-based reactivity
-- **Animation System**: RequestAnimationFrame with delta-time interpolation
-
-### Backend Stack
-
-- **Server Framework**: Node.js with Express
-- **Multiplayer Engine**: Colyseus with schema-based state synchronization
-- **Protocol**: Custom binary protocol over WebSockets for minimal bandwidth
-
----
-
-## 🚀 Performance Optimizations
-
-The game achieves **60+ FPS** even on mid-range mobile devices through:
-
-1. **Selective Rendering** with dirty rectangle tracking
-2. **Asset Pre-loading** and progressive enhancement
-3. **Spatial Partitioning** for collision detection optimization
-4. **Texture Atlasing** to minimize draw calls
-5. **Memory Management** with sophisticated object pooling
-
----
-
-## 📊 Scalability
-
-The multiplayer architecture supports:
-
-- **Horizontal Scaling** with stateless server design
-- **Regional Server Deployment** via cloud infrastructure
-- **Match Orchestration** for optimal player grouping
-- **Graceful Degradation** under high load conditions
-
----
-
-## 🔄 Development Workflow
-
-The project employs a professional development workflow:
-
-```mermaid
-graph TD
-    A[Feature Branch] --> B[Automated Tests]
-    B --> C{Pass?}
-    C -->|Yes| D[Code Review]
-    C -->|No| A
-    D --> E{Approved?}
-    E -->|Yes| F[Staging Deployment]
-    E -->|No| A
-    F --> G[Integration Tests]
-    G --> H{Pass?}
-    H -->|Yes| I[Production Deployment]
-    H -->|No| A
-```
-
-### CI/CD Pipeline
-
-- **Automated Testing**: Jest for unit tests, Playwright for E2E
-- **Performance Benchmarking**: Lighthouse and custom timing metrics
-- **Deployment**: Multi-stage process with canary releases
-
----
-
-## 🐳 Containerization & Cloud Deployment
-
-The application is fully containerized and ready for cloud deployment:
-
-### Docker Setup
-
-- **Multi-stage Build**: Optimized for production with minimal image size
-- **Client-Server Architecture**: Separated concerns in a single container
-- **Environment Configuration**: Dynamic environment variables for different deployment targets
-
-```bash
-# Local container testing
-docker-compose up -d
-```
-
-### Cloud Deployment
-
-The game can be deployed to any container-based cloud platform using the provided Docker container:
-
-```mermaid
-graph TD
-    A[GitHub Repository] -->|Push to main| B[CI/CD Workflow]
-    B -->|Build| C[Run Tests]
-    C -->|Pass| D[Build Docker Image]
-    D -->|Push| E[Container Registry]
-    E -->|Deploy| F[Cloud Platform]
-    F -->|Scale| G[Production Environment]
-```
-
-#### Deployment Infrastructure
-
-- **Container Registry**: Any standard container registry for secure image hosting
-- **Compute Platform**: Any container orchestration platform for scalable instances
-- **CI/CD**: Automated workflow for deployments
-- **Secrets Management**: Secure credentials management
-
-#### Deployment Process
-
-1. Code is pushed to the main branch
-2. CI/CD workflow is triggered automatically 
-3. Application is built and tested
-4. Docker image is built and pushed to container registry
-5. Cloud platform is updated with the new image
-6. Container environment scales based on traffic
-
----
-
-## 🏆 Architecture Principles
-
-The codebase strictly adheres to:
-
-- **SOLID Principles** throughout the class hierarchy
-- **DRY (Don't Repeat Yourself)** with meticulous refactoring
-- **KISS (Keep It Simple, Stupid)** for maintainable code
-- **Law of Demeter** to minimize coupling
-- **Single Responsibility Principle** at component level
-
----
-
-## 📱 Cross-Platform Support
-
-Fully responsive design that adapts to:
-
-- **Desktop** with keyboard controls
-- **Mobile** with touch-optimized interface
-- **Tablets** with hybrid controls
-- **Multiple orientations** with dynamic layout adaptation
-
----
-
-## 🚀 Getting Started
-
-### Prerequisites
-
-```bash
-node -v  # Must be ≥ 16.0.0
-npm -v   # Must be ≥ 8.0.0
-```
-
-### Installation
-
-```bash
-# Install dependencies
-npm install
-
-# Start both client & server (recommended for full experience)
-npm start
-
-# Start only the client
-npm run dev
-
-# Start only the server
-npm run dev:server
-```
-
-### Development Commands
-
-```bash
-# Run tests
-npm test
-
-# Check types
-npm run type-check
-
-# Lint code
-npm run lint
-
-# Build for production
-npm run build:all
-```
-
----
-
-## 🔮 Future Roadmap
-
-- **WebGL Rendering Pipeline** for advanced visual effects
-- **AI Opponents** using reinforcement learning
-- **Progressive Web App** conversion with offline support
-- **Cross-platform Desktop Clients** via Electron
-- **VR Mode** with immersive gameplay experience
-
----
-
-<div align="center">
-
-**Ascend & Avoid** — Demonstrating excellence in real-time web application architecture
-
-[GitHub](https://github.com/yourusername/ascend-avoid) | [Play Now](https://ascend-avoid.example.com) | [Documentation](https://docs.ascend-avoid.example.com)
-
-</div>
+1. Make sure Node.js (v16+) is installed
+2. Install dependencies:
+   ```
+   npm install
+   cd server && npm install ts-node --legacy-peer-deps
+   ```
