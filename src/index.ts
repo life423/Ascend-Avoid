@@ -6,6 +6,7 @@
 // Import core game components
 import Game from './core/Game';
 import ResponsiveManager from './managers/ResponsiveManager';
+import { setupResponsiveCanvas, setupOrientationHandling } from './utils/responsiveCanvas';
 
 // Node.js polyfills now handled by vite-plugin-node-polyfills
 // No manual Buffer or process polyfills needed
@@ -44,6 +45,12 @@ document.addEventListener('DOMContentLoaded', () => {
     body.classList.add('portrait');
   }
   
+  // Set up responsive canvas
+  const canvasContainer = setupResponsiveCanvas('canvas', 'game-container');
+  
+  // Set up orientation handling
+  setupOrientationHandling();
+  
   // Create multiplayer button with proper styling
   createMultiplayerButton();
   
@@ -68,6 +75,7 @@ document.addEventListener('DOMContentLoaded', () => {
   // Store references for debugging and future use
   (window as any).game = game;
   (window as any).responsiveManager = responsiveManager;
+  (window as any).canvasContainer = canvasContainer;
   
   // Remove loading indicator after initialization
   if (loader) {

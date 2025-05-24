@@ -23,10 +23,10 @@
         </script>
 
         <meta charset="UTF-8" />
-        <!-- Responsive viewport meta tag that prevents scaling and scrolling -->
+        <!-- Responsive viewport meta tag with proper settings -->
         <meta
             name="viewport"
-            content="width=device-width, initial-scale=1.0"
+            content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
         />
         <meta http-equiv="X-UA-Compatible" content="ie=edge" />
         <!-- Mobile web app capable meta tags -->
@@ -37,10 +37,11 @@
             content="black-translucent"
         />
         <!-- Theme color for browser UI elements -->
-        <meta name="theme-color" content="#0a1a2f" />
+        <meta name="theme-color" content="#0a192f" />
 
         <title>Ascend Avoid</title>
         <link rel="stylesheet" href="styles/style.css" />
+        <link rel="stylesheet" href="styles/responsive-canvas.css" />
         <!-- Preconnect to resources to speed up loading -->
         <link rel="preconnect" href="https://unpkg.com" />
 
@@ -58,43 +59,6 @@
                 touch-action: manipulation; /* Speed up clicks on touch devices */
             }
 
-            canvas {
-                display: block;
-                max-width: 100%;
-                touch-action: none; /* Prevents default touch actions like scrolling */
-            }
-
-            /* Responsive layout for different screen sizes */
-            @media screen and (min-width: 1200px) {
-                body.desktop-layout {
-                    max-width: 1400px;
-                    margin: 0 auto;
-                }
-                .game-content-wrapper {
-                    /* display: flex; */
-                    /* flex-direction: row; */
-                    /* justify-content: center; */
-                    /* align-items: flex-start; */
-                    gap: 30px;
-                    margin: 0 auto;
-                    max-width: 1400px;
-                }
-                .game-content-wrapper #wrapper {
-                    width: 60%;
-                    max-width: 900px;
-                }
-                .game-content-wrapper .sidebar-container {
-                    width: 30%;
-                    max-width: 400px;
-                    background: rgba(23, 42, 70, 0.8);
-                    border-radius: 8px;
-                    padding: 20px;
-                    border: 2px solid var(--accent-primary, #00bcd4);
-                    box-shadow: 0 0 25px rgba(0, 188, 212, 0.3);
-                    margin-top: 50px;
-                }
-            }
-
             /* Loading indicator for initial load */
             .loader {
                 position: fixed;
@@ -105,7 +69,7 @@
                 background: var(--background-dark);
                 display: flex;
                 justify-content: center;
-                /* align-items: center; */
+                align-items: center;
                 z-index: 9999;
             }
 
@@ -122,6 +86,43 @@
             @keyframes spin {
                 to {
                     transform: rotate(360deg);
+                }
+            }
+            
+            /* Orientation change overlay */
+            .orientation-overlay {
+                display: none;
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background-color: rgba(10, 25, 47, 0.9);
+                z-index: 10000;
+                justify-content: center;
+                align-items: center;
+                flex-direction: column;
+                text-align: center;
+                padding: 20px;
+            }
+            
+            .orientation-overlay img {
+                width: 80px;
+                height: 80px;
+                margin-bottom: 20px;
+                animation: rotate 2s ease-in-out infinite;
+            }
+            
+            @keyframes rotate {
+                0% { transform: rotate(0deg); }
+                50% { transform: rotate(90deg); }
+                100% { transform: rotate(0deg); }
+            }
+            
+            /* Show orientation overlay only on mobile in portrait mode */
+            @media (max-width: 767px) and (orientation: portrait) {
+                body.show-orientation-message .orientation-overlay {
+                    display: flex;
                 }
             }
         </style>
@@ -156,6 +157,16 @@
                     setTimeout(function () {
                         // Force a resize event to update the canvas
                         window.dispatchEvent(new Event('resize'))
+                        
+                        // Update orientation classes
+                        const isPortrait = window.matchMedia("(orientation: portrait)").matches;
+                        document.body.classList.toggle('portrait', isPortrait);
+                        document.body.classList.toggle('landscape', !isPortrait);
+                        
+                        // Show orientation message on mobile devices in portrait mode
+                        if (window.innerWidth < 768) {
+                            document.body.classList.toggle('show-orientation-message', isPortrait);
+                        }
                     }, 200)
                 })
 
@@ -201,12 +212,29 @@
                         { passive: true }
                     )
                 })
+                
+                // Set initial orientation classes
+                const isPortrait = window.matchMedia("(orientation: portrait)").matches;
+                document.body.classList.toggle('portrait', isPortrait);
+                document.body.classList.toggle('landscape', !isPortrait);
+                
+                // Show orientation message on mobile devices in portrait mode
+                if (window.innerWidth < 768) {
+                    document.body.classList.toggle('show-orientation-message', isPortrait);
+                }
             })
         </script>
     </head>
     <body>
         <!-- Loading indicator -->
         <div class="loader"></div>
+        
+        <!-- Orientation change overlay -->
+        <div class="orientation-overlay">
+            <img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI4MCIgaGVpZ2h0PSI4MCIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJub25lIiBzdHJva2U9IiMwMGJjZDQiIHN0cm9rZS13aWR0aD0iMiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIj48cGF0aCBkPSJNMjEgMTJhOS4wMSA5LjAxIDAgMCAxLTkgOSIvPjxwYXRoIGQ9Ik0zIDEyYTkuMDEgOS4wMSAwIDAgMCA5IDkiLz48cGF0aCBkPSJNMjEgMTJjMC00Ljk3LTQuMDMtOS05LTkiLz48cGF0aCBkPSJNMyAxMmMwLTQuOTcgNC4wMy05IDktOSIvPjxwYXRoIGQ9Ik0xMiAyMnYtNGgtNHY0Ii8+PHBhdGggZD0iTTEyIDJ2NGg0VjIiLz48L3N2Zz4=" alt="Rotate device">
+            <h3>Please rotate your device</h3>
+            <p>For the best gaming experience, please use landscape orientation.</p>
+        </div>
 
         <!-- Centered content container -->
         <div class="content-container">

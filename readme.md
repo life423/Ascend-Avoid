@@ -6,9 +6,15 @@ A multiplayer game where players need to ascend and avoid obstacles.
 
 ### Windows
 
-Double-click `start.bat` to start both client and server in separate windows.
+Simply double-click `start.bat` in the project root directory. This will:
+- Install dependencies if needed
+- Start the client in one window
+- Start the server in another window
+- Open the game in your default browser
 
 ### Manual Start
+
+If you prefer to start the components manually:
 
 1. **Client**: In one terminal
    ```
@@ -35,5 +41,5 @@ If you encounter any issues:
 2. Install dependencies:
    ```
    npm install
-   cd server && npm install ts-node --legacy-peer-deps
+   cd server && npm install --legacy-peer-deps
    ```
