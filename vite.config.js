@@ -47,7 +47,7 @@ export default defineConfig({
             '@ui': resolve(__dirname, 'src/ui'),
             '@utils': resolve(__dirname, 'src/utils'),
             '@constants': resolve(__dirname, 'src/constants'),
-            '@shared': resolve(__dirname, 'shared'),
+            '@server': resolve(__dirname, 'server'),
             buffer: 'buffer',
             process: 'process',
         },
