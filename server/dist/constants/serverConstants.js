@@ -2,7 +2,7 @@
  * Server-specific constants for the game server
  * Imports base constants and adds server-specific values
  */
-import { GAME_CONSTANTS, PLAYER, OBSTACLE, GAME, STATE, PLAYER_STATE, ARENA, PLAYER_COLORS } from '../../src/constants/gameConstants';
+import { GAME_CONSTANTS, PLAYER, OBSTACLE, GAME, STATE, PLAYER_STATE, ARENA, PLAYER_COLORS } from './gameConstants.js';
 // Server-specific settings
 export const SERVER = {
     DEFAULT_PORT: 3000,

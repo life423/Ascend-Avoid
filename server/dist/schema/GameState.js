@@ -1,12 +1,31 @@
 import * as schema from "@colyseus/schema";
 const { Schema, MapSchema, ArraySchema, type } = schema;
-import { PlayerSchema } from "./PlayerSchema";
-import { ObstacleSchema } from "./ObstacleSchema";
-import { GAME_CONSTANTS } from "../constants/serverConstants";
+import { PlayerSchema } from "./PlayerSchema.js";
+import { ObstacleSchema } from "./ObstacleSchema.js";
+import { GAME_CONSTANTS } from "../constants/serverConstants.js";
 /**
  * GameState defines the full synchronized game state
  */
 class GameState extends Schema {
+    // Game state properties
+    gameState;
+    elapsedTime;
+    startTime;
+    countdownTime;
+    // Arena settings
+    arenaWidth;
+    arenaHeight;
+    areaPercentage;
+    nextShrinkTime;
+    // Collections for players and obstacles
+    players;
+    obstacles;
+    // Game statistics
+    aliveCount;
+    totalPlayers;
+    winnerName;
+    // Last update time for delta calculations
+    lastUpdateTime;
     constructor() {
         super();
         // Initialize game state
@@ -39,7 +58,7 @@ class GameState extends Schema {
         const player = new PlayerSchema(sessionId, playerIndex);
         // Position player at bottom of screen
         player.resetPosition(this.arenaWidth, this.arenaHeight);
-        this.players[sessionId] = player;
+        this.players.set(sessionId, player);
         this.aliveCount++;
         this.totalPlayers++;
         return player;
@@ -49,12 +68,13 @@ class GameState extends Schema {
      * @param sessionId - The client session ID
      */
     removePlayer(sessionId) {
-        if (this.players[sessionId]) {
+        const player = this.players.get(sessionId);
+        if (player) {
             // If player was alive, decrement alive count
-            if (this.players[sessionId].state === GAME_CONSTANTS.PLAYER_STATE.ALIVE) {
+            if (player.state === GAME_CONSTANTS.PLAYER_STATE.ALIVE) {
                 this.aliveCount--;
             }
-            delete this.players[sessionId];
+            this.players.delete(sessionId);
         }
     }
     /**
@@ -75,12 +95,11 @@ class GameState extends Schema {
         const obstacle = new ObstacleSchema(this.obstacles.length);
         // Get player positions for obstacle placement
         const playerPositions = [];
-        for (const sessionId in this.players) {
-            const player = this.players[sessionId];
+        this.players.forEach((player, sessionId) => {
             if (player.state === GAME_CONSTANTS.PLAYER_STATE.ALIVE) {
                 playerPositions.push({ x: player.x, y: player.y });
             }
-        }
+        });
         // Initialize obstacle position
         obstacle.reset(this.arenaWidth, this.arenaHeight, playerPositions);
         this.obstacles.push(obstacle);
@@ -94,14 +113,12 @@ class GameState extends Schema {
         // Game is won when only one player remains alive
         if (this.aliveCount === 1 && this.totalPlayers > 1) {
             // Find the last player standing
-            for (const sessionId in this.players) {
-                const player = this.players[sessionId];
+            this.players.forEach((player, sessionId) => {
                 if (player.state === GAME_CONSTANTS.PLAYER_STATE.ALIVE) {
                     this.winnerName = player.name;
                     this.gameState = GAME_CONSTANTS.STATE.GAME_OVER;
-                    break;
                 }
-            }
+            });
             return true;
         }
         // No players left alive (shouldn't happen normally)
@@ -153,14 +170,13 @@ class GameState extends Schema {
                     this.nextShrinkTime = Date.now() + GAME_CONSTANTS.ARENA.SHRINK_INTERVAL;
                 }
                 // Update all players
-                for (const sessionId in this.players) {
-                    const player = this.players[sessionId];
+                this.players.forEach((player, sessionId) => {
                     if (player.state === GAME_CONSTANTS.PLAYER_STATE.ALIVE) {
                         player.updateMovement(deltaTime, this.arenaWidth, this.arenaHeight);
                         // Check if player is outside shrinking arena
                         this.checkPlayerInArena(player);
                     }
-                }
+                });
                 // Update all obstacles
                 for (let i = 0; i < this.obstacles.length; i++) {
                     const obstacle = this.obstacles[i];
@@ -169,12 +185,11 @@ class GameState extends Schema {
                         if (needsReset) {
                             // Get player positions for obstacle placement
                             const playerPositions = [];
-                            for (const sessionId in this.players) {
-                                const player = this.players[sessionId];
+                            this.players.forEach((player, sessionId) => {
                                 if (player.state === GAME_CONSTANTS.PLAYER_STATE.ALIVE) {
                                     playerPositions.push({ x: player.x, y: player.y });
                                 }
-                            }
+                            });
                             obstacle.reset(this.arenaWidth, this.arenaHeight, playerPositions);
                         }
                         // Check collisions with all alive players
@@ -222,8 +237,7 @@ class GameState extends Schema {
      * @param obstacle - The obstacle to check
      */
     checkObstacleCollisions(obstacle) {
-        for (const sessionId in this.players) {
-            const player = this.players[sessionId];
+        this.players.forEach((player, sessionId) => {
             // Only check collisions for active players
             if (player.state === GAME_CONSTANTS.PLAYER_STATE.ALIVE) {
                 if (obstacle.checkCollision(player)) {
@@ -232,7 +246,7 @@ class GameState extends Schema {
                     this.aliveCount--;
                 }
             }
-        }
+        });
     }
     /**
      * Reset game state for a new round
@@ -245,13 +259,12 @@ class GameState extends Schema {
         // Reset alive count
         this.aliveCount = 0;
         // Reset players
-        for (const sessionId in this.players) {
-            const player = this.players[sessionId];
+        this.players.forEach((player, sessionId) => {
             player.resetPosition(this.arenaWidth, this.arenaHeight);
             player.score = 0;
             player.state = GAME_CONSTANTS.PLAYER_STATE.ALIVE;
             this.aliveCount++;
-        }
+        });
         // Clear obstacles
         this.obstacles = new ArraySchema();
     }

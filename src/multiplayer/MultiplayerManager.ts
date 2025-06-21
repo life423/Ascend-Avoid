@@ -82,14 +82,8 @@ export default class MultiplayerManager {
     this.isMultiplayerMode = false;
     this.localSessionId = null;
     
-    // Determine server address based on environment
-    const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-    if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
-      this.serverAddress = `${protocol}//${window.location.hostname}:3000`;
-    } else {
-      // In production, connect to same hostname but with ws/wss protocol
-      this.serverAddress = `${protocol}//${window.location.hostname}`;
-    }
+    // Single port architecture - determine server address
+    this.serverAddress = this.getWebSocketUrl();
     
     // Game state
     this.gameState = null;
@@ -115,6 +109,22 @@ export default class MultiplayerManager {
   }
 
   /**
+   * Get WebSocket URL for single port architecture
+   * @returns WebSocket URL
+   */
+  private getWebSocketUrl(): string {
+    if (process.env.NODE_ENV === 'production') {
+      // In production, use same origin (single port architecture)
+      const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+      return `${protocol}//${window.location.host}`;
+    } else {
+      // In development, connect to backend port
+      const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+      return `${protocol}//${window.location.hostname}:3000`;
+    }
+  }
+
+  /**
    * Initialize the multiplayer client
    * @returns This instance for chaining
    */
@@ -125,7 +135,7 @@ export default class MultiplayerManager {
       import('colyseus.js').then(ColyseusModule => {
         const { Client } = ColyseusModule;
         this.client = new Client(this.serverAddress);
-        console.log('Multiplayer client initialized');
+        console.log(`Multiplayer client initialized with server: ${this.serverAddress}`);
       }).catch(err => {
         console.error('Failed to load Colyseus client:', err);
         if (this.onConnectionError) {
@@ -163,7 +173,7 @@ export default class MultiplayerManager {
     }
 
     try {
-      console.log('Connecting to game server...');
+      console.log(`Connecting to game server at ${this.serverAddress}...`);
 
       // Join or create a room
       this.room = await this.client.joinOrCreate(

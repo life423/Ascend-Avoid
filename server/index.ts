@@ -14,6 +14,7 @@ import { GAME_CONSTANTS } from "./constants/serverConstants.js";
 import config from "./config.js";
 import logger from "./utils/logger.js";
 
+// ES modules compatibility for __dirname
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
@@ -23,9 +24,6 @@ const app = express();
 // Apply middleware
 app.use(cors());
 app.use(express.json());
-
-// Serve static files from the dist directory
-app.use(express.static(path.join(__dirname, '../dist')));
 
 // Create HTTP server
 const httpServer = createServer(app);
@@ -39,18 +37,26 @@ const gameServer = new Server({
   })
 });
 
-// Health check endpoint (required for container health monitoring)
+// IMPORTANT: Define API routes BEFORE static file serving
+
+// Health check endpoint
 app.get('/health', (req, res) => {
-    res.status(200).json({ 
-        status: 'healthy',
-        timestamp: new Date().toISOString(),
-        uptime: process.uptime()
-    });
+  res.status(200).json({ 
+    status: 'healthy',
+    timestamp: new Date().toISOString(),
+    uptime: process.uptime(),
+    environment: process.env.NODE_ENV || 'development',
+    port: config.port
+  });
 });
 
-// Define routes
-app.get("/", (req, res) => {
-  res.send("Multiplayer game server is running");
+// API routes
+app.get("/api/status", (req, res) => {
+  res.json({
+    server: "running",
+    environment: process.env.NODE_ENV || 'development',
+    timestamp: new Date().toISOString()
+  });
 });
 
 // Register game rooms
@@ -60,9 +66,30 @@ gameServer.define(GAME_CONSTANTS.GAME.ROOM_NAME, GameRoom)
 // Register colyseus monitor
 app.use(config.monitorPath, monitor());
 
-// Catch-all route - serve index.html for client-side routing (must be last)
-app.get('*', (req, res) => {
-    res.sendFile(path.join(__dirname, '../dist/index.html'));
+// IMPORTANT: Serve static files AFTER all API routes
+if (process.env.NODE_ENV === 'production') {
+  // Serve static files from the dist directory
+  const staticPath = path.join(__dirname, '../../dist');
+  app.use(express.static(staticPath));
+  
+  logger.info(`Serving static files from: ${staticPath}`);
+  
+  // TODO: Add proper SPA routing handler for production
+  // For now, just serve static files
+} else {
+  // Development mode - serve from src directory
+  app.use(express.static("src"));
+  
+  // Root route for development
+  app.get("/", (req, res) => {
+    res.send("Multiplayer game server is running in development mode");
+  });
+}
+
+// Error handling middleware
+app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
+  logger.error('Server error:', err);
+  res.status(500).json({ error: 'Internal server error' });
 });
 
 // Start the server
@@ -74,4 +101,5 @@ logger.info(`
 ---------------------------------------
 Server is running on http://localhost:${port}
 Monitor dashboard: http://localhost:${port}${config.monitorPath}
+Environment: ${process.env.NODE_ENV || 'development'}
 `);

@@ -1,10 +1,18 @@
 import * as schema from "@colyseus/schema";
 const { Schema, type } = schema;
-import { GAME_CONSTANTS } from "../constants/serverConstants";
+import { GAME_CONSTANTS } from "../constants/serverConstants.js";
 /**
  * ObstacleSchema defines the synchronized properties for each obstacle
  */
 class ObstacleSchema extends Schema {
+    id;
+    x;
+    y;
+    width;
+    height;
+    speed;
+    variant;
+    active;
     constructor(id) {
         super();
         // Initialize obstacle properties

@@ -1,9 +1,9 @@
 import pkg from 'colyseus';
 const { Room } = pkg;
-import { GameState } from "../schema/GameState";
-import { GAME_CONSTANTS, PLAYER_COLORS } from "../constants/serverConstants";
+import { GameState } from "../schema/GameState.js";
+import { GAME_CONSTANTS, PLAYER_COLORS } from "../constants/serverConstants.js";
 import { Client } from "colyseus";
-import logger from "../utils/logger";
+import logger from "../utils/logger.js";
 
 /**
  * Type definitions for room messages

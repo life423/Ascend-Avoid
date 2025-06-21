@@ -12,7 +12,7 @@ import {
   PLAYER_STATE, 
   ARENA,
   PLAYER_COLORS 
-} from './gameConstants';
+} from './gameConstants.js';
 
 // Server-specific settings
 export const SERVER = {
