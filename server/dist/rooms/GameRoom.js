@@ -1,16 +1,16 @@
 import pkg from 'colyseus';
 const { Room } = pkg;
-import { GameState } from "../schema/GameState";
-import { GAME_CONSTANTS } from "../constants/serverConstants";
-import logger from "../utils/logger";
+import { GameState } from "../schema/GameState.js";
+import { GAME_CONSTANTS } from "../constants/serverConstants.js";
+import logger from "../utils/logger.js";
 /**
  * Last Player Standing Game Room
  * Handles up to 30 players in a battle royale style game
  */
 class GameRoom extends Room {
+    updateInterval = null;
     constructor() {
         super();
-        this.updateInterval = null;
         // Configure room settings
         this.maxClients = GAME_CONSTANTS.GAME.MAX_PLAYERS;
         this.autoDispose = false; // Don't dispose room automatically when empty
@@ -41,7 +41,7 @@ class GameRoom extends Room {
     setupMessageHandlers() {
         // Handle player movement input
         this.onMessage("input", (client, data) => {
-            const player = this.state.players[client.sessionId];
+            const player = this.state.players.get(client.sessionId);
             if (!player)
                 return;
             // Update player's movement input state
@@ -54,7 +54,7 @@ class GameRoom extends Room {
         });
         // Handle player name update
         this.onMessage("updateName", (client, data) => {
-            const player = this.state.players[client.sessionId];
+            const player = this.state.players.get(client.sessionId);
             if (player && data.name) {
                 player.name = data.name.substring(0, 20); // Limit name length
             }

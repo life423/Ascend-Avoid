@@ -1,10 +1,21 @@
 import * as schema from "@colyseus/schema";
 const { Schema, type } = schema;
-import { GAME_CONSTANTS } from "../constants/serverConstants";
+import { GAME_CONSTANTS } from "../constants/serverConstants.js";
 /**
  * PlayerSchema defines the synchronized properties for each player
  */
 class PlayerSchema extends Schema {
+    sessionId;
+    playerIndex;
+    name;
+    x;
+    y;
+    width;
+    height;
+    state;
+    score;
+    movementKeys;
+    lastUpdateTime;
     constructor(sessionId, playerIndex) {
         super();
         // Initialize player properties

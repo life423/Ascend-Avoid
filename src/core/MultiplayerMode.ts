@@ -7,21 +7,13 @@ import GameMode from './GameMode';
 import { InputState, ScalingInfo, NetworkPlayer } from '../types';
 
 // Define interfaces for multiplayer-specific components
-interface MultiplayerManager {
-  init: () => MultiplayerManager; // Returns this for method chaining
-  sendInput: (input: InputState) => void;
+interface IMultiplayerManager {
+  connect: () => Promise<boolean>;
+  sendInput: (input: any) => void;
   disconnect: () => void;
-  getLocalPlayer: () => NetworkPlayer | null;
-  getRemotePlayers: () => Record<string, NetworkPlayer>;
-  getTotalPlayers: () => number;
-  getAliveCount: () => number;
-  getArenaStats: () => ArenaStats | null;
-  requestRestart: () => void;
-  onGameStateChange: (gameState: GameState) => void;
-  onPlayerJoin: (player: NetworkPlayer) => void;
-  onPlayerLeave: (player: NetworkPlayer) => void;
-  onConnectionError: (error: string) => void;
-  onGameOver: (winnerName: string) => void;
+  isConnected: () => boolean;
+  getRoom: () => any;
+  updatePlayerName: (name: string) => void;
 }
 
 interface GameState {
@@ -50,7 +42,7 @@ interface ParticleSystem {
 }
 
 export default class MultiplayerMode extends GameMode {
-  private multiplayerManager: MultiplayerManager | null;
+  private multiplayerManager: any | null;
   private remotePlayers: Record<string, NetworkPlayer>;
   private lastSentInput?: InputState;
   private lastInputSendTime: number;
@@ -84,12 +76,18 @@ export default class MultiplayerMode extends GameMode {
     
     // Dynamically import multiplayer manager to avoid loading it in single-player mode
     try {
-      const MultiplayerManagerModule = await import('../multiplayer/MultiplayerManager');
-      const MultiplayerManager = MultiplayerManagerModule.default;
+      const { MultiplayerManager } = await import('../managers/MultiplayerManager');
       
       // Create and initialize the multiplayer manager
-      this.multiplayerManager = new MultiplayerManager();
-      await this.multiplayerManager.init();
+      // Use a simple EventBus and AssetManager for now
+      const EventBus = (await import('../core/EventBus')).EventBus;
+      const AssetManager = (await import('../managers/AssetManager')).default;
+      
+      const eventBus = new EventBus();
+      const assetManager = new AssetManager();
+      
+      this.multiplayerManager = new MultiplayerManager(eventBus, assetManager);
+      await this.multiplayerManager.connect();
       
       // Set up multiplayer event handlers
       this.setupEventHandlers();

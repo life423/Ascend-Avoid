@@ -14,6 +14,7 @@
         "build": "npm run build:client && npm run build:server",
         "build:client": "vite build",
         "build:server": "cd server && tsc",
+        "start:prod": "cd server && node dist/index.js",
         "preview": "vite preview",
         "serve:dist": "vite preview",
         "lint": "eslint src/**/*.{ts,js} server/**/*.{ts,js}",

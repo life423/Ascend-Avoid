@@ -1,7 +1,7 @@
 import * as schema from "@colyseus/schema";
 declare const Schema: typeof schema.Schema;
-import { PlayerSchema } from "./PlayerSchema";
-import { ObstacleSchema } from "./ObstacleSchema";
+import { PlayerSchema } from "./PlayerSchema.js";
+import { ObstacleSchema } from "./ObstacleSchema.js";
 /**
  * GameState defines the full synchronized game state
  */

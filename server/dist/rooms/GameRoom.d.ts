@@ -1,6 +1,6 @@
 import pkg from 'colyseus';
 declare const Room: typeof pkg.Room;
-import { GameState } from "../schema/GameState";
+import { GameState } from "../schema/GameState.js";
 import { Client } from "colyseus";
 /**
  * Type definitions for room messages
