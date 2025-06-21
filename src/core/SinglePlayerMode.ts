@@ -210,8 +210,8 @@ export default class SinglePlayerMode extends GameMode {
         hasScored: this.game.player.hasScored || false
     });
 
-    // Simple check: if player's top is above (less than) the winning line
-    if (this.game.player.y < scaledWinningLine && !this.game.player.hasScored) {
+    // Simple check: if player's top touches or crosses (less than or equal to) the winning line
+    if (this.game.player.y <= scaledWinningLine && !this.game.player.hasScored) {
         console.log('🎉 PLAYER SCORED! Player Y:', this.game.player.y, 'Winning Line:', scaledWinningLine);
         
         // Mark as scored to prevent multiple scoring
