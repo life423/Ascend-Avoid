@@ -856,10 +856,11 @@ export default class Game {
 
     /**
      * Add celebration particles when scoring
+     * @param winningLineScreenY - The winning line position in screen coordinates
      */
-    addScoreParticles(): void {
-        // Get the winning line position
-        const scaledWinningLine = this.config.getWinningLine(
+    addScoreParticles(winningLineScreenY?: number): void {
+        // Use provided winningLineScreenY or calculate it
+        const scaledWinningLine = winningLineScreenY ?? this.config.getWinningLine(
             this.canvas.height,
             BASE_CANVAS_HEIGHT
         )
@@ -885,37 +886,53 @@ export default class Game {
      * Check if player has reached the winning line
      */
     checkForWinner(): void {
-        // Calculate scaled winning line position
-        const scaledWinningLine = this.config.getWinningLine(
-            this.canvas.height,
-            BASE_CANVAS_HEIGHT
-        )
+        if (!this.player) return;
 
-        if (this.player.y < scaledWinningLine) {
-            // Increment score
-            this.score++
-            if (this.uiManager) {
-                this.uiManager.updateScore(this.score)
-            }
+        // Get winning line in screen coordinates (already scaled by getWinningLine)
+        const winningLineScreenY = this.config.getWinningLine(this.canvas.height, BASE_CANVAS_HEIGHT);
+        
+        // Convert player position to screen coordinates to match winning line
+        const scale = this.canvas.height / BASE_CANVAS_HEIGHT;
+        
+        // Check if ANY part of the player crosses the winning line
+        // Player.y is the TOP of the player in world coordinates
+        const playerTopScreenY = this.player.y * scale;
+        const playerBottomScreenY = (this.player.y + this.player.height) * scale;
 
-            // Add more obstacles as game progresses
-            this.addObstaclesBasedOnScore()
-
-            // Add visual effects
-            this.addScoreParticles()
-
-            // Play score sound
-            if (this.assetManager) {
-                this.assetManager.playSound('score', 0.3)
-            } else {
-                // Fallback to legacy sound method
-                const playSound = (window as any).playSound || (() => {})
-                playSound('score')
-            }
-
-            // Reset player to bottom of screen
-            this.player.resetPosition()
+        // Trigger if any part of the player crosses or touches the winning line
+        if (playerTopScreenY <= winningLineScreenY) {
+            this.handleScore(winningLineScreenY);
         }
+    }
+
+    /**
+     * Handle scoring when player crosses winning line
+     * @param winningLineScreenY - The winning line position in screen coordinates
+     */
+    private handleScore(winningLineScreenY: number): void {
+        // Increment score
+        this.score++
+        if (this.uiManager) {
+            this.uiManager.updateScore(this.score)
+        }
+
+        // Add more obstacles as game progresses
+        this.addObstaclesBasedOnScore()
+
+        // Add visual effects at the correct screen position
+        this.addScoreParticles(winningLineScreenY)
+
+        // Play score sound
+        if (this.assetManager) {
+            this.assetManager.playSound('score', 0.3)
+        } else {
+            // Fallback to legacy sound method
+            const playSound = (window as any).playSound || (() => {})
+            playSound('score')
+        }
+
+        // Reset player to bottom of screen
+        this.player.resetPosition()
     }
 
     /**
