@@ -5,12 +5,17 @@ import { createServer } from "http";
 import express from "express";
 import cors from "cors";
 import { monitor } from "@colyseus/monitor";
+import path from 'path';
+import { fileURLToPath } from 'url';
 
 // Import our game room
 import { GameRoom } from "./rooms/GameRoom.js";
 import { GAME_CONSTANTS } from "./constants/serverConstants.js";
 import config from "./config.js";
 import logger from "./utils/logger.js";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 // Create the Express app
 const app = express();
@@ -19,12 +24,8 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-// Serve static files from the appropriate directory based on environment
-if (process.env.NODE_ENV === 'production') {
-  app.use(express.static("dist"));
-} else {
-  app.use(express.static("src"));
-}
+// Serve static files from the dist directory
+app.use(express.static(path.join(__dirname, '../dist')));
 
 // Create HTTP server
 const httpServer = createServer(app);
@@ -38,6 +39,15 @@ const gameServer = new Server({
   })
 });
 
+// Health check endpoint (required for container health monitoring)
+app.get('/health', (req, res) => {
+    res.status(200).json({ 
+        status: 'healthy',
+        timestamp: new Date().toISOString(),
+        uptime: process.uptime()
+    });
+});
+
 // Define routes
 app.get("/", (req, res) => {
   res.send("Multiplayer game server is running");
@@ -49,6 +59,11 @@ gameServer.define(GAME_CONSTANTS.GAME.ROOM_NAME, GameRoom)
 
 // Register colyseus monitor
 app.use(config.monitorPath, monitor());
+
+// Catch-all route - serve index.html for client-side routing (must be last)
+app.get('*', (req, res) => {
+    res.sendFile(path.join(__dirname, '../dist/index.html'));
+});
 
 // Start the server
 const port = config.port;
