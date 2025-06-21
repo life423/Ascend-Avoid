@@ -67,7 +67,7 @@ export default class MultiplayerUI {
   constructor(multiplayerManager: MultiplayerManager) {
     this.multiplayerManager = multiplayerManager;
     this.isVisible = false;
-    this.gameContainer = document.querySelector('.app-root[data-app="ascend-avoid"]');
+    this.gameContainer = document.getElementById('wrapper');
     
     // Initialize UI elements (will be set in init)
     this.multiplayerContainer = null!;
@@ -687,7 +687,7 @@ export default class MultiplayerUI {
     }
     
     // Get canvas dimensions and position
-    const canvas = document.querySelector('.game-canvas[data-canvas="primary"]') as HTMLCanvasElement;
+    const canvas = document.getElementById('canvas') as HTMLCanvasElement;
     if (!canvas) return;
     
     const canvasRect = canvas.getBoundingClientRect();

@@ -93,7 +93,7 @@ h4 {
     font-weight: 600;
 }
 
-.score-panel[data-scores="main"] {
+#headers {
     text-align: center;
     padding: var(--space-sm) 0 var(--space-md);
     background-color: rgba(23, 42, 70, 0.7);
@@ -102,7 +102,7 @@ h4 {
     width: 100%;
 }
 
-.app-root[data-app="ascend-avoid"] {
+#wrapper {
     display: flex;
     justify-content: center;
     align-items: center;
@@ -124,7 +124,7 @@ h4 {
     position: relative;
 }
 
-.game-canvas[data-canvas="primary"] {
+#canvas {
     margin: 0 auto; /* Center horizontally */
     display: block;
     border-radius: var(--border-radius);
@@ -133,10 +133,10 @@ h4 {
     height: auto; /* Allow height to adjust properly */
 }
 
-/* REMOVED: Replaced with semantic .game-area[data-section="game"] in responsive-canvas.css */
+/* REMOVED: Replaced with semantic #game-layout in responsive-canvas.css */
 
 /* Desktop Sidebar Instructions */
-.info-panel[data-panel="info"] {
+#desktop-sidebar {
     background: #172a46;
     color: var(--text-light);
     border-radius: var(--border-radius);
@@ -150,18 +150,18 @@ h4 {
     flex-direction: column;
 }
 
-.panel-content[data-content="instructions"] h3 {
+#instructions-desktop h3 {
     color: var(--accent-secondary);
     font-size: 1.3rem;
     margin-top: 0;
 }
 
-.panel-content[data-content="instructions"] ul {
+#instructions-desktop ul {
     padding-left: var(--space-md);
     margin: var(--space-md) 0;
 }
 
-.panel-content[data-content="instructions"] li {
+#instructions-desktop li {
     margin-bottom: var(--space-sm);
     list-style-type: square;
 }
@@ -176,7 +176,7 @@ h4 {
 
 /* Mobile Instructions Drawer */
 /* Floating menu for mobile */
-.float-menu[data-menu="primary"] {
+#floating-menu {
     position: fixed;
     bottom: var(--space-md);
     right: var(--space-md);
@@ -186,7 +186,7 @@ h4 {
     align-items: flex-end;
 }
 
-.float-trigger[data-trigger="menu"] {
+#floating-menu-button {
     width: 50px;
     height: 50px;
     border-radius: 50%;
@@ -202,7 +202,7 @@ h4 {
     position: relative; /* Ensure z-index works */
 }
 
-.float-trigger[data-trigger="menu"]:active {
+#floating-menu-button:active {
     transform: scale(0.95);
 }
 
@@ -216,7 +216,7 @@ h4 {
     box-shadow: 0 0 2px rgba(0, 0, 0, 0.4);
 }
 
-.float-options[data-options="menu"] {
+#floating-menu-items {
     display: flex;
     flex-direction: column;
     margin-bottom: var(--space-sm);
@@ -242,13 +242,13 @@ h4 {
 }
 
 /* Always keep the floating menu button visible */
-.float-trigger[data-trigger="menu"] {
+#floating-menu-button {
     opacity: 1 !important;
     visibility: visible !important;
     display: flex !important;
 }
 
-.float-options[data-options="menu"] button {
+#floating-menu-items button {
     margin-bottom: var(--space-sm);
     padding: var(--space-sm) var(--space-md);
     border-radius: var(--border-radius);
@@ -265,7 +265,7 @@ h4 {
     text-align: center;
 }
 
-.float-options[data-options="menu"] button:active {
+#floating-menu-items button:active {
     transform: translateY(2px);
 }
 
@@ -416,7 +416,7 @@ h4 {
         margin-bottom: var(--space-xs);
     }
 
-    .score-panel[data-scores="main"] {
+    #headers {
         padding: var(--space-xs) 0;
         margin-bottom: var(--space-xs);
     }
@@ -439,7 +439,7 @@ h4 {
     }
 
     /* Ensure touch controls are visible */
-    .touch-controller[data-controller="main"] {
+    #touch-controls-container {
         position: relative;
         display: flex;
         justify-content: center;
@@ -450,7 +450,7 @@ h4 {
 
 @media screen and (min-width: 768px) {
     /* Enhanced rules to completely hide touch controls on larger screens */
-    .touch-controller[data-controller="main"] {
+    #touch-controls-container {
         display: none !important;
         visibility: hidden !important;
         opacity: 0 !important;
@@ -480,7 +480,7 @@ h4 {
         padding: var(--space-md);
     }
 
-    .app-root[data-app="ascend-avoid"] {
+    #wrapper {
         padding: var(--space-lg) 0;
     }
 
@@ -505,7 +505,7 @@ h4 {
         display: block;
     }
 
-    /* REMOVED: .game-content-wrapper replaced with .game-area[data-section="game"] */
+    /* REMOVED: .game-content-wrapper replaced with #game-layout */
 
     .game-container {
         flex: 0 0 65%; /* Don't grow, don't shrink, start at 65% */
@@ -515,7 +515,7 @@ h4 {
         justify-content: center;
     }
 
-    .info-panel[data-panel="info"] {
+    #desktop-sidebar {
         flex: 0 0 30%; /* Don't grow, don't shrink, start at 30% */
         margin-top: 0;
         height: auto;
@@ -530,7 +530,7 @@ h4 {
     }
 
     /* Canvas height should match sidebar height */
-    .game-canvas[data-canvas="primary"] {
+    #canvas {
         height: 100%;
         max-height: none;
     }
@@ -542,7 +542,7 @@ h4 {
         display: block;
     }
 
-    .info-panel[data-panel="info"] {
+    #desktop-sidebar {
         display: none;
     }
 
@@ -574,7 +574,7 @@ body {
 }
 
 /* Ensure all content containers maintain the no-scroll behavior */
-.canvas-viewport[data-viewport="main"],
+#game-container,
 .game-content-wrapper,
 #canvas-container {
     overflow: hidden;
@@ -619,17 +619,17 @@ body {
 
 /* Make buttons more responsive for different screen sizes */
 @media screen and (max-width: 400px) {
-    .float-menu[data-menu="primary"] {
+    #floating-menu {
         bottom: var(--space-sm);
         right: var(--space-sm);
     }
 
-    .float-trigger[data-trigger="menu"] {
+    #floating-menu-button {
         width: 45px;
         height: 45px;
     }
 
-    .float-options[data-options="menu"] button {
+    #floating-menu-items button {
         width: 100px;
         padding: var(--space-sm);
         font-size: 12px;
@@ -648,7 +648,7 @@ body {
 
 /* Hide three-dot menu on desktop, show nav buttons */
 @media screen and (min-width: 768px) {
-    .float-menu[data-menu="primary"] {
+    #floating-menu {
         display: none !important;
     }
 }

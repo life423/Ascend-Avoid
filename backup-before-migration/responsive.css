@@ -8,7 +8,7 @@
 }
 
 /* Legacy canvas ID support */
-.game-canvas[data-canvas="primary"] {
+#canvas {
   display: block;
   touch-action: none;
   background-color: #000;
@@ -52,4 +52,4 @@
 }
 
 /* All game container sizing now handled by responsive-canvas.css */
-/* No more conflicting .canvas-viewport[data-viewport="main"] rules here */
+/* No more conflicting #game-container rules here */

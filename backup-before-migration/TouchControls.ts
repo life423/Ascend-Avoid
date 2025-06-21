@@ -130,14 +130,15 @@ export default class TouchControls {
      * D-pad on left, two action buttons on right
      */
     private createControlElements(): void {
-        // Get the container for controls using the new selector system
-        const containerElement = document.querySelector('.touch-controller[data-controller="main"]')
+        // Get the container for controls
+        const containerElement = document.getElementById(
+            'touch-controls-container'
+        )
         if (!containerElement) {
             console.log('Touch controls container not found, creating one')
             // Create the container if it doesn't exist
             this.container = document.createElement('div')
-            this.container.className = 'touch-controller'
-            this.container.setAttribute('data-controller', 'main')
+            this.container.id = 'touch-controls-container'
             this.container.style.position = 'fixed'  // Changed to fixed positioning
             this.container.style.bottom = '0'
             this.container.style.left = '0'
@@ -153,7 +154,7 @@ export default class TouchControls {
             
             document.body.appendChild(this.container)
         } else {
-            this.container = containerElement as HTMLElement
+            this.container = containerElement
         }
 
         // Create left side controls (D-pad)
@@ -528,8 +529,8 @@ export default class TouchControls {
         if (this.container && this.container.parentNode) {
             // Only remove if we created it programmatically
             if (
-                this.container.className.includes('touch-controller') &&
-                !document.querySelector('.touch-controller[data-controller="main"]')
+                this.container.id === 'touch-controls-container' &&
+                !document.getElementById('touch-controls-container')
             ) {
                 this.container.parentNode.removeChild(this.container)
             }

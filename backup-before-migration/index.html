@@ -19,11 +19,8 @@
         <meta name="theme-color" content="#0a192f" />
 
         <title>Ascend Avoid</title>
-        <link rel="stylesheet" href="styles/unified-layout.css" />
-        <link rel="icon" type="image/svg+xml" href="/favicon.svg">
-<!-- optional PNG fallbacks for old browsers -->
-<link rel="alternate icon" type="image/png" sizes="32x32" href="/favicon-32.png">
-
+        <link rel="stylesheet" href="styles/style.css" />
+        <link rel="stylesheet" href="styles/responsive-canvas.css" />
 
         <!-- Critical CSS for faster rendering -->
         <style>
@@ -86,25 +83,25 @@
             <h1>Ascend Avoid</h1>
             
             <!-- Score display -->
-            <div class="score-panel" data-scores="main">
-                <h4>High Score: <span class="score-value" data-score="high">0</span></h4>
-                <h4>Score: <span class="score-value" data-score="current">0</span></h4>
+            <div id="headers">
+                <h4>High Score: <span id="highScore">0</span></h4>
+                <h4>Score: <span id="score">0</span></h4>
             </div>
 
             <!-- Game layout container with semantic ID -->
-            <div class="game-area" data-section="game">
+            <div id="game-layout">
                 <!-- Game container -->
                 <div class="game-container">
                     <canvas
-                        class="game-canvas" data-canvas="primary"
+                        id="canvas"
                         aria-label="Cross the Box game"
                         role="img"
                     ></canvas>
                 </div>
                 
                 <!-- Desktop: Sidebar container for instructions -->
-                <div class="info-panel desktop-only" data-panel="info">
-                    <div class="panel-content" data-content="instructions">
+                <div id="desktop-sidebar" class="desktop-only">
+                    <div id="instructions-desktop">
                         <h3>How to Play:</h3>
                         <p>
                             Move the white block to the top without hitting the blue
@@ -124,15 +121,15 @@
                     </div>
                     <div class="desktop-nav-buttons">
                         <button
-                            class="nav-button btn-action"
-                            data-action="guide-desktop"
+                            id="guide-button-sidebar"
+                            class="nav-button"
                             aria-label="How to play"
                         >
                             Guide
                         </button>
                         <button
-                            class="nav-button btn-action"
-                            data-action="multiplayer-desktop"
+                            id="multiplayer-toggle-sidebar"
+                            class="nav-button"
                             aria-label="Multiplayer mode"
                         >
                             Multiplayer
@@ -142,31 +139,31 @@
             </div>
         </div>
 
-        <div class="control-panel" data-section="controls">
-            <div class="touch-controller" data-controller="main">
+        <div id="game-ui-container">
+            <div id="touch-controls-container">
                 <!-- Touch controls will be inserted here by JavaScript -->
             </div>
 
             <!-- Floating action menu for game controls -->
-            <div class="float-menu mobile-only" data-menu="primary">
+            <div id="floating-menu" class="mobile-only">
                 <div
-                    class="float-trigger" data-trigger="menu"
+                    id="floating-menu-button"
                     onclick="window.showFloatingMenu(); event.stopPropagation(); return false;"
                 >
                     <span class="menu-dot"></span>
                     <span class="menu-dot"></span>
                     <span class="menu-dot"></span>
                 </div>
-                <div class="float-options hidden" data-options="menu">
+                <div id="floating-menu-items" class="hidden">
                     <button
-                        class="btn-action" data-action="guide"
+                        id="guide-button"
                         aria-label="How to play"
                         title="How to play"
                     >
                         Guide
                     </button>
                     <button
-                        class="btn-action" data-action="multiplayer"
+                        id="multiplayer-toggle"
                         aria-label="Multiplayer mode"
                         title="Multiplayer mode"
                     >
@@ -176,7 +173,7 @@
             </div>
 
             <!-- Mobile: Game instructions modal -->
-            <div class="modal-panel mobile-only modal hidden" data-modal="instructions">
+            <div id="instructions-modal" class="mobile-only modal hidden">
                 <div class="modal-content">
                     <div class="modal-header">
                         <h3>How to Play</h3>
@@ -188,7 +185,7 @@
                         </button>
                     </div>
                     <div class="modal-body">
-                        <div class="modal-instructions" data-content="mobile-instructions">
+                        <div id="instructions-mobile">
                             <p>
                                 Move the white block to the top without hitting
                                 the blue blocks.
@@ -213,7 +210,7 @@
 
         <!-- Game error handling -->
         <div
-            class="error-panel" data-error="container"
+            id="error-container"
             style="
                 display: none;
                 padding: 20px;
@@ -226,7 +223,7 @@
             "
         >
             <h3>Oops! Something went wrong</h3>
-            <p class="error-text" data-error="message">There was a problem loading the game.</p>
+            <p id="error-message">There was a problem loading the game.</p>
             <button onclick="window.location.reload()">Reload Game</button>
         </div>
 
@@ -234,14 +231,14 @@
         <script
             type="module"
             src="index.ts"
-            onerror="document.querySelector('.error-panel[data-error=&quot;container&quot;]').style.display='block'; document.querySelector('.error-text[data-error=&quot;message&quot;]').textContent='Failed to load game script. Please check your connection and try again.'"
+            onerror="document.getElementById('error-container').style.display='block'; document.getElementById('error-message').textContent='Failed to load game script. Please check your connection and try again.'"
         ></script>
 
         <!-- UI Controls and Navigation Script -->
         <script>
             // For direct access from debugging
             window.showFloatingMenu = function () {
-                const menuItems = document.querySelector('.float-options[data-options="menu"]')
+                const menuItems = document.getElementById('floating-menu-items')
                 if (menuItems) {
                     menuItems.classList.remove('hidden')
                     menuItems.style.display = 'flex'
@@ -252,7 +249,7 @@
             }
 
             window.hideFloatingMenu = function () {
-                const menuItems = document.querySelector('.float-options[data-options="menu"]')
+                const menuItems = document.getElementById('floating-menu-items')
                 if (menuItems) {
                     menuItems.classList.add('hidden')
                     menuItems.style.display = 'none'
@@ -263,13 +260,13 @@
             document.addEventListener('DOMContentLoaded', function () {
                 // Set up menu functionality
                 setTimeout(function () {
-                    const menuButton = document.querySelector('.float-trigger[data-trigger="menu"]');
-                    const menuItems = document.querySelector('.float-options[data-options="menu"]');
-                    const guideButton = document.querySelector('.btn-action[data-action="guide"]');
-                    const multiplayerToggle = document.querySelector('.btn-action[data-action="multiplayer"]');
-                    const guideSidebarBtn = document.querySelector('.btn-action[data-action="guide-desktop"]');
-                    const multiplayerSidebarBtn = document.querySelector('.btn-action[data-action="multiplayer-desktop"]');
-                    const instructionsModal = document.querySelector('.modal-panel[data-modal="instructions"]');
+                    const menuButton = document.getElementById('floating-menu-button');
+                    const menuItems = document.getElementById('floating-menu-items');
+                    const guideButton = document.getElementById('guide-button');
+                    const multiplayerToggle = document.getElementById('multiplayer-toggle');
+                    const guideSidebarBtn = document.getElementById('guide-button-sidebar');
+                    const multiplayerSidebarBtn = document.getElementById('multiplayer-toggle-sidebar');
+                    const instructionsModal = document.getElementById('instructions-modal');
                     const closeModalBtn = document.querySelector('.close-modal');
                     
                     // Menu button toggle
