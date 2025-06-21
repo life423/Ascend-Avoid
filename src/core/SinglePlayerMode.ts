@@ -1,7 +1,7 @@
 /**
  * Implementation of single-player game mode.
  * Handles all game logic specific to the single-player experience.
- * Now with TypeScript support.
+ * Now with TypeScript support and improved collision detection.
  */
 import GameMode from './GameMode';
 import { InputState, PerformanceStats, ScalingInfo } from '../types';
@@ -191,51 +191,75 @@ export default class SinglePlayerMode extends GameMode {
   
   /**
    * Check if player has reached the winning line
+   * SIMPLIFIED: Use the same method as Game.ts for absolute consistency
    */
-  private checkForWinner(): void {
-    if (!this.game.player || !this.game.config) return;
-    
-    // Get base canvas height from constants or fallback
+  checkForWinner(): void {
+    // Use EXACTLY the same calculation as Game.ts checkForWinner() and drawWinningLine()
     const BASE_CANVAS_HEIGHT = 550;
-    
-    // Calculate scaled winning line position
     const scaledWinningLine = this.game.config.getWinningLine(
-      this.game.canvas.height,
-      BASE_CANVAS_HEIGHT
+        this.game.canvas.height,
+        BASE_CANVAS_HEIGHT
     );
-    
-    if (this.game.player.y < scaledWinningLine) {
-      // Increment score
-      this.game.score++;
-      
-      // Update UI
-      if (this.game.uiManager) {
-        this.game.uiManager.updateScore(this.game.score);
-      }
-      
-      // Add more obstacles as game progresses
-      this.addObstaclesBasedOnScore();
-      
-      // Add visual effects
-      this.addScoreParticles(scaledWinningLine);
-      
-      // Play score sound
-      if (this.game.assetManager) {
-        this.game.assetManager.playSound('score', 0.3);
-      } else {
-        // Fallback to legacy sound method
-        const playSound = (window as any).playSound || (() => {});
-        playSound('score');
-      }
-      
-      // Reset player to bottom of screen
-      this.game.player.resetPosition();
+
+    // Debug logging to see what's happening
+    console.log('Checking for winner:', {
+        playerY: this.game.player.y,
+        scaledWinningLine: scaledWinningLine,
+        canvasHeight: this.game.canvas.height,
+        distance: this.game.player.y - scaledWinningLine,
+        hasScored: this.game.player.hasScored || false
+    });
+
+    // Simple check: if player's top is above (less than) the winning line
+    if (this.game.player.y < scaledWinningLine && !this.game.player.hasScored) {
+        console.log('🎉 PLAYER SCORED! Player Y:', this.game.player.y, 'Winning Line:', scaledWinningLine);
+        
+        // Mark as scored to prevent multiple scoring
+        this.game.player.hasScored = true;
+
+        // Increment score
+        this.game.score++;
+        if (this.game.uiManager) {
+            this.game.uiManager.updateScore(this.game.score);
+        }
+
+        // Add more obstacles as game progresses
+        this.addObstaclesBasedOnScore();
+
+        // Add visual effects
+        this.addScoreParticles(scaledWinningLine);
+
+        // Play score sound
+        if (this.game.assetManager) {
+            this.game.assetManager.playSound('score', 0.3);
+        }
+
+        // Reset player to bottom of screen
+        this.resetPlayerPosition();
     }
   }
-  
+
+  /**
+   * Properly reset player position and scoring flags
+   */
+  private resetPlayerPosition(): void {
+    if (!this.game.player) return;
+    
+    // Reset player to bottom of screen
+    this.game.player.resetPosition();
+    
+    // CRITICAL: Reset scoring flag so player can score again
+    this.game.player.hasScored = false;
+    
+    // Reset last position to current position
+    this.game.player.lastY = this.game.player.y;
+    
+    console.log('✅ Player reset to bottom, ready for next score');
+  }
+
   /**
    * Add celebration particles when scoring
-   * @param winningLineY - Y position of the winning line
+   * @param winningLineY - Exact Y position of the winning line
    */
   private addScoreParticles(winningLineY: number): void {
     if (!this.game.player || !this.game.particleSystem) return;
@@ -243,12 +267,15 @@ export default class SinglePlayerMode extends GameMode {
     // Number of particles based on score (more particles for higher scores)
     const particleCount = Math.min(10 + this.game.score * 2, 50);
     
+    // Apply scaling to particle sizes
+    const scaleMultiplier = this.game.scalingInfo?.widthScale || 1;
+    
     this.game.particleSystem.createCelebration({
       x: this.game.player.x + this.game.player.width / 2,
-      y: winningLineY,
+      y: winningLineY, // Use exact winning line position
       count: particleCount,
-      minSize: 2 * this.game.scalingInfo.widthScale,
-      maxSize: 7 * this.game.scalingInfo.widthScale,
+      minSize: 2 * scaleMultiplier,
+      maxSize: 7 * scaleMultiplier,
       minLife: 20,
       maxLife: 40,
     });
@@ -309,6 +336,8 @@ export default class SinglePlayerMode extends GameMode {
     
     if (this.game.player) {
       this.game.player.resetPosition();
+      // Reset scoring flag when game resets
+      this.game.player.hasScored = false;
     }
     
     // Clear particles

@@ -1,6 +1,6 @@
 /**
  * Player class representing the player entity in the game.
- * Updated with TypeScript support.
+ * Updated with TypeScript support and improved collision detection.
  */
 import { GAME, PLAYER } from '../constants/gameConstants';
 import { getSprite } from '../utils/sprites';
@@ -28,6 +28,10 @@ export default class Player implements GameObject {
   vx: number = 0;
   vy: number = 0;
   
+  // Properties for improved winning line collision detection
+  lastY: number = 0;  // Previous Y position for swept collision detection
+  hasScored: boolean = false;  // Flag to prevent multiple scoring
+  
   /**
    * Creates a new Player instance
    * @param canvas - The game canvas
@@ -47,6 +51,8 @@ export default class Player implements GameObject {
     // Initialize position properties - will be set in resetPosition
     this.x = 0;
     this.y = 0;
+    this.lastY = 0;  // Initialize previous position tracking
+    this.hasScored = false;  // Initialize scoring flag
     
     // Set initial position
     this.resetPosition();
@@ -87,6 +93,10 @@ export default class Player implements GameObject {
     // Ensure position is within bounds
     this.x = Math.max(0, Math.min(this.x, this.canvas.width - this.width));
     this.y = Math.max(0, Math.min(this.y, this.canvas.height - this.height));
+    
+    // CRITICAL: Reset collision detection properties
+    this.lastY = this.y;  // Set lastY to current position
+    this.hasScored = false;  // Reset scoring flag so player can score again
   }
   
   /**
@@ -125,6 +135,9 @@ export default class Player implements GameObject {
    * Move the player based on current input state
    */
   move(): void {
+    // IMPORTANT: Store previous position BEFORE any movement
+    this.lastY = this.y;
+    
     // Update dimensions first - before any movement calculations
     const playerSize = Math.max(
       this.baseWidth * SCALE_FACTOR,
