@@ -609,9 +609,9 @@ body.modal-open {
     }
     
     .game-area[data-section="game"] {
-        grid-template-columns: 2fr 1fr;
-        gap: var(--space-lg);
-        padding: var(--space-lg);
+        grid-template-columns: 4fr 1fr; /* Give canvas 4x more space than sidebar */
+        gap: var(--space-md); /* Reduce gap to give more space to canvas */
+        padding: var(--space-md); /* Reduce padding to give more space to canvas */
     }
     
     .canvas-viewport[data-viewport="main"] {
@@ -620,10 +620,16 @@ body.modal-open {
     
     .info-panel[data-panel="info"] {
         grid-column: 2;
+        max-width: 300px; /* Limit sidebar width so canvas can be larger */
     }
     
     .app-header h1 {
         font-size: 3rem;
+    }
+    
+    /* Give the main game container more space */
+    .game-main[data-section="main"] {
+        padding: var(--space-sm); /* Reduce main padding */
     }
 }
 

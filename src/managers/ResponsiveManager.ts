@@ -160,13 +160,17 @@ export default class ResponsiveManager {
    * @returns Whether the current viewport is desktop sized
    */
   detectDesktop(): boolean {
-    // Check both width and input device type for more accurate detection
-    const isWideScreen = window.matchMedia('(min-width: 1024px)').matches;
-    const hasMouse = window.matchMedia('(pointer: fine)').matches;
+    // Use a more practical detection method that works with browser automation
+    const isWideScreen = window.innerWidth >= 800; // Lower threshold to match browser viewport
+    const hasLargeHeight = window.innerHeight >= 500;
     
-    // Consider a device as desktop if it has a wide screen AND a mouse pointer
-    // This helps differentiate between desktop computers and tablets
-    return isWideScreen && hasMouse;
+    // Consider desktop if screen is both wide and tall enough
+    // This is more reliable than pointer detection which can fail in automation
+    const isDesktopSize = isWideScreen && hasLargeHeight;
+    
+    console.log(`Desktop detection: width=${window.innerWidth}, height=${window.innerHeight}, isDesktop=${isDesktopSize}`);
+    
+    return isDesktopSize;
   }
   
   /**
@@ -179,10 +183,30 @@ export default class ResponsiveManager {
     const parent = this.canvas.parentElement;
     if (!parent) return;
     
-    // Calculate available space with proper margins
-    const margin = this.isDesktop ? 40 : 20;
-    const availableWidth = parent.clientWidth || (window.innerWidth - margin);
-    const availableHeight = parent.clientHeight || (window.innerHeight * (this.isDesktop ? 0.85 : 0.75));
+    // Calculate available space based on device type
+    let availableWidth: number;
+    let availableHeight: number;
+    
+    if (this.isDesktop) {
+      // Desktop: Use much more aggressive sizing, bypass parent constraints
+      const margin = 60; // Smaller margin for more canvas space
+      
+      // Use window dimensions directly for desktop to get maximum size
+      // The grid layout will handle the actual placement
+      availableWidth = Math.min(window.innerWidth - margin - 320, CANVAS.MAX_DESKTOP_WIDTH); // Reserve 320px for sidebar
+      availableHeight = window.innerHeight - 200; // Account for header space
+      
+      // Ensure we get a substantial minimum size on desktop
+      availableWidth = Math.max(availableWidth, 800); // Minimum 800px wide
+      availableHeight = Math.max(availableHeight, 600); // Minimum 600px tall
+      
+      console.log(`Desktop canvas sizing: ${availableWidth}x${availableHeight} available`);
+    } else {
+      // Mobile: Use most of viewport with smaller margins
+      const margin = 20;
+      availableWidth = Math.min(window.innerWidth - margin, CANVAS.MAX_MOBILE_WIDTH);
+      availableHeight = window.innerHeight * 0.75; // Leave space for controls
+    }
     
     // Calculate scaling factors to fit within available space
     const widthScale = availableWidth / this.baseCanvasWidth;
@@ -195,8 +219,8 @@ export default class ResponsiveManager {
     const canvasWidth = Math.floor(this.baseCanvasWidth * scale);
     const canvasHeight = Math.floor(this.baseCanvasHeight * scale);
     
-    // Ensure minimum playable size
-    const minHeight = 300;
+    // Ensure minimum playable size (higher minimums for desktop)
+    const minHeight = this.isDesktop ? 500 : 300;
     const minWidth = Math.floor((minHeight / this.baseCanvasHeight) * this.baseCanvasWidth);
     
     const finalCanvasWidth = Math.max(canvasWidth, minWidth);
