@@ -61,3 +61,9 @@ Thumbs.db
 
 # Debug
 .debug/
+
+# Security - Never commit setup scripts with credentials
+setup-github-secrets.ps1
+setup-*.ps1
+COMPLETE_DEPLOYMENT_SUMMARY.md
+*.secrets
