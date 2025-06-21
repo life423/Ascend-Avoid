@@ -73,8 +73,7 @@ body {
     touch-action: manipulation;
     overscroll-behavior: contain;
     display: flex;
-    justify-content: center;
-    align-items: center;
+    flex-direction: column;
 }
 
 /* Modal open state */
@@ -140,14 +139,24 @@ body.modal-open {
    GAME AREA LAYOUT
    ============================================ */
 
-/* Main game section */
-.game-area[data-section="game"] {
+/* Main game container - takes remaining height and centers game content */
+.game-main[data-section="main"] {
     flex: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    overflow: hidden;
+    padding: var(--space-md);
+}
+
+/* Game area wrapper inside main */
+.game-area[data-section="game"] {
+    width: 100%;
+    max-width: 1200px;
     display: grid;
     grid-template-rows: 1fr;
     grid-template-columns: 1fr;
     overflow: hidden;
-    padding: var(--space-md);
     gap: var(--space-lg);
 }
 
