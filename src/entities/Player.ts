@@ -72,13 +72,21 @@ export default class Player implements GameObject {
    * Reset player to starting position at the bottom center of the screen
    */
   resetPosition(): void {
-    // Update dimensions based on current scale factor
-    this.width = this.baseWidth * SCALE_FACTOR;
-    this.height = this.baseHeight * SCALE_FACTOR;
+    // Use same dimension calculation as move() method
+    const playerSize = Math.max(
+      this.baseWidth * SCALE_FACTOR,
+      15
+    );
+    this.width = playerSize;
+    this.height = playerSize;
     
-    // Position player at the bottom center
+    // Position player at the bottom center with proper boundary clamping
     this.x = this.canvas.width / 2 - this.width / 2;
-    this.y = this.canvas.height - this.height - (10 * SCALE_FACTOR); // Position near the bottom with padding
+    this.y = this.canvas.height - this.height - (10 * SCALE_FACTOR);
+    
+    // Ensure position is within bounds
+    this.x = Math.max(0, Math.min(this.x, this.canvas.width - this.width));
+    this.y = Math.max(0, Math.min(this.y, this.canvas.height - this.height));
   }
   
   /**
@@ -86,19 +94,9 @@ export default class Player implements GameObject {
    * @param timestamp - Current timestamp for animation
    */
   draw(timestamp: number = 0): void {
-    // Calculate responsive size based on scale factor
-    const playerSize = Math.max(
-      this.baseWidth * SCALE_FACTOR,
-      15
-    );
-    
-    // Update dimensions for collision detection
-    this.width = playerSize;
-    this.height = playerSize;
-    
     // Get and draw animated player sprite with current timestamp for animation
     const playerSprite = getSprite('player', 0, timestamp);
-    this.ctx.drawImage(playerSprite, this.x, this.y, playerSize, playerSize);
+    this.ctx.drawImage(playerSprite, this.x, this.y, this.width, this.height);
   }
   
   /**
@@ -127,6 +125,14 @@ export default class Player implements GameObject {
    * Move the player based on current input state
    */
   move(): void {
+    // Update dimensions first - before any movement calculations
+    const playerSize = Math.max(
+      this.baseWidth * SCALE_FACTOR,
+      15
+    );
+    this.width = playerSize;
+    this.height = playerSize;
+    
     // Calculate movement step size based on scale factor
     const baseStepX = BASE_CANVAS_WIDTH * 0.07;
     const baseStepY = BASE_CANVAS_HEIGHT * 0.07;
@@ -185,6 +191,10 @@ export default class Player implements GameObject {
     if (!this.movementKeys.left) {
       this.canMove.left = true;
     }
+    
+    // Clamp player position to stay fully within canvas bounds
+    this.x = Math.max(0, Math.min(this.x, this.canvas.width - this.width));
+    this.y = Math.max(scaledWinningLine, Math.min(this.y, this.canvas.height - this.height));
   }
   
   /**
