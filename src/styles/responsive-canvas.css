@@ -61,12 +61,14 @@
   }
 }
 
-/* Mobile-first: Single column grid layout */
-.game-content-wrapper {
+/* Clean semantic game layout */
+#game-layout {
   display: grid;
   grid-template-rows: 1fr;
   height: 100vh;
   width: 100vw;
+  max-width: 100vw;
+  overflow: hidden;
 }
 
 #game-container {
@@ -80,7 +82,7 @@
 
 /* Desktop layout: Two column grid */
 @media (min-width: 1200px) {
-  .game-content-wrapper {
+  #game-layout {
     display: grid;
     grid-template-columns: 1fr 350px; /* Game area | Sidebar */
     grid-template-rows: 1fr;

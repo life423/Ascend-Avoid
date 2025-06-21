@@ -133,14 +133,7 @@ h4 {
     height: auto; /* Allow height to adjust properly */
 }
 
-/* Create a game content wrapper for desktop layout */
-.game-content-wrapper {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    width: 100%;
-    margin: 0 auto;
-}
+/* REMOVED: Replaced with semantic #game-layout in responsive-canvas.css */
 
 /* Desktop Sidebar Instructions */
 #desktop-sidebar {
@@ -512,13 +505,7 @@ h4 {
         display: block;
     }
 
-    .game-content-wrapper {
-        flex-direction: row;
-        justify-content: center;
-        align-items: stretch; /* Make children same height */
-        gap: var(--space-xl);
-        width: 100%;
-    }
+    /* REMOVED: .game-content-wrapper replaced with #game-layout */
 
     #game-container {
         flex: 0 0 65%; /* Don't grow, don't shrink, start at 65% */

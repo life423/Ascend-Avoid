@@ -77,12 +77,7 @@
     height: 80vh;
   }
   
-  /* For desktop layout with sidebar */
-  .game-content-wrapper {
-    display: flex;
-    flex-direction: row;
-    align-items: flex-start;
-  }
+  /* REMOVED: Replaced with semantic #game-layout in responsive-canvas.css */
   
   #game-container {
     flex: 0 0 65%;
