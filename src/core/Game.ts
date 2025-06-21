@@ -22,6 +22,7 @@ interface KeyMappings {
     LEFT: string[]
     RIGHT: string[]
     RESTART: string[]
+    SHOOT: string[] // Added shooting support
     [key: string]: string[]
 }
 

@@ -5,7 +5,8 @@
     "main": "index.html",
     "type": "module",
     "scripts": {
-        "dev": "concurrently -k \"npm:dev:client\" \"npm:dev:server\" --names \"CLIENT,SERVER\" --prefix-colors \"cyan,green\"",
+        "dev": "npm run kill-ports && concurrently -k \"npm:dev:client\" \"npm:dev:server\" --names \"CLIENT,SERVER\" --prefix-colors \"cyan,green\"",
+        "kill-ports": "kill-port 3000 5173 || true",
         "dev:client": "vite --open",
         "dev:server": "cd server && node --loader ts-node/esm --watch index.ts",
         "dev:legacy": "start.bat",
@@ -45,6 +46,7 @@
         "@vitest/ui": "^3.1.2",
         "concurrently": "^9.1.2",
         "eslint": "^8.23.0",
+        "kill-port": "^2.0.1",
         "rimraf": "^5.0.10",
         "typescript": "^5.8.3",
         "vite": "^6.2.5",

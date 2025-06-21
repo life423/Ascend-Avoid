@@ -16,6 +16,7 @@ interface KeyMappings {
     LEFT: string[]
     RIGHT: string[]
     RESTART: string[]
+    SHOOT: string[] // Added shooting support
     [key: string]: string[]
 }
 
@@ -25,7 +26,7 @@ interface InputManagerOptions {
 
 export default class InputManager {
     private keyMappings: KeyMappings
-    private keys: InputState & { restart: boolean }
+    private keys: InputState & { restart: boolean; shoot: boolean } // Added shoot
     private touchStart: Point
     private isTouchDevice: boolean
 
@@ -44,6 +45,7 @@ export default class InputManager {
             left: false,
             right: false,
             restart: false,
+            shoot: false, // Added shoot state
         }
 
         // Touch state tracking
@@ -135,6 +137,11 @@ export default class InputManager {
             document.dispatchEvent(new CustomEvent('game:restart'))
         }
 
+        // Check for shoot key
+        if (this.keyMappings.SHOOT.includes(e.key) || e.keyCode === 32) { // 32 is spacebar
+            this.keys.shoot = true
+        }
+
         // Debug logging if needed
         if ((window as any).DEBUG) {
             console.log('Key down:', e.key, e.keyCode)
@@ -165,6 +172,11 @@ export default class InputManager {
 
         if (this.keyMappings.RESTART.includes(e.key)) {
             this.keys.restart = false
+        }
+
+        // Release shoot key
+        if (this.keyMappings.SHOOT.includes(e.key) || e.keyCode === 32) { // 32 is spacebar
+            this.keys.shoot = false
         }
 
         // Debug logging if needed
@@ -243,6 +255,14 @@ export default class InputManager {
         // Exclude restart from InputState interface
         const { up, down, left, right } = this.keys
         return { up, down, left, right }
+    }
+
+    /**
+     * Check if the shoot key is currently pressed
+     * @returns True if shoot key is pressed
+     */
+    isShootPressed(): boolean {
+        return this.keys.shoot
     }
 
     /**

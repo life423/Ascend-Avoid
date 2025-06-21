@@ -29,6 +29,20 @@ export const OBSTACLE = {
   MAX_WIDTH_RATIO: 0.18,
 } as const;
 
+// Projectile settings
+export const PROJECTILE = {
+  WIDTH: 4,
+  HEIGHT: 8,
+  SPEED: 400,
+  BASE_SPEED: 400, // Base speed for projectiles (used in constructor)
+  MAX_ACTIVE: 5,
+  MAX_COUNT: 5, // Maximum number of projectiles (used by ProjectileManager)
+  FIRE_RATE: 250, // milliseconds between shots
+  COLOR: '#00ffff',
+  TRAIL_LENGTH: 3,
+  LIFETIME: 3000, // Projectile lifetime in milliseconds (3 seconds)
+} as const;
+
 // Game settings
 export const GAME = {
   WINNING_LINE: 40,
@@ -71,6 +85,7 @@ export const KEYS = {
   LEFT: ['ArrowLeft', 'Left', 'a', 'A'],
   RIGHT: ['ArrowRight', 'Right', 'd', 'D'],
   RESTART: ['r', 'R'],
+  SHOOT: [' ', 'Space', 'Enter'], // Spacebar, Space, and Enter
 } as const;
 
 // Player colors for differentiation - improved contrast with dark background
@@ -134,6 +149,7 @@ export const GAME_CONSTANTS = {
   CANVAS,
   PLAYER,
   OBSTACLE,
+  PROJECTILE, // Added this
   GAME,
   STATE,
   PLAYER_STATE,
