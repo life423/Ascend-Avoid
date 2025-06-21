@@ -152,6 +152,14 @@ export class ServiceLocator {
     }
 
     /**
+     * Remove a service (alias for unregister)
+     * @param name - Service name/key
+     */
+    remove(name: string): void {
+        this.unregister(name);
+    }
+
+    /**
      * Clear all services
      */
     clear(): void {

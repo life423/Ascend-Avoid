@@ -1,205 +1,117 @@
 /**
- * Type definitions for the game
+ * Complete TypeScript type definitions for Ascend Avoid game.
+ * Contains all interfaces and types used throughout the application.
  */
 
-// Game object interface
+// ===== CORE GAME TYPES =====
+
+export interface Entity {
+    x: number
+    y: number
+    width: number
+    height: number
+    update(deltaTime: number): void
+    render(ctx: CanvasRenderingContext2D, scalingInfo?: ScalingInfo | number): void
+    destroy?(): void
+}
+
+export interface System {
+    init?(): void
+    update?(deltaTime: number): void
+    destroy?(): void
+}
+
 export interface GameObject {
     x: number
     y: number
     width: number
     height: number
-    update?: (deltaTime: number, ...args: any[]) => void
-    render?: (ctx: CanvasRenderingContext2D, timestamp?: number) => void
-    reset?: () => void
+    update(deltaTime: number, ...args: any[]): void
+    render(ctx: CanvasRenderingContext2D, scalingInfo?: ScalingInfo | number): void
 }
 
-// Input state interface
 export interface InputState {
     up: boolean
     down: boolean
     left: boolean
     right: boolean
-    [key: string]: boolean
+    restart?: boolean  // Made optional since many places don't provide it
+    shoot?: boolean
+    [key: string]: boolean | undefined
 }
 
-// Performance statistics interface
-export interface PerformanceStats {
-    avgFrameTime: number
-    maxFrameTime: number
-    minFrameTime: number
-    frameCount: number
-}
-
-// Scaling information interface
 export interface ScalingInfo {
+    scaleX?: number
+    scaleY?: number
+    offsetX?: number
+    offsetY?: number
+    canvasWidth?: number
+    canvasHeight?: number
+    baseWidth?: number
+    baseHeight?: number
+    devicePixelRatio?: number
+    isDesktop?: boolean
+    isMobile?: boolean
+    isTablet?: boolean
+    // Legacy support for existing code
     widthScale: number
     heightScale: number
     pixelRatio: number
     reducedResolution?: boolean
 }
 
-// Responsive canvas options
-export interface ResponsiveCanvasOptions {
-    baseWidth?: number
-    baseHeight?: number
-    maxWidth?: number
-    maxHeight?: number
-    debug?: boolean
+export interface PerformanceStats {
+    fps?: number
+    frameTime?: number
+    averageFrameTime?: number
+    memoryUsage?: number
+    renderTime?: number
+    updateTime?: number
+    // Legacy support for existing code
+    avgFrameTime: number
+    maxFrameTime: number
+    minFrameTime: number
+    frameCount: number
 }
 
-// Responsive canvas controller
-export interface ResponsiveCanvasController {
-    updateCanvasSize: () => ScalingInfo
-    getScalingInfo: () => ScalingInfo
-}
+// ===== SERVICE LOCATOR AND EVENT BUS =====
 
-// Enhanced device capabilities interface
-export interface DeviceCapabilities {
-    screen: {
-        width: number
-        height: number
-        availWidth: number
-        availHeight: number
-        dpr: number
-        orientation: 'portrait' | 'landscape'
-    }
-    performance: {
-        tier: 'low' | 'medium' | 'high'
-        memory: number
-        cores: number
-        gpu: string | null
-        fps: number
-    }
-    input: {
-        touch: boolean
-        mouse: boolean
-        keyboard: boolean
-        gamepad: boolean
-        hover: boolean
-    }
-    features: {
-        webgl: boolean
-        webgl2: boolean
-        canvas2d: boolean
-        vibration: boolean
-        fullscreen: boolean
-        orientation: boolean
-        deviceMemory: boolean
-        connection: boolean
-    }
-    battery?: {
-        charging: boolean
-        level: number
+export type EventCallback<T = any> = (data: T) => void
+
+// Augment the imported ServiceLocator class to add missing methods
+declare module '../core/ServiceLocator' {
+    export interface ServiceLocator {
+        register<T>(name: string, instance: T, singleton?: boolean): void
+        get<T>(name: string): T
+        has(name: string): boolean
+        unregister(name: string): void
+        remove(name: string): void // Alias for unregister
+        clear(): void
     }
 }
 
-// Game viewport interface
-export interface GameViewport {
-    internal: {
-        width: number
-        height: number
-        aspectRatio: number
-    }
-    display: {
-        width: number
-        height: number
-        actualWidth: number
-        actualHeight: number
-    }
-    scale: {
-        uniform: number
-        x: number
-        y: number
-    }
-    offset: {
-        x: number
-        y: number
-    }
-    bounds: {
-        left: number
-        top: number
-        right: number
-        bottom: number
+// Augment the imported EventBus class to add missing methods  
+declare module '../core/EventBus' {
+    export interface EventBus {
+        listeners: Map<string, Set<EventCallback>>
+        onceListeners: Map<string, Set<EventCallback>>
+        debugMode: boolean
+        on<T>(event: string, callback: EventCallback<T>): () => void
+        off(event: string, callback: EventCallback): void
+        once<T>(event: string, callback: EventCallback<T>): () => void
+        emit<T>(event: string, data?: T): void
+        clear(event: string): void
+        dispose(): void
+        getEvents(): string[]
+        getListenerCount(event: string): number
+        setDebugMode(enabled: boolean): void
     }
 }
 
-// Quality settings interface
-export interface QualitySettings {
-    particleCount: number
-    shadowsEnabled: boolean
-    effectsEnabled: boolean
-    antiAliasing: boolean
-    renderScale: number
-    targetFPS: number
-    backgroundQuality: 'low' | 'medium' | 'high'
-    textureQuality: 'low' | 'medium' | 'high'
-}
+// ===== GAME CONFIGURATION =====
 
-// Touch gesture interface
-export interface TouchGesture {
-    type: 'tap' | 'swipe' | 'pinch' | 'rotate'
-    startPoint: { x: number; y: number }
-    endPoint: { x: number; y: number }
-    duration: number
-    velocity: { x: number; y: number }
-    distance: number
-    direction?: 'up' | 'down' | 'left' | 'right'
-}
-
-// Canvas layer interface
-export interface CanvasLayer {
-    canvas: HTMLCanvasElement
-    ctx: CanvasRenderingContext2D
-    zIndex: number
-    alpha: number
-    visible: boolean
-    dirty: boolean
-}
-
-// Responsive canvas configuration
-export interface ResponsiveCanvasConfig {
-    gameWidth: number
-    gameHeight: number
-    minWidth?: number
-    minHeight?: number
-    maxWidth?: number
-    maxHeight?: number
-    maintainAspectRatio: boolean
-    allowUpscaling: boolean
-    allowDownscaling: boolean
-    centerCanvas: boolean
-    enableDPR: boolean
-    enableAntialiasing: boolean
-    quality: 'auto' | 'low' | 'medium' | 'high'
-    layers?: number
-    debug?: boolean
-}
-
-// NetworkPlayer interface for multiplayer functionality
-export interface NetworkPlayer {
-    id: string
-    sessionId: string
-    name: string
-    x: number
-    y: number
-    width: number
-    height: number
-    state: string
-    score: number
-    playerIndex: number
-    index: number
-    movementKeys?: {
-        up: boolean
-        down: boolean
-        left: boolean
-        right: boolean
-    }
-    lastUpdateTime?: number
-}
-
-// GameConfig interface
 export interface GameConfig {
-    STATE: {
+    STATE?: {
         READY: string
         WAITING: string
         STARTING: string
@@ -207,16 +119,204 @@ export interface GameConfig {
         PAUSED: string
         GAME_OVER: string
     }
-    getKeys(): Record<string, readonly string[]>
-    getWinningLine(canvasHeight: number, baseHeight?: number): number
-    isDebugEnabled(): boolean
-    setDesktopMode(isDesktop: boolean): void
-    getObstacleMinWidthRatio(): number
-    getObstacleMaxWidthRatio(): number
-    getMaxCars(): number
+    WINNING_LINE?: number
+    DEBUG_MODE?: boolean
+    DESKTOP_MODE?: boolean
+    OBSTACLE_MIN_WIDTH_RATIO?: number
+    OBSTACLE_MAX_WIDTH_RATIO?: number
+    MAX_CARS?: number
+    KEYS?: {
+        UP: string[]
+        DOWN: string[]
+        LEFT: string[]
+        RIGHT: string[]
+        RESTART: string[]
+        SHOOT?: string[]
+    }
 }
 
-// Extend Window interface to include game-specific properties
+// ===== MULTIPLAYER TYPES =====
+
+export interface NetworkPlayer {
+    id: string
+    sessionId: string
+    x: number
+    y: number
+    color: string
+    name: string
+    isAlive: boolean
+    score: number
+    velocity?: {
+        x: number
+        y: number
+    }
+    lastUpdate?: number
+    interpolationData?: {
+        startX: number
+        startY: number
+        targetX: number
+        targetY: number
+        startTime: number
+        duration: number
+    }
+    // Legacy support for existing code
+    index?: number
+    playerIndex?: number
+}
+
+export interface GameState {
+    gameState: string
+    players: Record<string, NetworkPlayer>
+    obstacles: any[]
+    arenaWidth: number
+    arenaHeight: number
+    areaPercentage: number
+    elapsedTime: number
+    countdownTime?: number
+    aliveCount: number
+    totalPlayers: number
+    winnerName?: string
+}
+
+export interface ArenaStats {
+    width: number
+    height: number
+    areaPercentage: number
+    elapsedTime: number
+    countdownTime?: number
+    shrinkStart?: number
+    shrinkEnd?: number
+}
+
+// ===== UI AND RESPONSIVE TYPES =====
+
+export interface TouchControlsConfig {
+    enabled: boolean
+    opacity: number
+    size: number
+    position: {
+        dpad: { bottom: number; left: number }
+        buttons: { bottom: number; right: number }
+    }
+}
+
+export interface ResponsiveConfig {
+    maintainAspectRatio: boolean
+    minWidth: number
+    minHeight: number
+    maxWidth: number
+    maxHeight: number
+    devicePixelRatio: boolean
+}
+
+export interface DeviceInfo {
+    isTouchDevice: boolean
+    isMobile: boolean
+    isTablet: boolean
+    isDesktop: boolean
+    isLandscape: boolean
+    devicePixelRatio: number
+    screenWidth: number
+    screenHeight: number
+}
+
+// ===== ASSET MANAGEMENT =====
+
+export interface AssetDefinition {
+    key: string
+    src: string
+    type?: 'image' | 'audio' | 'font'
+}
+
+export interface LoadProgress {
+    loaded: number
+    total: number
+    percentage: number
+    currentAsset?: string
+}
+
+// ===== PARTICLE SYSTEM =====
+
+export interface ParticleConfig {
+    x: number
+    y: number
+    velocityX: number
+    velocityY: number
+    life: number
+    maxLife: number
+    size: number
+    color: string
+    gravity?: number
+    fade?: boolean
+}
+
+export interface ParticleStats {
+    activeParticles: number
+    totalAllocated: number
+    poolSize: number
+    createdThisFrame: number
+}
+
+// ===== COLLISION DETECTION =====
+
+export interface CollisionBox {
+    x: number
+    y: number
+    width: number
+    height: number
+}
+
+export interface CollisionResult {
+    collided: boolean
+    side?: 'top' | 'bottom' | 'left' | 'right'
+    overlap?: {
+        x: number
+        y: number
+    }
+}
+
+// ===== AUDIO SYSTEM =====
+
+export interface SoundConfig {
+    volume: number
+    loop: boolean
+    pitch?: number
+    fadeIn?: number
+    fadeOut?: number
+}
+
+// ===== GAME ENGINE =====
+
+export interface GameEngineInterface {
+    canvas: HTMLCanvasElement
+    getCanvas(): HTMLCanvasElement
+    addSystem(system: System): void
+    removeSystem(system: System): void
+    init(): Promise<void>
+    start(): void
+    stop(): void
+    pause(): void
+    resume(): void
+    destroy(): void
+}
+
+// Allow GameEngine constructor to accept different parameter types
+export declare class GameEngine {
+    constructor(canvasOrEventBus: HTMLCanvasElement | any)
+    canvas: HTMLCanvasElement
+    getCanvas(): HTMLCanvasElement
+    addSystem(system: System): void
+    removeSystem(system: System): void
+    init(): Promise<void>
+    start(): void
+    stop(): void
+    pause(): void
+    resume(): void
+    destroy(): void
+}
+
+// ===== GLOBAL WINDOW EXTENSIONS =====
+
 declare global {
     interface Window {
         game?: {
@@ -225,15 +325,49 @@ declare global {
                 heightScale: number,
                 isDesktop: boolean
             ) => void
+            pause?: () => void
+            resume?: () => void
+            restart?: () => void
+            toggleMultiplayer?: () => void
+            getStats?: () => PerformanceStats
         }
-        responsiveCanvas?: ResponsiveCanvasController
-        multiplayerUI?: any
-        showFloatingMenu?: () => void
-        hideFloatingMenu?: () => void
-    }
-
-    // Extend HTMLCanvasElement to include scaling info
-    interface HTMLCanvasElement {
-        scalingInfo?: ScalingInfo
+        devicePixelRatio: number
     }
 }
+
+// ===== UTILITY TYPES =====
+
+export type GameModeType = 'single' | 'multiplayer'
+
+export type GameDifficulty = 'easy' | 'normal' | 'hard' | 'expert'
+
+export interface EventEmitter {
+    on(event: string, callback: EventCallback): void
+    off(event: string, callback: EventCallback): void
+    emit(event: string, data?: any): void
+}
+
+// ===== CONSTANTS AS TYPES =====
+
+export const GAME_EVENTS = {
+    GAME_START: 'game:start',
+    GAME_PAUSE: 'game:pause',
+    GAME_RESUME: 'game:resume',
+    GAME_OVER: 'game:over',
+    PLAYER_DEATH: 'player:death',
+    SCORE_UPDATE: 'score:update',
+    MULTIPLAYER_CONNECT: 'multiplayer:connect',
+    MULTIPLAYER_DISCONNECT: 'multiplayer:disconnect',
+    WINDOW_RESIZE: 'window:resize',
+    INPUT_KEY_DOWN: 'input:key_down',
+    INPUT_KEY_UP: 'input:key_up',
+    INPUT_TOUCH_START: 'input:touch_start',
+    INPUT_TOUCH_END: 'input:touch_end',
+    PLAYER_COLLISION: 'player:collision',
+} as const
+
+export type GameEvent = (typeof GAME_EVENTS)[keyof typeof GAME_EVENTS]
+
+// ===== GAME EVENTS CONSTANT FOR IMPORT =====
+
+export declare const GameEvents: typeof GAME_EVENTS

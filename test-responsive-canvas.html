@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Responsive Canvas Test - Ascend Avoid</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            overflow: hidden;
+        }
+        
+        #gameContainer {
+            position: relative;
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        #gameCanvas {
+            border: 2px solid #333;
+            border-radius: 8px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            background: #000;
+        }
+        
+        #info {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            color: white;
+            background: rgba(0, 0, 0, 0.7);
+            padding: 15px;
+            border-radius: 8px;
+            font-size: 14px;
+            line-height: 1.4;
+            max-width: 300px;
+            z-index: 1000;
+        }
+        
+        #controls {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            color: white;
+            background: rgba(0, 0, 0, 0.7);
+            padding: 15px;
+            border-radius: 8px;
+            font-size: 14px;
+            z-index: 1000;
+        }
+        
+        button {
+            background: #4CAF50;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            margin: 2px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+        }
+        
+        button:hover {
+            background: #45a049;
+        }
+        
+        .info-section {
+            margin-bottom: 10px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .info-section:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+        }
+        
+        .label {
+            font-weight: bold;
+            color: #4CAF50;
+        }
+    </style>
+</head>
+<body>
+    <div id="gameContainer">
+        <canvas id="gameCanvas"></canvas>
+        
+        <div id="info">
+            <div class="info-section">
+                <div class="label">Device Info:</div>
+                <div>Type: <span id="deviceType">-</span></div>
+                <div>Touch: <span id="touchDevice">-</span></div>
+                <div>Orientation: <span id="orientation">-</span></div>
+                <div>Screen: <span id="screenSize">-</span></div>
+            </div>
+            
+            <div class="info-section">
+                <div class="label">Canvas Info:</div>
+                <div>Size: <span id="canvasSize">-</span></div>
+                <div>Buffer: <span id="bufferSize">-</span></div>
+                <div>DPR: <span id="devicePixelRatio">-</span></div>
+            </div>
+            
+            <div class="info-section">
+                <div class="label">Scaling Info:</div>
+                <div>Scale: <span id="scaleInfo">-</span></div>
+                <div>Base: <span id="baseSize">-</span></div>
+            </div>
+        </div>
+        
+        <div id="controls">
+            <div class="label">Test Controls:</div>
+            <button onclick="toggleAspectRatio()">Toggle Aspect Ratio</button>
+            <button onclick="togglePixelRatio()">Toggle Device Pixel Ratio</button>
+            <button onclick="forceResize()">Force Resize</button>
+            <br>
+            <button onclick="setMinSize()">Minimum Size</button>
+            <button onclick="setMediumSize()">Medium Size</button>
+            <button onclick="setMaxSize()">Maximum Size</button>
+        </div>
+    </div>
+
+    <script type="module">
+        // Import the responsive canvas system
+        import { ResponsiveCanvas } from './src/utils/responsiveCanvas.js';
+        
+        let responsiveCanvas;
+        let animationId;
+        let time = 0;
+        
+        // Demo objects to render
+        const demoObjects = [
+            { x: 100, y: 100, width: 50, height: 50, color: '#FF6B6B', vx: 2, vy: 1.5 },
+            { x: 200, y: 150, width: 30, height: 30, color: '#4ECDC4', vx: -1.5, vy: 2 },
+            { x: 300, y: 200, width: 40, height: 40, color: '#45B7D1', vx: 1, vy: -1.8 },
+            { x: 150, y: 250, width: 35, height: 35, color: '#96CEB4', vx: -2.5, vy: 1 },
+            { x: 250, y: 100, width: 25, height: 25, color: '#FFEAA7', vx: 1.8, vy: 2.2 }
+        ];
+        
+        function init() {
+            try {
+                const canvas = document.getElementById('gameCanvas');
+                
+                // Create responsive canvas with configuration
+                responsiveCanvas = new ResponsiveCanvas(canvas, {
+                    maintainAspectRatio: false,
+                    minWidth: 800,
+                    minHeight: 600,
+                    maxWidth: 1920,
+                    maxHeight: 1080,
+                    devicePixelRatio: true
+                });
+                
+                // Set up resize callback
+                responsiveCanvas.onResize((widthScale, heightScale, deviceInfo) => {
+                    console.log('Canvas resized:', { widthScale, heightScale, deviceInfo });
+                    updateInfo();
+                });
+                
+                // Initial info update
+                updateInfo();
+                
+                // Start animation loop
+                startAnimation();
+                
+                console.log('Responsive Canvas Test initialized successfully');
+                
+            } catch (error) {
+                console.error('Failed to initialize:', error);
+                document.getElementById('info').innerHTML = `
+                    <div style="color: #ff6b6b;">
+                        <strong>Error:</strong> ${error.message}
+                    </div>
+                `;
+            }
+        }
+        
+        function updateInfo() {
+            if (!responsiveCanvas) return;
+            
+            const deviceInfo = responsiveCanvas.getDeviceInfo();
+            const scalingInfo = responsiveCanvas.getScalingInfo();
+            const canvas = responsiveCanvas.getCanvas();
+            
+            // Device info
+            document.getElementById('deviceType').textContent = 
+                deviceInfo.isDesktop ? 'Desktop' : 
+                deviceInfo.isTablet ? 'Tablet' : 'Mobile';
+            document.getElementById('touchDevice').textContent = 
+                deviceInfo.isTouchDevice ? 'Yes' : 'No';
+            document.getElementById('orientation').textContent = 
+                deviceInfo.isLandscape ? 'Landscape' : 'Portrait';
+            document.getElementById('screenSize').textContent = 
+                `${deviceInfo.screenWidth}×${deviceInfo.screenHeight}`;
+            
+            // Canvas info
+            document.getElementById('canvasSize').textContent = 
+                `${canvas.style.width} × ${canvas.style.height}`;
+            document.getElementById('bufferSize').textContent = 
+                `${canvas.width}×${canvas.height}`;
+            document.getElementById('devicePixelRatio').textContent = 
+                deviceInfo.devicePixelRatio.toFixed(2);
+            
+            // Scaling info
+            document.getElementById('scaleInfo').textContent = 
+                `${scalingInfo.scaleX?.toFixed(2) || scalingInfo.widthScale.toFixed(2)}×${scalingInfo.scaleY?.toFixed(2) || scalingInfo.heightScale.toFixed(2)}`;
+            document.getElementById('baseSize').textContent = 
+                `${scalingInfo.baseWidth}×${scalingInfo.baseHeight}`;
+        }
+        
+        function startAnimation() {
+            function animate() {
+                time += 0.016; // ~60fps
+                
+                const ctx = responsiveCanvas.getContext();
+                const scalingInfo = responsiveCanvas.getScalingInfo();
+                const canvas = responsiveCanvas.getCanvas();
+                
+                // Clear canvas
+                ctx.fillStyle = '#1a1a1a';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+                
+                // Update and render demo objects
+                demoObjects.forEach(obj => {
+                    // Update position
+                    obj.x += obj.vx;
+                    obj.y += obj.vy;
+                    
+                    // Bounce off edges (using scaled dimensions)
+                    const maxX = (scalingInfo.canvasWidth || scalingInfo.baseWidth * scalingInfo.widthScale) - obj.width;
+                    const maxY = (scalingInfo.canvasHeight || scalingInfo.baseHeight * scalingInfo.heightScale) - obj.height;
+                    
+                    if (obj.x <= 0 || obj.x >= maxX) {
+                        obj.vx *= -1;
+                        obj.x = Math.max(0, Math.min(maxX, obj.x));
+                    }
+                    
+                    if (obj.y <= 0 || obj.y >= maxY) {
+                        obj.vy *= -1;
+                        obj.y = Math.max(0, Math.min(maxY, obj.y));
+                    }
+                    
+                    // Render object
+                    ctx.fillStyle = obj.color;
+                    ctx.fillRect(obj.x, obj.y, obj.width, obj.height);
+                    
+                    // Add a subtle glow effect
+                    ctx.shadowColor = obj.color;
+                    ctx.shadowBlur = 10;
+                    ctx.fillRect(obj.x, obj.y, obj.width, obj.height);
+                    ctx.shadowBlur = 0;
+                });
+                
+                // Render grid overlay
+                renderGrid(ctx, scalingInfo);
+                
+                // Render center crosshair
+                renderCrosshair(ctx, scalingInfo);
+                
+                animationId = requestAnimationFrame(animate);
+            }
+            
+            animate();
+        }
+        
+        function renderGrid(ctx, scalingInfo) {
+            const width = scalingInfo.canvasWidth || scalingInfo.baseWidth * scalingInfo.widthScale;
+            const height = scalingInfo.canvasHeight || scalingInfo.baseHeight * scalingInfo.heightScale;
+            
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.1)';
+            ctx.lineWidth = 1;
+            
+            // Vertical lines
+            for (let x = 0; x <= width; x += 50) {
+                ctx.beginPath();
+                ctx.moveTo(x, 0);
+                ctx.lineTo(x, height);
+                ctx.stroke();
+            }
+            
+            // Horizontal lines
+            for (let y = 0; y <= height; y += 50) {
+                ctx.beginPath();
+                ctx.moveTo(0, y);
+                ctx.lineTo(width, y);
+                ctx.stroke();
+            }
+        }
+        
+        function renderCrosshair(ctx, scalingInfo) {
+            const width = scalingInfo.canvasWidth || scalingInfo.baseWidth * scalingInfo.widthScale;
+            const height = scalingInfo.canvasHeight || scalingInfo.baseHeight * scalingInfo.heightScale;
+            const centerX = width / 2;
+            const centerY = height / 2;
+            
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.5)';
+            ctx.lineWidth = 2;
+            
+            // Horizontal line
+            ctx.beginPath();
+            ctx.moveTo(centerX - 20, centerY);
+            ctx.lineTo(centerX + 20, centerY);
+            ctx.stroke();
+            
+            // Vertical line
+            ctx.beginPath();
+            ctx.moveTo(centerX, centerY - 20);
+            ctx.lineTo(centerX, centerY + 20);
+            ctx.stroke();
+        }
+        
+        // Control functions
+        window.toggleAspectRatio = function() {
+            responsiveCanvas.config.maintainAspectRatio = !responsiveCanvas.config.maintainAspectRatio;
+            responsiveCanvas.forceResize();
+            console.log('Aspect ratio maintenance:', responsiveCanvas.config.maintainAspectRatio);
+        };
+        
+        window.togglePixelRatio = function() {
+            responsiveCanvas.config.devicePixelRatio = !responsiveCanvas.config.devicePixelRatio;
+            responsiveCanvas.forceResize();
+            console.log('Device pixel ratio support:', responsiveCanvas.config.devicePixelRatio);
+        };
+        
+        window.forceResize = function() {
+            responsiveCanvas.forceResize();
+            console.log('Forced resize triggered');
+        };
+        
+        window.setMinSize = function() {
+            const container = document.getElementById('gameContainer');
+            container.style.width = '400px';
+            container.style.height = '300px';
+            setTimeout(() => responsiveCanvas.forceResize(), 100);
+        };
+        
+        window.setMediumSize = function() {
+            const container = document.getElementById('gameContainer');
+            container.style.width = '800px';
+            container.style.height = '600px';
+            setTimeout(() => responsiveCanvas.forceResize(), 100);
+        };
+        
+        window.setMaxSize = function() {
+            const container = document.getElementById('gameContainer');
+            container.style.width = '100vw';
+            container.style.height = '100vh';
+            setTimeout(() => responsiveCanvas.forceResize(), 100);
+        };
+        
+        // Initialize when DOM is ready
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', init);
+        } else {
+            init();
+        }
+        
+        // Cleanup on page unload
+        window.addEventListener('beforeunload', () => {
+            if (animationId) {
+                cancelAnimationFrame(animationId);
+            }
+            if (responsiveCanvas) {
+                responsiveCanvas.destroy();
+            }
+        });
+    </script>
+</body>
+</html>

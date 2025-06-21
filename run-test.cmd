@@ -1,0 +1,3 @@
+@echo off
+echo Starting test engine...
+npx vite --open test-engine.html

@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Projectile Debug Demo</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            background-color: #000;
+            font-family: Arial, sans-serif;
+            color: #00ffff;
+        }
+        
+        .instructions {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        
+        canvas {
+            display: block;
+            margin: 0 auto;
+            border: 2px solid #00ffff;
+        }
+        
+        .debug-panel {
+            position: fixed;
+            top: 10px;
+            left: 10px;
+            background: rgba(0,0,0,0.8);
+            color: #00ffff;
+            padding: 10px;
+            border-radius: 5px;
+            font-family: monospace;
+            font-size: 12px;
+            max-width: 300px;
+        }
+        
+        .controls {
+            text-align: center;
+            margin-top: 20px;
+        }
+        
+        button {
+            padding: 10px 20px;
+            margin: 5px;
+            background: #00ffff;
+            color: #000;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        
+        button:hover {
+            background: #00cccc;
+        }
+        
+        .stop-btn {
+            background: #ff0000 !important;
+            color: white !important;
+        }
+        
+        .stop-btn:hover {
+            background: #cc0000 !important;
+        }
+    </style>
+</head>
+<body>
+    <div class="instructions">
+        <h1>🐛 Projectile Shooting Debug Demo</h1>
+        <p>Press <strong>SPACEBAR</strong> to shoot projectiles!</p>
+        <p>Use <strong>WASD</strong> or <strong>Arrow Keys</strong> to move the player.</p>
+        <p>Check the console (F12) for detailed debug information.</p>
+    </div>
+
+    <div id="game-container"></div>
+
+    <div class="controls">
+        <button id="manualTest">Manual Projectile Test</button>
+        <button id="resetCooldown">Reset Cooldown</button>
+        <button id="toggleDebug">Toggle Debug Mode</button>
+        <button id="stopDemo" class="stop-btn">Stop Demo</button>
+    </div>
+
+    <script type="module">
+        // Import and start the debug demo
+        import { DebugProjectileDemo } from './src/DebugProjectileDemo.js';
+        
+        // Wait for DOM to be ready
+        document.addEventListener('DOMContentLoaded', () => {
+            console.log('Starting Debug Demo...');
+            
+            // Enable global debug mode
+            window.DEBUG = true;
+            
+            // Clear the body and start demo
+            const gameContainer = document.getElementById('game-container');
+            
+            try {
+                // Start the debug demo
+                const demo = new DebugProjectileDemo();
+                
+                // Set up control buttons
+                document.getElementById('manualTest').addEventListener('click', () => {
+                    console.log('🧪 Manual test button clicked');
+                    const success = demo.projectileManager?.createProjectile(400, 300);
+                    console.log('Manual projectile result:', success);
+                });
+                
+                document.getElementById('resetCooldown').addEventListener('click', () => {
+                    console.log('🔄 Resetting cooldown');
+                    if (demo.projectileManager) {
+                        demo.projectileManager.lastShotTime = 0;
+                        console.log('Cooldown reset');
+                    }
+                });
+                
+                document.getElementById('toggleDebug').addEventListener('click', () => {
+                    window.DEBUG = !window.DEBUG;
+                    console.log('Debug mode:', window.DEBUG ? 'ON' : 'OFF');
+                });
+                
+                document.getElementById('stopDemo').addEventListener('click', () => {
+                    demo.stop();
+                    document.body.innerHTML = '<h1 style="color: #00ffff; text-align: center; margin-top: 200px;">Debug Demo Stopped</h1>';
+                });
+                
+                // Add keyboard event logging
+                document.addEventListener('keydown', (e) => {
+                    if (window.DEBUG) {
+                        console.log('🎮 Key pressed:', {
+                            key: e.key,
+                            keyCode: e.keyCode,
+                            code: e.code,
+                            target: e.target.tagName
+                        });
+                    }
+                });
+                
+            } catch (error) {
+                console.error('Failed to start debug demo:', error);
+                document.body.innerHTML = `
+                    <div style="color: #ff0000; text-align: center; margin-top: 100px;">
+                        <h1>Debug Demo Failed to Start</h1>
+                        <p>Error: ${error.message}</p>
+                        <p>Check the console for more details.</p>
+                    </div>
+                `;
+            }
+        });
+    </script>
+</body>
+</html>
