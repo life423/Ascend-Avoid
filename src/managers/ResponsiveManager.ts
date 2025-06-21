@@ -179,64 +179,54 @@ export default class ResponsiveManager {
     const parent = this.canvas.parentElement;
     if (!parent) return;
     
-    // Get viewport dimensions for proper responsiveness using constants
-    // For desktop screens, allow the game to be much larger
-    const viewportWidth = this.isDesktop ? 
-      Math.min(window.innerWidth - 40, CANVAS.MAX_DESKTOP_WIDTH) : 
-      Math.min(window.innerWidth - 20, CANVAS.MAX_MOBILE_WIDTH);
-    const viewportHeight = window.innerHeight * (this.isDesktop ? 0.8 : 0.7); // Use more of the viewport height on desktop
+    // Calculate available space with proper margins
+    const margin = this.isDesktop ? 40 : 20;
+    const availableWidth = parent.clientWidth || (window.innerWidth - margin);
+    const availableHeight = parent.clientHeight || (window.innerHeight * (this.isDesktop ? 0.85 : 0.75));
     
-    // Use the parent dimensions if available, otherwise use viewport calculations
-    const parentWidth = parent.clientWidth || viewportWidth;
-    const parentHeight = parent.clientHeight || viewportHeight;
+    // Calculate scaling factors to fit within available space
+    const widthScale = availableWidth / this.baseCanvasWidth;
+    const heightScale = availableHeight / this.baseCanvasHeight;
     
-    // Calculate scaling factors
-    const widthScale = parentWidth / this.baseCanvasWidth;
-    const heightScale = parentHeight / this.baseCanvasHeight;
-    
-    // Always maintain the canvas aspect ratio
+    // Use the smaller scale to maintain aspect ratio and fit within bounds
     const scale = Math.min(widthScale, heightScale);
     
-    // Calculate canvas dimensions preserving aspect ratio
+    // Calculate final canvas dimensions
     const canvasWidth = Math.floor(this.baseCanvasWidth * scale);
     const canvasHeight = Math.floor(this.baseCanvasHeight * scale);
     
-    // Make sure canvas has a proper height - at least 300px
-    // This ensures the game remains playable on all devices
+    // Ensure minimum playable size
     const minHeight = 300;
-    const finalCanvasHeight = Math.max(canvasHeight, minHeight);
-    const finalCanvasWidth = canvasWidth;
+    const minWidth = Math.floor((minHeight / this.baseCanvasHeight) * this.baseCanvasWidth);
     
-    // Apply dimensions to canvas with proper aspect ratio - THIS MAKES IT VISUALLY RESPONSIVE
+    const finalCanvasWidth = Math.max(canvasWidth, minWidth);
+    const finalCanvasHeight = Math.max(canvasHeight, minHeight);
+    
+    // Apply CSS dimensions for visual scaling
     this.canvas.style.width = `${finalCanvasWidth}px`;
     this.canvas.style.height = `${finalCanvasHeight}px`;
+    this.canvas.style.display = 'block';
+    this.canvas.style.margin = '0 auto';
     
-    // Center canvas in parent if parent is larger
-    if (parentWidth > finalCanvasWidth) {
-      this.canvas.style.marginLeft = 'auto';
-      this.canvas.style.marginRight = 'auto';
-    }
-    
-    // CRITICAL: Set the internal canvas dimensions to exactly match the CSS dimensions
-    // This ensures the coordinate space matches what's visually displayed
+    // Set internal canvas dimensions to match visual size exactly
     this.canvas.width = finalCanvasWidth;
     this.canvas.height = finalCanvasHeight;
     
-    // Reset any previous transforms - keep 1:1 mapping
+    // Reset context transform for 1:1 pixel mapping
     const ctx = this.canvas.getContext('2d');
     if (ctx) {
       ctx.setTransform(1, 0, 0, 1, 0, 0);
     }
     
-    // Update scaling info for other parts of the game
+    // Update scaling info for game logic
     this.scalingInfo = {
       widthScale: finalCanvasWidth / this.baseCanvasWidth,
       heightScale: finalCanvasHeight / this.baseCanvasHeight,
-      pixelRatio: 1, // Use 1:1 mapping for coordinates
+      pixelRatio: 1,
       reducedResolution: false
     };
     
-    console.log(`Canvas resized: ${finalCanvasWidth.toFixed(0)}x${finalCanvasHeight.toFixed(0)}, scale: ${this.scalingInfo.widthScale.toFixed(2)}, responsive with 1:1 mapping`);
+    console.log(`Canvas resized: ${finalCanvasWidth}×${finalCanvasHeight} (scale: ${this.scalingInfo.widthScale.toFixed(2)})`);
   }
   
   /**

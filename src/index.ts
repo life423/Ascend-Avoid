@@ -5,7 +5,6 @@
 
 // Import core game components
 import Game from './core/Game';
-import { setupResponsiveCanvas, setupOrientationHandling } from './utils/responsiveCanvas';
 import { CANVAS } from './constants/gameConstants';
 
 // Helper function for device detection
@@ -37,16 +36,7 @@ document.addEventListener('DOMContentLoaded', () => {
     body.classList.add('desktop-layout');
   }
   
-  // Set up responsive canvas with options from game constants
-  const responsiveCanvas = setupResponsiveCanvas('canvas', 'game-container', {
-    baseWidth: CANVAS.BASE_WIDTH,
-    baseHeight: CANVAS.BASE_HEIGHT,
-    maxWidth: deviceInfo.isDesktop ? CANVAS.MAX_DESKTOP_WIDTH : CANVAS.MAX_MOBILE_WIDTH,
-    debug: true
-  });
-  
-  // Set up orientation handling
-  setupOrientationHandling();
+  // Canvas management is now handled by ResponsiveManager in Game.ts
   
   // Create multiplayer button with proper styling
   createMultiplayerButton();
@@ -56,7 +46,6 @@ document.addEventListener('DOMContentLoaded', () => {
   
   // Store references for debugging and future use
   (window as any).game = game;
-  (window as any).responsiveCanvas = responsiveCanvas;
   
   // Remove loading indicator after initialization
   if (loader) {

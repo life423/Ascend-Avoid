@@ -1,12 +1,12 @@
 /**
- * Responsive Canvas Styles
- * These styles work with the responsiveCanvas.ts utility
+ * Clean Responsive Canvas Styles - Works with ResponsiveManager
+ * Removes all size constraints to let ResponsiveManager handle scaling
  */
 
-/* Game container with viewport units */
+/* Game container - minimal constraints, let ResponsiveManager handle sizing */
 .game-container {
-  width: 100%;
-  height: 80vh;
+  width: 100vw;
+  height: 100vh;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -15,15 +15,13 @@
   position: relative;
 }
 
-/* Canvas styling */
+/* Canvas styling - NO size constraints, let ResponsiveManager control everything */
 #canvas {
   display: block;
-  max-width: 100%;
-  max-height: 100%;
-  object-fit: contain;
   touch-action: none;
-  border: 4px solid #00bcd4;
-  box-shadow: 0 0 20px rgba(0, 188, 212, 0.3);
+  background-color: #000;
+  /* Removed: max-width, max-height, object-fit, border */
+  /* ResponsiveManager will set width/height directly */
 }
 
 /* Orientation message overlay */
@@ -61,39 +59,50 @@
   body.show-orientation-message .orientation-overlay {
     display: flex;
   }
-  
-  .game-container {
-    height: 60vh;
-  }
 }
 
-/* Media queries for different device sizes */
-@media (min-width: 768px) and (max-width: 1199px) {
-  /* Tablets */
-  .game-container {
-    height: 70vh;
-  }
+/* Mobile-first: Single column grid layout */
+.game-content-wrapper {
+  display: grid;
+  grid-template-rows: 1fr;
+  height: 100vh;
+  width: 100vw;
 }
 
+#game-container {
+  /* Critical: Override implicit minimum sizes */
+  min-height: 0;
+  min-width: 0;
+  /* Ensure container fills grid area */
+  height: 100%;
+  width: 100%;
+}
+
+/* Desktop layout: Two column grid */
 @media (min-width: 1200px) {
-  /* Desktop */
-  .game-container {
-    height: 80vh;
-  }
-  
-  /* For desktop layout with sidebar */
   .game-content-wrapper {
-    display: flex;
-    flex-direction: row;
-    align-items: flex-start;
+    display: grid;
+    grid-template-columns: 1fr 350px; /* Game area | Sidebar */
+    grid-template-rows: 1fr;
+    gap: 0;
+    height: 100vh;
+    width: 100vw;
   }
   
   #game-container {
-    flex: 0 0 65%;
+    grid-column: 1;
+    /* Keep the critical min-size overrides */
+    min-height: 0;
+    min-width: 0;
+    height: 100%;
+    width: 100%;
   }
   
   #desktop-sidebar {
-    flex: 0 0 30%;
+    grid-column: 2;
+    /* Sidebar automatically gets 350px width from grid-template-columns */
+    height: 100%;
+    overflow-y: auto; /* Allow sidebar scrolling if needed */
   }
 }
 
