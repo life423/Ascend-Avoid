@@ -76,12 +76,12 @@
         
         <!-- Orientation change overlay -->
         <div class="orientation-overlay">
-            <img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI4MCIgaGVpZ2h0PSI4MCIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJub25lIiBzdHJva2U9IiMwMGJjZDQiIHN0cm9rZS13aWR0aD0iMiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIj48cGF0aCBkPSJNMjEgMTJhOS4wMSA5LjAxIDAgMCAxLTkgOSIvPjxwYXRoIGQ9Ik0zIDEyYTkuMDEgOS4wMSAwIDAgMCA5IDkiLz48cGF0aCBkPSJNMjEgMTJjMC00Ljk3LTQuMDMtOS05LTkiLz48cGF0aCBkPSJNMyAxMmMwLTQuOTcgNC4wMy05IDktOSIvPjxwYXRoIGQ9Ik0xMiAyMnYtNGgtNHY0Ii8+PHBhdGggZD0iTTEyIDJ2NGg0VjIiLz48L3N2Zz4=" alt="Rotate device">
+            <img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI4MCIgaGVpZ2h0PSI4MCIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJub25lIiBzdHJva2U9IiMwMGJjZDQiIHN0cm9rZS13aWR0aD0iMiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIj48cGF0aCBkPSJNMjEgMTJhOS4wMSA5LjAxIDAgMCAxLTkgOSIvPjxwYXRoIGQ9Ik0zIDEyYTkuMDEgOS4wMSAwIDAgMCA5IDkiLz48cGF0aCBkPSJNMjEgMTJjMC00Ljk3LTQuMDMtOS05LTkiLz48cGF0aCBkPSJNMyAxMmMwLTQuOTcgNC4wMy05IDktOSIvPjxwYXRoIGQ9Ike1UiAyMnYtNGgtNHY0Ii8+PHBhdGggZD0iTTEyIDJ2NGg0VjIiLz48L3N2Zz4=" alt="Rotate device">
             <h3>Please rotate your device</h3>
             <p>For the best gaming experience, please use landscape orientation.</p>
         </div>
 
-        <!-- Centered content container -->
+        <!-- Main application container -->
         <div class="content-container">
             <h1>Ascend Avoid</h1>
             
@@ -93,8 +93,8 @@
 
             <!-- Game layout container with semantic ID -->
             <div class="game-area" data-section="game">
-                <!-- Game container -->
-                <div class="game-container">
+                <!-- Canvas viewport wrapper for proper centering -->
+                <div class="canvas-viewport" data-viewport="main">
                     <canvas
                         class="game-canvas" data-canvas="primary"
                         aria-label="Cross the Box game"

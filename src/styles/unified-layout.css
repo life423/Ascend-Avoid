@@ -74,7 +74,7 @@ body {
     overscroll-behavior: contain;
     display: flex;
     justify-content: center;
-    align-items: flex-start;
+    align-items: center;
 }
 
 /* Modal open state */

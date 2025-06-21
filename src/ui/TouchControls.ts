@@ -107,7 +107,7 @@ export default class TouchControls {
     handleResize(): void {
         // Always show touch controls on small screens regardless of touch support
         // This ensures they're available on all mobile devices
-        const isSmallScreen = window.innerWidth < 768; // 768px is a common tablet/mobile breakpoint
+        const isSmallScreen = window.innerWidth < 1200; // 1200px matches CSS breakpoint
 
         // Also check for desktop layout class or large-screen class
         const isLargeDisplay = 
@@ -466,7 +466,7 @@ export default class TouchControls {
             this.container.style.cssText = 'display: none !important'
             
             // For larger screens, completely remove from DOM instead of just hiding
-            if (window.innerWidth >= 768) {
+            if (window.innerWidth >= 1200) {
                 // Use setTimeout to avoid any potential race conditions
                 setTimeout(() => {
                     if (this.container && this.container.parentNode) {
