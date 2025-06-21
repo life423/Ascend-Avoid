@@ -73,7 +73,7 @@ class GameRoom extends Room<GameState> {
   setupMessageHandlers(): void {
     // Handle player movement input
     this.onMessage("input", (client, data: InputMessage) => {
-      const player = this.state.players[client.sessionId];
+      const player = this.state.players.get(client.sessionId);
       if (!player) return;
 
       // Update player's movement input state
@@ -87,7 +87,7 @@ class GameRoom extends Room<GameState> {
 
     // Handle player name update
     this.onMessage("updateName", (client, data: NameUpdateMessage) => {
-      const player = this.state.players[client.sessionId];
+      const player = this.state.players.get(client.sessionId);
       if (player && data.name) {
         player.name = data.name.substring(0, 20); // Limit name length
       }
