@@ -41,7 +41,7 @@ app.get('/health', (req, res) => {
         port: config.port
     });
 });
-// API routes
+// API routes with /api prefix
 app.get("/api/status", (req, res) => {
     res.json({
         server: "running",
@@ -52,23 +52,38 @@ app.get("/api/status", (req, res) => {
 // Register game rooms
 gameServer.define(GAME_CONSTANTS.GAME.ROOM_NAME, GameRoom)
     .enableRealtimeListing();
-// Register colyseus monitor
-app.use(config.monitorPath, monitor());
+// Register colyseus monitor (only in development)
+if (process.env.NODE_ENV !== 'production') {
+    app.use(config.monitorPath, monitor());
+}
 // IMPORTANT: Serve static files AFTER all API routes
 if (process.env.NODE_ENV === 'production') {
     // Serve static files from the dist directory
     const staticPath = path.join(__dirname, '../../dist');
     app.use(express.static(staticPath));
     logger.info(`Serving static files from: ${staticPath}`);
-    // TODO: Add proper SPA routing handler for production
-    // For now, just serve static files
+    // Handle client-side routing - serve index.html for all non-API routes
+    app.get('*', (req, res, next) => {
+        // Skip API and WebSocket routes
+        if (req.path.startsWith('/api') ||
+            req.path.startsWith('/ws') ||
+            req.path.startsWith('/health') ||
+            req.path.startsWith(config.monitorPath)) {
+            return next();
+        }
+        // Serve index.html for all other routes (SPA routing)
+        res.sendFile(path.join(staticPath, 'index.html'));
+    });
 }
 else {
-    // Development mode - serve from src directory
-    app.use(express.static("src"));
-    // Root route for development
+    // Development mode - don't serve static files, let Vite handle it
     app.get("/", (req, res) => {
-        res.send("Multiplayer game server is running in development mode");
+        res.json({
+            message: "Multiplayer game server is running in development mode",
+            websocket: `ws://localhost:${config.port}`,
+            frontend: "http://localhost:5173 (served by Vite)",
+            monitor: `http://localhost:${config.port}${config.monitorPath}`
+        });
     });
 }
 // Error handling middleware
@@ -79,11 +94,26 @@ app.use((err, req, res, next) => {
 // Start the server
 const port = config.port;
 gameServer.listen(port);
-logger.info(`
-🎮 Last Player Standing Multiplayer Server
+if (process.env.NODE_ENV === 'production') {
+    logger.info(`
+🎮 Production Server - Single Port Architecture
+-----------------------------------------------
+✅ Frontend: http://localhost:${port} (static files)
+✅ Backend API: http://localhost:${port}/api/*
+✅ WebSocket: ws://localhost:${port}
+✅ Environment: ${process.env.NODE_ENV}
+-----------------------------------------------
+Everything runs on port ${port} 🚀
+`);
+}
+else {
+    logger.info(`
+🎮 Development Server
 ---------------------------------------
-Server is running on http://localhost:${port}
-Monitor dashboard: http://localhost:${port}${config.monitorPath}
+Backend: http://localhost:${port}
+Frontend: http://localhost:5173 (Vite)
+Monitor: http://localhost:${port}${config.monitorPath}
 Environment: ${process.env.NODE_ENV || 'development'}
 `);
+}
 //# sourceMappingURL=index.js.map
