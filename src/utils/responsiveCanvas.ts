@@ -157,10 +157,3 @@ export function setupOrientationHandling(): void {
 }
 
 // Add TypeScript interface augmentation for global objects
-declare global {
-  interface Window {
-    game?: {
-      onResize?: (widthScale: number, heightScale: number, isDesktop: boolean) => void;
-    };
-  }
-}

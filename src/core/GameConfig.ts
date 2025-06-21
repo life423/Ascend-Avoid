@@ -7,10 +7,10 @@ import {
   GAME,
   PLAYER,
   OBSTACLE,
-  STATE,
   DESKTOP_SETTINGS,
   KEYS
 } from '../constants/gameConstants';
+import { GAME_STATE } from '../constants/gameState';
 import { GameConfig as GameConfigInterface } from '../types';
 
 interface GameSettings {
@@ -36,13 +36,7 @@ export default class GameConfig implements GameConfigInterface {
   private isDesktop: boolean;
   
   // Game state constants - use the standardized ones from constants
-  STATE: {
-    WAITING: string;
-    STARTING: string;
-    PLAYING: string;
-    PAUSED: string;
-    GAME_OVER: string;
-  };
+  public readonly STATE = GAME_STATE;
   
   // Optional properties added by performance optimization
   deviceTier?: string;
@@ -52,9 +46,21 @@ export default class GameConfig implements GameConfigInterface {
    * Creates a new GameConfig instance
    * @param options - Configuration options
    */
-  constructor({ isDesktop = false } = {}) {
-    // Create a local copy of settings to avoid mutating the original
-    this.settings = {
+  constructor({ isDesktop = false }: { isDesktop?: boolean } = {}) {
+    const params = new URLSearchParams(window.location.search);
+    const debugFlag = params.get('debug') === 'true';
+
+    this.settings = this.buildBaseSettings(isDesktop);
+    this.isDesktop = isDesktop;
+    this.debug = {
+      enabled: debugFlag,
+      showCollisions: debugFlag,
+      showFPS: debugFlag,
+    };
+  }
+
+  private buildBaseSettings(isDesktop: boolean): GameSettings {
+    const base = {
       WINNING_LINE: GAME.WINNING_LINE,
       BASE_SPEED: OBSTACLE.BASE_SPEED,
       PLAYER_SIZE_RATIO: PLAYER.SIZE_RATIO,
@@ -62,26 +68,9 @@ export default class GameConfig implements GameConfigInterface {
       OBSTACLE_MIN_WIDTH_RATIO: OBSTACLE.MIN_WIDTH_RATIO,
       OBSTACLE_MAX_WIDTH_RATIO: OBSTACLE.MAX_WIDTH_RATIO,
       MAX_CARS: GAME.MAX_OBSTACLES,
-      DIFFICULTY_INCREASE_RATE: GAME.DIFFICULTY_INCREASE_RATE
+      DIFFICULTY_INCREASE_RATE: GAME.DIFFICULTY_INCREASE_RATE,
     };
-    
-    // Apply platform-specific settings if on desktop
-    if (isDesktop) {
-      this.settings = { ...this.settings, ...DESKTOP_SETTINGS };
-    }
-    
-    // Save platform information
-    this.isDesktop = isDesktop;
-    
-    // Debug settings based on URL parameters
-    this.debug = {
-      enabled: new URLSearchParams(window.location.search).get('debug') === 'true',
-      showCollisions: new URLSearchParams(window.location.search).get('debug') === 'true',
-      showFPS: new URLSearchParams(window.location.search).get('debug') === 'true'
-    };
-    
-    // Game state constants
-    this.STATE = STATE;
+    return isDesktop ? { ...base, ...DESKTOP_SETTINGS } : base;
   }
   
   /**
@@ -90,25 +79,7 @@ export default class GameConfig implements GameConfigInterface {
    */
   setDesktopMode(isDesktop: boolean): void {
     this.isDesktop = isDesktop;
-    
-    // Create a base set of settings
-    const baseSettings: GameSettings = {
-      WINNING_LINE: GAME.WINNING_LINE,
-      BASE_SPEED: OBSTACLE.BASE_SPEED,
-      PLAYER_SIZE_RATIO: PLAYER.SIZE_RATIO,
-      MIN_STEP: PLAYER.MIN_STEP,
-      OBSTACLE_MIN_WIDTH_RATIO: OBSTACLE.MIN_WIDTH_RATIO,
-      OBSTACLE_MAX_WIDTH_RATIO: OBSTACLE.MAX_WIDTH_RATIO,
-      MAX_CARS: GAME.MAX_OBSTACLES,
-      DIFFICULTY_INCREASE_RATE: GAME.DIFFICULTY_INCREASE_RATE
-    };
-    
-    // Update settings based on platform
-    if (isDesktop) {
-      this.settings = { ...baseSettings, ...DESKTOP_SETTINGS };
-    } else {
-      this.settings = { ...baseSettings };
-    }
+    this.settings = this.buildBaseSettings(isDesktop);
   }
   
   /**
@@ -191,6 +162,22 @@ export default class GameConfig implements GameConfigInterface {
    */
   getDifficultyIncreaseRate(): number {
     return this.settings.DIFFICULTY_INCREASE_RATE;
+  }
+
+  /**
+   * Get the device tier (when implemented)
+   * @returns The device tier
+   */
+  getDeviceTier(): string | undefined {
+    return this.deviceTier;
+  }
+
+  /**
+   * Get the target FPS (when implemented)
+   * @returns The target FPS
+   */
+  getTargetFPS(): number | undefined {
+    return this.targetFPS;
   }
   
   /**
