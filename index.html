@@ -1,29 +1,106 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <title>Ascend Avoid</title>
-    <meta http-equiv="refresh" content="0;url=src/index.html?direct=true">
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            text-align: center;
-            margin-top: 50px;
-        }
-        a {
-            color: #0066cc;
-            text-decoration: none;
-        }
-        a:hover {
-            text-decoration: underline;
-        }
-    </style>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="Ascend Avoid - A modern multiplayer game where players need to ascend and avoid obstacles" />
+    <meta name="theme-color" content="#1a1a1a" />
+    
+    <!-- Preconnect for better performance -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    
+    <!-- PWA support -->
+    <link rel="manifest" href="/manifest.json" />
+    <link rel="apple-touch-icon" href="/icon-192.png" />
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <link rel="icon" type="image/png" href="/favicon.png" />
+    
+    <!-- External CSS -->
+    <link rel="stylesheet" href="/src/style.css">
+    
+    <title>Ascend Avoid - Multiplayer Game</title>
 </head>
 <body>
-    <h1>Ascend Avoid</h1>
-    <p>Redirecting to game...</p>
-    <p>If you are not redirected automatically, <a href="src/index.html?direct=true">click here</a>.</p>
+    <div id="app">
+        <!-- Loading screen -->
+        <div class="loader" id="loader">
+            <div class="spinner"></div>
+            <div>Loading Ascend Avoid...</div>
+        </div>
+        
+        <!-- Main game canvas -->
+        <canvas id="gameCanvas" 
+                width="800" 
+                height="600"
+                role="img"
+                aria-label="Ascend Avoid Game Canvas">
+            Your browser does not support the HTML5 Canvas element.
+            Please upgrade to a modern browser to play Ascend Avoid.
+        </canvas>
+        
+        <!-- UI Overlay for buttons and HUD -->
+        <div id="ui-overlay">
+            <!-- Multiplayer toggle button -->
+            <div class="button-container">
+                <button id="multiplayerToggle" 
+                        class="game-button"
+                        aria-label="Toggle Multiplayer Mode">
+                    <span class="button-text">Multiplayer: </span>
+                    <span class="button-status off">OFF</span>
+                </button>
+            </div>
+            
+            <!-- Performance stats (debug mode) -->
+            <div id="debug-stats">
+                <div id="fps-counter">FPS: --</div>
+                <div id="frame-time">Frame: --ms</div>
+                <div id="canvas-size">Canvas: --x--</div>
+                <div id="device-info">Device: --</div>
+            </div>
+            
+            <!-- Touch controls container (mobile) -->
+            <div id="touch-controls">
+                <!-- Touch controls will be dynamically inserted here -->
+            </div>
+        </div>
+        
+        <!-- Game Over Modal -->
+        <div id="gameOverModal" 
+             class="modal"
+             role="dialog"
+             aria-labelledby="gameOverTitle"
+             aria-describedby="gameOverContent">
+            <!-- Modal content will be dynamically generated -->
+        </div>
+        
+        <!-- Settings Modal -->
+        <div id="settingsModal" 
+             class="modal"
+             role="dialog"
+             aria-labelledby="settingsTitle">
+            <!-- Settings content will be dynamically generated -->
+        </div>
+    </div>
+    
+    <!-- Load main application script -->
+    <script type="module" src="/src/index.ts"></script>
+    
+    <!-- Service Worker registration for PWA -->
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/sw.js')
+                    .then(registration => {
+                        console.log('SW registered: ', registration);
+                    })
+                    .catch(registrationError => {
+                        console.log('SW registration failed: ', registrationError);
+                    });
+            });
+        }
+    </script>
 </body>
 </html>
