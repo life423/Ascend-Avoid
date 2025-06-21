@@ -423,6 +423,18 @@ body.modal-open {
 }
 
 /* ============================================
+   POINTER-BASED HIDING FOR GUIDE BUTTONS
+   ============================================ */
+
+/* Hide Guide buttons on devices with hover capability (desktop/laptop) */
+@media (hover: hover) {
+    .btn-action[data-action="guide"],
+    .btn-action[data-action="guide-desktop"] {
+        display: none !important;
+    }
+}
+
+/* ============================================
    UTILITY COMPONENTS
    ============================================ */
 

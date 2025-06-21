@@ -154,7 +154,6 @@
             <div class="float-menu mobile-only" data-menu="primary">
                 <div
                     class="float-trigger" data-trigger="menu"
-                    onclick="window.showFloatingMenu(); event.stopPropagation(); return false;"
                 >
                     <span class="menu-dot"></span>
                     <span class="menu-dot"></span>
@@ -242,126 +241,132 @@
 
         <!-- UI Controls and Navigation Script -->
         <script>
-            // For direct access from debugging
-            window.showFloatingMenu = function () {
-                const menuItems = document.querySelector('.float-options[data-options="menu"]')
-                if (menuItems) {
-                    menuItems.classList.remove('hidden')
-                    menuItems.style.display = 'flex'
-                    menuItems.style.opacity = '1'
-                    menuItems.style.visibility = 'visible'
-                    menuItems.style.transform = 'scale(1)'
-                }
-            }
-
-            window.hideFloatingMenu = function () {
-                const menuItems = document.querySelector('.float-options[data-options="menu"]')
-                if (menuItems) {
-                    menuItems.classList.add('hidden')
-                    menuItems.style.display = 'none'
-                }
-            }
-
             // Initialize when DOM is ready
             document.addEventListener('DOMContentLoaded', function () {
-                // Set up menu functionality
-                setTimeout(function () {
-                    const menuButton = document.querySelector('.float-trigger[data-trigger="menu"]');
-                    const menuItems = document.querySelector('.float-options[data-options="menu"]');
-                    const guideButton = document.querySelector('.btn-action[data-action="guide"]');
-                    const multiplayerToggle = document.querySelector('.btn-action[data-action="multiplayer"]');
-                    const guideSidebarBtn = document.querySelector('.btn-action[data-action="guide-desktop"]');
-                    const multiplayerSidebarBtn = document.querySelector('.btn-action[data-action="multiplayer-desktop"]');
-                    const instructionsModal = document.querySelector('.modal-panel[data-modal="instructions"]');
-                    const closeModalBtn = document.querySelector('.close-modal');
-                    
-                    // Menu button toggle
-                    if (menuButton) {
-                        menuButton.addEventListener('click', function(e) {
-                            e.stopPropagation();
+                // Get all UI elements
+                const menuButton = document.querySelector('.float-trigger[data-trigger="menu"]');
+                const menuItems = document.querySelector('.float-options[data-options="menu"]');
+                const floatMenu = document.querySelector('.float-menu[data-menu="primary"]');
+                const guideButton = document.querySelector('.btn-action[data-action="guide"]');
+                const multiplayerToggle = document.querySelector('.btn-action[data-action="multiplayer"]');
+                const guideSidebarBtn = document.querySelector('.btn-action[data-action="guide-desktop"]');
+                const multiplayerSidebarBtn = document.querySelector('.btn-action[data-action="multiplayer-desktop"]');
+                const instructionsModal = document.querySelector('.modal-panel[data-modal="instructions"]');
+                const closeModalBtn = document.querySelector('.close-modal');
+                
+                // Helper function to close menu
+                function closeMenu() {
+                    if (menuItems) {
+                        menuItems.classList.add('hidden');
+                    }
+                }
+                
+                // Helper function to open menu
+                function openMenu() {
+                    if (menuItems) {
+                        menuItems.classList.remove('hidden');
+                    }
+                }
+                
+                // Menu button toggle - works for both click and touch
+                if (menuButton && menuItems) {
+                    ['click', 'touchstart'].forEach(eventType => {
+                        menuButton.addEventListener(eventType, function(e) {
                             e.preventDefault();
-                            menuItems.classList.toggle('hidden');
-                            if (!menuItems.classList.contains('hidden')) {
-                                menuItems.style.display = 'flex';
-                                menuItems.style.opacity = '1';
-                                menuItems.style.visibility = 'visible';
+                            e.stopPropagation();
+                            
+                            // Toggle menu visibility
+                            if (menuItems.classList.contains('hidden')) {
+                                openMenu();
                             } else {
-                                setTimeout(() => {
-                                    menuItems.style.display = 'none';
-                                }, 300);
+                                closeMenu();
                             }
-                        });
+                        }, { passive: false });
+                    });
+                }
+                
+                // Guide button handlers
+                function openInstructionsModal() {
+                    if (instructionsModal) {
+                        instructionsModal.classList.remove('hidden');
+                        document.body.classList.add('modal-open');
+                        closeMenu();
                     }
-                    
-                    // Guide buttons
-                    if (guideButton) {
-                        guideButton.addEventListener('click', function() {
-                            instructionsModal.classList.remove('hidden');
-                            document.body.classList.add('modal-open');
-                            menuItems.classList.add('hidden');
-                        });
-                    }
-                    
-                    if (guideSidebarBtn) {
-                        guideSidebarBtn.addEventListener('click', function() {
-                            instructionsModal.classList.remove('hidden');
-                            document.body.classList.add('modal-open');
-                        });
-                    }
-                    
-                    // Close modal button
-                    if (closeModalBtn) {
-                        closeModalBtn.addEventListener('click', function() {
+                }
+                
+                if (guideButton) {
+                    guideButton.addEventListener('click', openInstructionsModal);
+                }
+                
+                if (guideSidebarBtn) {
+                    guideSidebarBtn.addEventListener('click', openInstructionsModal);
+                }
+                
+                // Close modal button
+                if (closeModalBtn) {
+                    closeModalBtn.addEventListener('click', function() {
+                        if (instructionsModal) {
                             instructionsModal.classList.add('hidden');
                             document.body.classList.remove('modal-open');
-                        });
-                    }
-                    
-                    // Multiplayer toggle
-                    function toggleMultiplayer() {
-                        const game = window.game;
-                        if (game && typeof game.switchGameMode === 'function') {
-                            const newMode = game.isMultiplayerMode ? 'singlePlayer' : 'multiplayer';
-                            game.switchGameMode(newMode)
-                                .then(() => {
-                                    console.log(`Switched to ${newMode} mode`);
-                                    menuItems.classList.add('hidden');
-                                })
-                                .catch(err => {
-                                    console.error('Failed to switch game mode:', err);
-                                });
-                        }
-                    }
-                    
-                    if (multiplayerToggle) {
-                        multiplayerToggle.addEventListener('click', toggleMultiplayer);
-                    }
-                    
-                    if (multiplayerSidebarBtn) {
-                        multiplayerSidebarBtn.addEventListener('click', toggleMultiplayer);
-                    }
-                    
-                    // Close menu when clicking elsewhere
-                    document.addEventListener('click', function(e) {
-                        if (menuItems && !menuItems.classList.contains('hidden')) {
-                            if (!e.target.closest('#floating-menu')) {
-                                menuItems.classList.add('hidden');
-                            }
                         }
                     });
-                    
-                    // Close modal when clicking outside content
-                    if (instructionsModal) {
-                        instructionsModal.addEventListener('click', function(e) {
-                            if (e.target === instructionsModal) {
-                                instructionsModal.classList.add('hidden');
-                                document.body.classList.remove('modal-open');
-                            }
-                        });
+                }
+                
+                // Multiplayer toggle function
+                function toggleMultiplayer() {
+                    const game = window.game;
+                    if (game && typeof game.switchGameMode === 'function') {
+                        const newMode = game.isMultiplayerMode ? 'singlePlayer' : 'multiplayer';
+                        game.switchGameMode(newMode)
+                            .then(() => {
+                                console.log(`Switched to ${newMode} mode`);
+                                closeMenu();
+                            })
+                            .catch(err => {
+                                console.error('Failed to switch game mode:', err);
+                            });
                     }
-                }, 500);
+                }
+                
+                if (multiplayerToggle) {
+                    multiplayerToggle.addEventListener('click', toggleMultiplayer);
+                }
+                
+                if (multiplayerSidebarBtn) {
+                    multiplayerSidebarBtn.addEventListener('click', toggleMultiplayer);
+                }
+                
+                // Close menu when clicking outside - FIXED SELECTOR
+                document.addEventListener('click', function(e) {
+                    if (menuItems && !menuItems.classList.contains('hidden')) {
+                        // Check if click is outside the floating menu
+                        if (!e.target.closest('.float-menu[data-menu="primary"]')) {
+                            closeMenu();
+                        }
+                    }
+                });
+                
+                // Handle touch events for mobile
+                document.addEventListener('touchstart', function(e) {
+                    if (menuItems && !menuItems.classList.contains('hidden')) {
+                        // Check if touch is outside the floating menu
+                        if (!e.target.closest('.float-menu[data-menu="primary"]')) {
+                            closeMenu();
+                        }
+                    }
+                }, { passive: true });
+                
+                // Close modal when clicking outside content
+                if (instructionsModal) {
+                    instructionsModal.addEventListener('click', function(e) {
+                        if (e.target === instructionsModal) {
+                            instructionsModal.classList.add('hidden');
+                            document.body.classList.remove('modal-open');
+                        }
+                    });
+                }
 
-                // Prevent page scrolling on mobile
+                // Prevent page scrolling on mobile (but allow modal scrolling)
                 document.addEventListener('touchmove', function(e) {
                     if (e.target.closest('.modal-content')) {
                         // Allow scrolling inside modal
