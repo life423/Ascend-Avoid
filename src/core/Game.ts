@@ -132,9 +132,12 @@ export default class Game {
     constructor() {
         console.log('Game constructor called')
 
-        // Get DOM elements
+        // Get DOM elements - handle both canvas selectors for compatibility
         this.canvas =
-            (document.querySelector('.game-canvas[data-canvas="primary"]') as HTMLCanvasElement) ||
+            (document.querySelector(
+                '.game-canvas[data-canvas="primary"]'
+            ) as HTMLCanvasElement) || 
+            (document.getElementById('gameCanvas') as HTMLCanvasElement) ||
             document.createElement('canvas')
         console.log('Canvas element:', this.canvas)
 
@@ -161,8 +164,12 @@ export default class Game {
             this.ctx = this.canvas.getContext('2d')!
         }
 
-        this.scoreElement = document.querySelector('.score-value[data-score="current"]')
-        this.highScoreElement = document.querySelector('.score-value[data-score="high"]')
+        this.scoreElement = document.querySelector(
+            '.score-value[data-score="current"]'
+        )
+        this.highScoreElement = document.querySelector(
+            '.score-value[data-score="high"]'
+        )
 
         // Game state
         this.score = 0
@@ -402,9 +409,13 @@ export default class Game {
      * Callback for when canvas or window size changes
      * Called when the window is resized or orientation changes
      */
-    onResize(widthScale?: number, heightScale?: number, isDesktop?: boolean): void {
+    onResize(
+        widthScale?: number,
+        heightScale?: number,
+        isDesktop?: boolean
+    ): void {
         // Get updated scaling info from responsive manager
-        this.scalingInfo = this.responsiveManager.getScalingInfo();
+        this.scalingInfo = this.responsiveManager.getScalingInfo()
 
         // Update device detection
         this.isDesktop = window.innerWidth >= 1024
@@ -860,10 +871,9 @@ export default class Game {
      */
     addScoreParticles(winningLineScreenY?: number): void {
         // Use provided winningLineScreenY or calculate it
-        const scaledWinningLine = winningLineScreenY ?? this.config.getWinningLine(
-            this.canvas.height,
-            BASE_CANVAS_HEIGHT
-        )
+        const scaledWinningLine =
+            winningLineScreenY ??
+            this.config.getWinningLine(this.canvas.height, BASE_CANVAS_HEIGHT)
 
         // Number of particles based on score (more particles for higher scores)
         const particleCount = Math.min(10 + this.score * 2, 50)
@@ -886,22 +896,25 @@ export default class Game {
      * Check if player has reached the winning line
      */
     checkForWinner(): void {
-        if (!this.player) return;
+        if (!this.player) return
 
         // Get winning line in screen coordinates (already scaled by getWinningLine)
-        const winningLineScreenY = this.config.getWinningLine(this.canvas.height, BASE_CANVAS_HEIGHT);
-        
+        const winningLineScreenY = this.config.getWinningLine(
+            this.canvas.height,
+            BASE_CANVAS_HEIGHT
+        )
+
         // Convert player position to screen coordinates to match winning line
-        const scale = this.canvas.height / BASE_CANVAS_HEIGHT;
-        
+        const scale = this.canvas.height / BASE_CANVAS_HEIGHT
+
         // Check if ANY part of the player crosses the winning line
         // Player.y is the TOP of the player in world coordinates
-        const playerTopScreenY = this.player.y * scale;
-        const playerBottomScreenY = (this.player.y + this.player.height) * scale;
+        const playerTopScreenY = this.player.y * scale
+        const playerBottomScreenY = (this.player.y + this.player.height) * scale
 
         // Trigger if any part of the player crosses or touches the winning line
         if (playerTopScreenY <= winningLineScreenY) {
-            this.handleScore(winningLineScreenY);
+            this.handleScore(winningLineScreenY)
         }
     }
 
@@ -987,58 +1000,17 @@ export default class Game {
             BASE_CANVAS_HEIGHT
         )
 
-        // Draw winning line
-        if (this.isDesktop) {
-            // Enhanced visual feedback for desktop
-            this.ctx.beginPath()
-            this.ctx.moveTo(0, scaledWinningLine)
-            this.ctx.lineTo(this.canvas.width, scaledWinningLine)
-
-            // Pulsing effect
-            const glowIntensity = 0.3 + 0.2 * Math.sin(timestamp / 500)
-            this.ctx.strokeStyle = `rgba(0, 255, 255, ${glowIntensity})`
-            this.ctx.lineWidth = 2
-            this.ctx.stroke()
-
-            // Draw subtle grid pattern on desktop
-            if (this.config.isDebugEnabled() || this.score > 5) {
-                this.drawGridPattern()
-            }
-        } else {
-            // Standard line for mobile
-            this.ctx.beginPath()
-            this.ctx.moveTo(0, scaledWinningLine)
-            this.ctx.lineTo(this.canvas.width, scaledWinningLine)
-            this.ctx.strokeStyle = 'rgba(255,255,255,0.3)'
-            this.ctx.stroke()
-        }
-    }
-
-    /**
-     * Draw a subtle grid pattern for desktop view
-     */
-    drawGridPattern(): void {
-        // Draw a subtle grid pattern visible only on desktop
+        // Draw a subtle animated line
+        this.ctx.save()
+        this.ctx.globalAlpha = 0.7 + 0.3 * Math.sin(timestamp * 0.002)
+        this.ctx.strokeStyle = '#00ff44'
+        this.ctx.lineWidth = 2 * this.scalingInfo.heightScale
+        this.ctx.setLineDash([5, 5])
         this.ctx.beginPath()
-        this.ctx.strokeStyle = 'rgba(0, 255, 255, 0.05)'
-        this.ctx.lineWidth = 0.5
-
-        // Scale grid size with the canvas
-        const gridSize = 30 * this.scalingInfo.widthScale
-
-        // Vertical lines
-        for (let x = 0; x < this.canvas.width; x += gridSize) {
-            this.ctx.moveTo(x, 0)
-            this.ctx.lineTo(x, this.canvas.height)
-        }
-
-        // Horizontal lines
-        for (let y = 0; y < this.canvas.height; y += gridSize) {
-            this.ctx.moveTo(0, y)
-            this.ctx.lineTo(this.canvas.width, y)
-        }
-
+        this.ctx.moveTo(0, scaledWinningLine)
+        this.ctx.lineTo(this.canvas.width, scaledWinningLine)
         this.ctx.stroke()
+        this.ctx.restore()
     }
 
     /**
@@ -1046,139 +1018,52 @@ export default class Game {
      * @param timestamp - Current animation timestamp
      */
     drawDebugInfo(timestamp: number): void {
-        // Set debug text styles
+        this.ctx.save()
+        this.ctx.fillStyle = '#ffffff'
         this.ctx.font = '12px monospace'
-        this.ctx.fillStyle = 'yellow'
         this.ctx.textAlign = 'left'
-        this.ctx.textBaseline = 'top'
 
-        // Display fps
-        const fps = Math.round(
-            1000 / Math.max(1, timestamp - this.lastFrameTime)
-        )
-        this.ctx.fillText(`FPS: ${fps}`, 10, 10)
-
-        // Display performance stats
-        this.ctx.fillText(
-            `Frame Time: ${this.performanceStats.avgFrameTime.toFixed(1)}ms`,
-            10,
-            25
-        )
-        this.ctx.fillText(
-            `Min/Max: ${this.performanceStats.minFrameTime.toFixed(
-                1
-            )}/${this.performanceStats.maxFrameTime.toFixed(1)}ms`,
-            10,
-            40
-        )
-
-        // Display player position
-        this.ctx.fillText(
-            `Player: (${Math.round(this.player.x)}, ${Math.round(
-                this.player.y
-            )})`,
-            10,
-            55
-        )
-
-        // Display obstacle count
-        this.ctx.fillText(
+        const debugLines = [
+            `FPS: ${Math.round(1000 / (this.performanceStats.avgFrameTime || 16))}`,
+            `Frame Time: ${this.performanceStats.avgFrameTime.toFixed(2)}ms`,
+            `Scale: ${this.scalingInfo.widthScale.toFixed(2)}x${this.scalingInfo.heightScale.toFixed(2)}`,
+            `Canvas: ${this.canvas.width}x${this.canvas.height}`,
+            `Player: (${this.player?.x.toFixed(0)}, ${this.player?.y.toFixed(0)})`,
+            `Game State: ${this.gameState}`,
             `Obstacles: ${this.obstacleManager?.getObstacles().length || 0}`,
-            10,
-            70
-        )
+            `Particles: ${this.particleSystem?.getStats().activeParticles || 0}`
+        ]
 
-        // Display particle count
-        if (this.particleSystem) {
-            const stats = this.particleSystem.getStats()
-            this.ctx.fillText(
-                `Particles: ${stats.activeParticles}/${stats.totalAllocated}`,
-                10,
-                85
-            )
-        } else {
-            this.ctx.fillText(
-                `Particles: ${this.particles ? this.particles.length : 0}`,
-                10,
-                85
-            )
-        }
+        debugLines.forEach((line, index) => {
+            this.ctx.fillText(line, 10, 20 + index * 15)
+        })
 
-        // Display scaling info
-        this.ctx.fillText(
-            `Scale: ${this.scalingInfo.widthScale.toFixed(2)}x`,
-            10,
-            100
-        )
-
-        // Display game state
-        this.ctx.fillText(`State: ${this.gameState}`, 10, 115)
-
-        // Display object counts for memory tracking
-        let totalObjects =
-            1 + // Game instance
-            (this.obstacleManager
-                ? this.obstacleManager.getObstacles().length
-                : 0) +
-            (this.particleSystem
-                ? this.particleSystem.getStats().activeParticles
-                : 0) +
-            Object.keys(this.remotePlayers).length
-        this.ctx.fillText(`Total Objects: ~${totalObjects}`, 10, 130)
-
-        // Draw player hitbox
-        this.ctx.strokeStyle = 'yellow'
-        this.ctx.lineWidth = 1
-        this.ctx.strokeRect(
-            this.player.x,
-            this.player.y,
-            this.player.width,
-            this.player.height
-        )
+        this.ctx.restore()
     }
 
     /**
-     * Draw method (primary drawing function)
-     * Used by ResponsiveManager to force redraw
-     */
-    draw(): void {
-        if (this.ctx && this.canvas) {
-            this.render(performance.now())
-        }
-    }
-
-    /**
-     * Clean up resources (important for memory management)
+     * Clean up resources when game is destroyed
      */
     dispose(): void {
         // Remove event listeners
-        document.removeEventListener('game:restart', this.handleRestartEvent)
+        document.removeEventListener('game:restart', this.handleRestartEvent.bind(this))
 
-        // Dispose managers
-        if (this.inputManager) {
-            this.inputManager.dispose()
+        // Clean up game mode
+        if (this.currentGameMode) {
+            this.currentGameMode.dispose()
+            this.currentGameMode = null
         }
 
-        if (this.uiManager) {
-            this.uiManager.dispose()
-        }
-
-        if (this.assetManager) {
-            this.assetManager.dispose()
-        }
-
-        // Clean up responsive manager
+        // Clean up managers
         if (this.responsiveManager) {
-            this.responsiveManager.dispose();
+            this.responsiveManager.dispose()
         }
 
-        // Clean up particle system
-        if (this.particleSystem) {
-            this.particleSystem.dispose()
-            this.particleSystem = null
+        if (this.touchControls) {
+            this.touchControls.hide()
         }
 
-        // Stop animation frame
-        this.gameState = this.config.STATE.PAUSED
+        // Clear any remaining intervals/timeouts
+        // (none currently used, but good practice for future additions)
     }
 }
