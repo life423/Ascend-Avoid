@@ -1,3 +1,4 @@
+// Codex test commit
 /**
  * Modern main entry point for Ascend Avoid game.
  * Handles initialization, polyfills, and responsive behavior.
