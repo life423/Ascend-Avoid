@@ -20,6 +20,7 @@ COPY . .
 ENV NODE_ENV=production
 ENV PORT=3000
 
+
 # Expose ports (3000 for backend, 5173 for Vite)
 EXPOSE 3000
 EXPOSE 5173
