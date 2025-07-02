@@ -61,7 +61,15 @@ export default defineConfig(({ mode }) => {
         },
       },
     },
-    server: { open: true },
+    server: { 
+      open: true,
+      host: '0.0.0.0', // Allow external connections
+      port: 5173
+    },
+    preview: {
+      host: '0.0.0.0',
+      port: 5173
+    },
     test: {
       globals: true,
       environment: 'jsdom',

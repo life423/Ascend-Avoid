@@ -68,38 +68,16 @@ if (process.env.NODE_ENV !== 'production') {
   app.use(config.monitorPath, monitor());
 }
 
-// IMPORTANT: Serve static files AFTER all API routes
-if (process.env.NODE_ENV === 'production') {
-  // Serve static files from the dist directory
-  const staticPath = path.join(__dirname, '../../dist');
-  app.use(express.static(staticPath));
-  
-  logger.info(`Serving static files from: ${staticPath}`);
-  
-  // Handle client-side routing - serve index.html for all non-API routes
-  app.get('*', (req, res, next) => {
-    // Skip API and WebSocket routes
-    if (req.path.startsWith('/api') || 
-        req.path.startsWith('/ws') || 
-        req.path.startsWith('/health') ||
-        req.path.startsWith(config.monitorPath)) {
-      return next();
-    }
-    
-    // Serve index.html for all other routes (SPA routing)
-    res.sendFile(path.join(staticPath, 'index.html'));
+// Always run in development mode - let Vite handle static files
+app.get("/", (_req, res) => {
+  res.json({
+    message: "Multiplayer game server is running",
+    websocket: `ws://localhost:${config.port}`,
+    frontend: "http://localhost:5173 (served by Vite)",
+    monitor: `http://localhost:${config.port}${config.monitorPath}`,
+    environment: process.env.NODE_ENV || 'development'
   });
-} else {
-  // Development mode - don't serve static files, let Vite handle it
-  app.get("/", (_req, res) => {
-    res.json({
-      message: "Multiplayer game server is running in development mode",
-      websocket: `ws://localhost:${config.port}`,
-      frontend: "http://localhost:5173 (served by Vite)",
-      monitor: `http://localhost:${config.port}${config.monitorPath}`
-    });
-  });
-}
+});
 
 // Error handling middleware
 app.use((err: any, _req: express.Request, res: express.Response, _next: express.NextFunction) => {

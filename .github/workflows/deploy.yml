@@ -1,9 +1,7 @@
-name: CI/CD Pipeline - Build and Deploy to Azure
+name: Deploy to Azure - Dev Mode
 
 on:
   push:
-    branches: [ main ]
-  pull_request:
     branches: [ main ]
 
 env:
@@ -13,33 +11,9 @@ env:
   AZURE_RESOURCE_GROUP: ascend-avoid-rg
 
 jobs:
-  test:
-    name: Run Tests
+  deploy:
+    name: Deploy to Azure
     runs-on: ubuntu-latest
-    if: github.event_name == 'pull_request'
-    
-    steps:
-    - uses: actions/checkout@v4
-    
-    - name: Setup Node.js
-      uses: actions/setup-node@v4
-      with:
-        node-version: '18'
-        cache: 'npm'
-    
-    - name: Install dependencies
-      run: |
-        npm ci --legacy-peer-deps
-        cd server && npm ci --legacy-peer-deps
-    
-    - name: Run tests
-      run: npm test
-      continue-on-error: true  # Remove this in production
-
-  build-and-deploy:
-    name: Build and Deploy to Azure
-    runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
     
     steps:
     - name: Checkout code
@@ -76,10 +50,14 @@ jobs:
           --name ${{ env.AZURE_CONTAINER_APP }} \
           --resource-group ${{ env.AZURE_RESOURCE_GROUP }} \
           --image ${{ env.IMAGE_NAME }}:latest \
-          --set-env-vars "NODE_ENV=production" "PORT=3000"
+          --set-env-vars "NODE_ENV=production" "PORT=3000" \
+          --ingress external \
+          --target-port 5173 \
+          --transport http
     
     - name: Verify deployment
       run: |
         echo "🚀 Deployment complete!"
         echo "📱 App URL: https://${{ env.AZURE_CONTAINER_APP }}.azurecontainerapps.io"
         echo "🌐 Custom domain: https://ascend.drewclark.io"
+        echo "🔧 Running in dev mode with Vite + Express"
