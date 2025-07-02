@@ -152,6 +152,7 @@ body.modal-open {
 
 /* Game area wrapper inside main */
 .game-area[data-section="game"] {
+    max-height: 100%;
     width: 100%;
     max-width: 1200px;
     display: grid;
@@ -619,7 +620,7 @@ body.modal-open {
     
     .canvas-viewport[data-viewport="main"] {
         flex: 1;
-        width: 100%;
+    
         max-width: 100%;
         max-height: 100%;
         border: 2px solid var(--accent-primary);
@@ -631,8 +632,9 @@ body.modal-open {
     .game-canvas[data-canvas="primary"] {
         max-width: 100%;
         max-height: 100%;
-        width: auto;
-        height: auto;
+        
+        /* width: auto;
+        height: auto; */
     }
     
     .control-panel[data-section="controls"] {
@@ -672,18 +674,26 @@ body.modal-open {
     }
     
     .game-area[data-section="game"] {
-        grid-template-columns: 4fr 1fr; /* Give canvas 4x more space than sidebar */
-        gap: var(--space-md); /* Reduce gap to give more space to canvas */
-        padding: var(--space-md); /* Reduce padding to give more space to canvas */
+        grid-template-columns: 1fr 280px; /* Fixed sidebar width, canvas gets remaining space */
+        gap: var(--space-lg); /* Adequate gap for visual separation */
+        padding: 0; /* Remove padding to maximize space */
+        height: 100%;
+        align-items: stretch; /* Make both columns same height */
     }
     
     .canvas-viewport[data-viewport="main"] {
         grid-column: 1;
+        min-width: 0; /* Allow shrinking */
+        display: flex;
+        justify-content: center;
+        align-items: center;
     }
     
     .info-panel[data-panel="info"] {
         grid-column: 2;
-        max-width: 300px; /* Limit sidebar width so canvas can be larger */
+        width: 280px; /* Fixed width for consistency */
+        min-width: 280px;
+        max-width: 280px;
     }
     
     .app-header h1 {
@@ -692,7 +702,13 @@ body.modal-open {
     
     /* Give the main game container more space */
     .game-main[data-section="main"] {
-        padding: var(--space-sm); /* Reduce main padding */
+        padding: var(--space-md); /* Balanced padding */
+    }
+    
+    /* Ensure the app root uses full height */
+    .app-root[data-app="ascend-avoid"] {
+        max-width: none; /* Remove max-width constraint on desktop */
+        width: 100vw;
     }
 }
 

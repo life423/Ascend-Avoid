@@ -201,7 +201,9 @@ export default class ResponsiveManager {
         if (!this.canvas) return
 
         // Get the canvas viewport container
-        const viewport = this.canvas.closest('.canvas-viewport[data-viewport="main"]') as HTMLElement
+        const viewport = this.canvas.closest(
+            '.canvas-viewport[data-viewport="main"]'
+        ) as HTMLElement
         if (!viewport) {
             console.warn('Canvas viewport container not found')
             return
@@ -212,32 +214,65 @@ export default class ResponsiveManager {
         let availableHeight: number
 
         if (this.isDesktop) {
-            // Desktop: Use the viewport container dimensions directly
-            const viewportRect = viewport.getBoundingClientRect()
-            availableWidth = Math.max(viewportRect.width - 20, 600) // 10px margin each side, min 600px
-            availableHeight = Math.max(viewportRect.height - 20, 400) // 10px margin each side, min 400px
-
-            console.log(
-                `Desktop canvas sizing: ${availableWidth}x${availableHeight} available from viewport`
-            )
+            // Desktop: Calculate based on the CSS Grid layout
+            // The grid is: grid-template-columns: 1fr 280px with gap: 16px
+            const gameMain = document.querySelector(
+                '.game-main[data-section="main"]'
+            ) as HTMLElement | null
+            
+            if (gameMain) {
+                const gameMainRect = gameMain.getBoundingClientRect()
+                const sidebarWidth = 280 // Fixed sidebar width from CSS
+                const gridGap = 24 // CSS gap from --space-lg
+                const padding = 32 // Main padding (16px each side)
+                
+                // Calculate available space for canvas (first grid column)
+                availableWidth = Math.max(gameMainRect.width - sidebarWidth - gridGap - padding, 600)
+                availableHeight = Math.max(gameMainRect.height - padding, 500)
+                
+                console.log(
+                    `Desktop canvas sizing: ${availableWidth}x${availableHeight} available (gameMain: ${gameMainRect.width}x${gameMainRect.height}, sidebar: ${sidebarWidth}px)`
+                )
+            } else {
+                // Fallback for desktop
+                const sidebarWidth = 280
+                const gridGap = 24
+                const padding = 64 // Conservative padding estimate
+                
+                availableWidth = Math.max(window.innerWidth - sidebarWidth - gridGap - padding, 600)
+                availableHeight = Math.max(window.innerHeight - 200, 500) // Account for header
+                
+                console.log(
+                    `Desktop canvas sizing (fallback): ${availableWidth}x${availableHeight}`
+                )
+            }
         } else {
             // Mobile: Calculate based on actual layout structure
-            const header = document.querySelector('.app-header') as HTMLElement | null
-            const controlPanel = document.querySelector('.control-panel[data-section="controls"]') as HTMLElement | null
-            
+            const header = document.querySelector(
+                '.app-header'
+            ) as HTMLElement | null
+            const controlPanel = document.querySelector(
+                '.control-panel[data-section="controls"]'
+            ) as HTMLElement | null
+
             // Get actual heights of fixed elements
             const headerHeight = header ? header.offsetHeight : 80
-            const controlsHeight = controlPanel ? controlPanel.offsetHeight : 140
+            const controlsHeight = controlPanel
+                ? controlPanel.offsetHeight
+                : 140
             const margin = 20 // Total margin (10px each side)
-            
+
             // Calculate available space more accurately
             const totalReservedHeight = headerHeight + controlsHeight + margin
-            availableHeight = Math.max(window.innerHeight - totalReservedHeight, 250) // Minimum 250px height
+            availableHeight = Math.max(
+                window.innerHeight - totalReservedHeight,
+                250
+            ) // Minimum 250px height
             availableWidth = Math.max(window.innerWidth - margin, 280) // Minimum 280px width
-            
+
             // Apply mobile-specific limits
             availableWidth = Math.min(availableWidth, CANVAS.MAX_MOBILE_WIDTH)
-            
+
             console.log(
                 `Mobile canvas sizing: ${availableWidth}x${availableHeight} available (header: ${headerHeight}px, controls: ${controlsHeight}px)`
             )
@@ -255,7 +290,7 @@ export default class ResponsiveManager {
         const canvasHeight = Math.floor(this.baseCanvasHeight * scale)
 
         // Ensure minimum playable size (higher minimums for desktop)
-        const minHeight = this.isDesktop ? 400 : 250
+        const minHeight = this.isDesktop ? 500 : 250
         const minWidth = Math.floor(
             (minHeight / this.baseCanvasHeight) * this.baseCanvasWidth
         )
