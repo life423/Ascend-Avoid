@@ -97,6 +97,7 @@ body.modal-open {
     flex-direction: column;
     overflow: hidden;
     position: relative;
+    margin: 0 auto;
 }
 
 /* Header section */
