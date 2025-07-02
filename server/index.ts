@@ -68,16 +68,33 @@ if (process.env.NODE_ENV !== 'production') {
   app.use(config.monitorPath, monitor());
 }
 
-// Always run in development mode - let Vite handle static files
-app.get("/", (_req, res) => {
-  res.json({
-    message: "Multiplayer game server is running",
-    websocket: `ws://localhost:${config.port}`,
-    frontend: "http://localhost:5173 (served by Vite)",
-    monitor: `http://localhost:${config.port}${config.monitorPath}`,
-    environment: process.env.NODE_ENV || 'development'
+// IMPORTANT: Serve static files AFTER all API routes
+if (process.env.NODE_ENV === 'production') {
+  // In production, serve the Vite dev server content via proxy
+  app.get('*', (req, res, next) => {
+    // Skip API and WebSocket routes
+    if (req.path.startsWith('/api') || 
+        req.path.startsWith('/ws') || 
+        req.path.startsWith('/health') ||
+        req.path.startsWith(config.monitorPath)) {
+      return next();
+    }
+    
+    // Proxy to Vite dev server running on port 5173
+    const viteUrl = `http://localhost:5173${req.path}`;
+    res.redirect(302, viteUrl);
   });
-});
+} else {
+  // Development mode - don't serve static files, let Vite handle it
+  app.get("/", (_req, res) => {
+    res.json({
+      message: "Multiplayer game server is running in development mode",
+      websocket: `ws://localhost:${config.port}`,
+      frontend: "http://localhost:5173 (served by Vite)",
+      monitor: `http://localhost:${config.port}${config.monitorPath}`
+    });
+  });
+}
 
 // Error handling middleware
 app.use((err: any, _req: express.Request, res: express.Response, _next: express.NextFunction) => {
