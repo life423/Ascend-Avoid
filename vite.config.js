@@ -69,6 +69,7 @@ export default defineConfig(({ mode }) => {
         'localhost',
         '*.azurecontainerapps.io',
         'ascend.drewclark.io',
+        'ascend-avoid.livelyisland-db4ad2db.eastus.azurecontainerapps.io,'
       ]
     },
     preview: {
