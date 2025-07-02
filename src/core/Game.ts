@@ -967,7 +967,8 @@ export default class Game {
         // Draw a subtle animated line
         this.ctx.save()
         this.ctx.globalAlpha = 0.7 + 0.3 * Math.sin(timestamp * 0.002)
-        this.ctx.strokeStyle = '#00ff44'
+        this.ctx.strokeStyle = '#7FDBFF'
+        // this.ctx.strokeStyle = '#66D9EF'
         this.ctx.lineWidth = 2 * this.scalingInfo.heightScale
         this.ctx.setLineDash([5, 5])
         this.ctx.beginPath()
