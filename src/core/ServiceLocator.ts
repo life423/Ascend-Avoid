@@ -253,7 +253,7 @@ export class ServiceLocator {
 export class ScopedServiceLocator extends ServiceLocator {
     constructor(
         private parent: ServiceLocator,
-        private context: string
+        _context: string // Context for debugging purposes
     ) {
         super();
     }

@@ -67,7 +67,7 @@ class PlayerSchema extends Schema {
    * @param canvasWidth - Width of the game canvas
    * @param canvasHeight - Height of the game canvas
    */
-  updateMovement(deltaTime: number, canvasWidth: number, canvasHeight: number): void {
+  updateMovement(_deltaTime: number, canvasWidth: number, canvasHeight: number): void {
     if (this.state !== GAME_CONSTANTS.PLAYER_STATE.ALIVE) return;
     
     // Calculate movement step

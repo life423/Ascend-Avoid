@@ -66,7 +66,7 @@ export class InputSystem extends System {
    * Update the input system
    * @param deltaTime - Time since last frame in seconds
    */
-  public update(deltaTime: number): void {
+  public update(_deltaTime: number): void {
     // Nothing to do in update for input system
     // Input is handled by event listeners
   }

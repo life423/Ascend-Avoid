@@ -45,7 +45,7 @@ export class Entity implements EntityInterface {
    * Update the entity
    * @param deltaTime - Time since last frame in seconds
    */
-  update(deltaTime: number): void {
+  update(_deltaTime: number): void {
     // Base implementation does nothing
   }
   
@@ -54,7 +54,7 @@ export class Entity implements EntityInterface {
    * @param ctx - Canvas rendering context
    * @param timestamp - Current timestamp for animation
    */
-  render(ctx: CanvasRenderingContext2D, timestamp?: number): void {
+  render(_ctx: CanvasRenderingContext2D, _timestamp?: number): void {
     // Base implementation does nothing
   }
   

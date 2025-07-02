@@ -1,50 +1,43 @@
-# Multi-stage build for optimized single container
-
-# Stage 1: Build everything
+# Multi-stage build for optimized container size
 FROM node:18-alpine AS builder
 WORKDIR /app
 
-# Copy package files
+# Copy package files for better layer caching
 COPY package*.json ./
 COPY server/package*.json ./server/
 
-# Install all dependencies
-RUN npm ci --legacy-peer-deps
-RUN cd server && npm ci --legacy-peer-deps
+# Install dependencies
+RUN npm ci
+RUN cd server && npm ci
 
-# Copy source files
+# Copy source code
 COPY . .
 
-# Build frontend with Vite
-RUN npm run build:client
+# Build client and server
+RUN npm run build
 
-# Build server TypeScript
-RUN cd server && npm run build
-
-# Stage 2: Production runtime
+# Production stage
 FROM node:18-alpine
 WORKDIR /app
 
-# Install production dependencies only
+# Copy only production dependencies
 COPY server/package*.json ./server/
-RUN cd server && npm ci --production --legacy-peer-deps
+RUN cd server && npm ci --omit=dev
 
-# Copy built frontend (static files)
+# Copy built assets from builder stage
 COPY --from=builder /app/dist ./dist
-
-# Copy compiled server
 COPY --from=builder /app/server/dist ./server/dist
 
-# Environment variables
+# Set environment variables
 ENV NODE_ENV=production
 ENV PORT=3000
 
-# Only expose the backend port (serves everything)
+# Expose port
 EXPOSE 3000
 
 # Health check
 HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
   CMD wget --no-verbose --tries=1 --spider http://localhost:3000/health || exit 1
 
-# Start the server (which serves both frontend and backend)
+# Start the server
 CMD ["node", "server/dist/index.js"]

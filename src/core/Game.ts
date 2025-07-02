@@ -12,7 +12,7 @@ import ResponsiveManager from '../managers/ResponsiveManager'
 import TouchControls from '../ui/TouchControls'
 
 // Fallback constants in case imports fail
-const BASE_CANVAS_WIDTH = 560
+// const BASE_CANVAS_WIDTH = 560 // Unused
 const BASE_CANVAS_HEIGHT = 550
 
 // Define interfaces for specific components
@@ -53,39 +53,16 @@ import ObstacleManager from '../managers/ObstacleManager'
 import UIManager from '../managers/UIManager'
 import GameConfig from './GameConfig'
 
-// Forward references to game mode types
-import GameMode from './GameMode'
+// Import game modes from consolidated file
+import { GameMode, MultiplayerMode, SinglePlayerMode } from './GameModes'
 
-// Define interfaces for game components
-interface GameModeModule {
-    default: new (game: Game) => GameMode
-}
-
-interface ParticleStats {
-    activeParticles: number
-    totalAllocated: number
-}
-
-interface AssetDefinition {
-    key: string
-    src: string
-}
-
-interface ParticleCelebrationOptions {
-    x: number
-    y: number
-    count: number
-    minSize: number
-    maxSize: number
-    minLife: number
-    maxLife: number
-}
+// Removed unused interfaces
 
 export default class Game {
     // Canvas and rendering context
     canvas: HTMLCanvasElement
     ctx: CanvasRenderingContext2D
-    responsiveManager: ResponsiveManager
+    responsiveManager!: ResponsiveManager
 
     // UI elements
     scoreElement: HTMLElement | null
@@ -136,7 +113,7 @@ export default class Game {
         this.canvas =
             (document.querySelector(
                 '.game-canvas[data-canvas="primary"]'
-            ) as HTMLCanvasElement) || 
+            ) as HTMLCanvasElement) ||
             (document.getElementById('gameCanvas') as HTMLCanvasElement) ||
             document.createElement('canvas')
         console.log('Canvas element:', this.canvas)
@@ -323,30 +300,19 @@ export default class Game {
         }
 
         try {
-            // Dynamically import the appropriate game mode class
-            let GameModeClass: new (game: Game) => GameMode
-
+            // Create the appropriate game mode directly
             switch (mode) {
                 case 'multiplayer':
-                    // Dynamic import of MultiplayerMode
-                    const MultiplayerModeModule = (await import(
-                        './MultiplayerMode'
-                    )) as GameModeModule
-                    GameModeClass = MultiplayerModeModule.default
+                    this.currentGameMode = new MultiplayerMode(this)
                     break
 
                 case 'singlePlayer':
                 default:
-                    // Dynamic import of SinglePlayerMode
-                    const SinglePlayerModeModule = (await import(
-                        './SinglePlayerMode'
-                    )) as GameModeModule
-                    GameModeClass = SinglePlayerModeModule.default
+                    this.currentGameMode = new SinglePlayerMode(this)
                     break
             }
 
-            // Create and initialize the game mode
-            this.currentGameMode = new GameModeClass(this)
+            // Initialize the game mode
             await this.currentGameMode.initialize()
 
             console.log(`Game mode initialized: ${mode}`)
@@ -410,9 +376,9 @@ export default class Game {
      * Called when the window is resized or orientation changes
      */
     onResize(
-        widthScale?: number,
-        heightScale?: number,
-        isDesktop?: boolean
+        _widthScale?: number,
+        _heightScale?: number,
+        _isDesktop?: boolean
     ): void {
         // Get updated scaling info from responsive manager
         this.scalingInfo = this.responsiveManager.getScalingInfo()
@@ -642,7 +608,7 @@ export default class Game {
      * @param deltaTime - Time since last frame in seconds
      * @param timestamp - Current timestamp for animation
      */
-    updateCommonSystems(deltaTime: number, timestamp: number): void {
+    updateCommonSystems(deltaTime: number, _timestamp: number): void {
         // Update particles
         this.updateParticles(deltaTime)
     }
@@ -682,7 +648,7 @@ export default class Game {
      * Handle collision with obstacle
      * @param obstacle - The obstacle that was hit
      */
-    handleCollision(obstacle: GameObject): void {
+    handleCollision(_obstacle: GameObject): void {
         // Play collision sound
         if (this.assetManager) {
             this.assetManager.playSound('collision', 0.3)
@@ -905,12 +871,10 @@ export default class Game {
         )
 
         // Convert player position to screen coordinates to match winning line
-        const scale = this.canvas.height / BASE_CANVAS_HEIGHT
-
-        // Check if ANY part of the player crosses the winning line
+        const scale = this.canvas.height / BASE_CANVAS_HEIGHT // Check if ANY part of the player crosses the winning line
         // Player.y is the TOP of the player in world coordinates
         const playerTopScreenY = this.player.y * scale
-        const playerBottomScreenY = (this.player.y + this.player.height) * scale
+        // const playerBottomScreenY = (this.player.y + this.player.height) * scale
 
         // Trigger if any part of the player crosses or touches the winning line
         if (playerTopScreenY <= winningLineScreenY) {
@@ -1017,21 +981,29 @@ export default class Game {
      * Draw debug information
      * @param timestamp - Current animation timestamp
      */
-    drawDebugInfo(timestamp: number): void {
+    drawDebugInfo(_timestamp: number): void {
         this.ctx.save()
         this.ctx.fillStyle = '#ffffff'
         this.ctx.font = '12px monospace'
         this.ctx.textAlign = 'left'
 
         const debugLines = [
-            `FPS: ${Math.round(1000 / (this.performanceStats.avgFrameTime || 16))}`,
+            `FPS: ${Math.round(
+                1000 / (this.performanceStats.avgFrameTime || 16)
+            )}`,
             `Frame Time: ${this.performanceStats.avgFrameTime.toFixed(2)}ms`,
-            `Scale: ${this.scalingInfo.widthScale.toFixed(2)}x${this.scalingInfo.heightScale.toFixed(2)}`,
+            `Scale: ${this.scalingInfo.widthScale.toFixed(
+                2
+            )}x${this.scalingInfo.heightScale.toFixed(2)}`,
             `Canvas: ${this.canvas.width}x${this.canvas.height}`,
-            `Player: (${this.player?.x.toFixed(0)}, ${this.player?.y.toFixed(0)})`,
+            `Player: (${this.player?.x.toFixed(0)}, ${this.player?.y.toFixed(
+                0
+            )})`,
             `Game State: ${this.gameState}`,
             `Obstacles: ${this.obstacleManager?.getObstacles().length || 0}`,
-            `Particles: ${this.particleSystem?.getStats().activeParticles || 0}`
+            `Particles: ${
+                this.particleSystem?.getStats().activeParticles || 0
+            }`,
         ]
 
         debugLines.forEach((line, index) => {
@@ -1046,7 +1018,10 @@ export default class Game {
      */
     dispose(): void {
         // Remove event listeners
-        document.removeEventListener('game:restart', this.handleRestartEvent.bind(this))
+        document.removeEventListener(
+            'game:restart',
+            this.handleRestartEvent.bind(this)
+        )
 
         // Clean up game mode
         if (this.currentGameMode) {

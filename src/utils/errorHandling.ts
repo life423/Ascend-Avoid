@@ -207,7 +207,7 @@ export class ErrorHandler {
   /**
    * Shows error dialog for critical errors
    */
-  private showErrorDialog(message: string, report: ErrorReport): void {
+  private showErrorDialog(message: string, _report: ErrorReport): void {
     const dialog = document.createElement('div');
     dialog.className = 'error-dialog';
     dialog.style.cssText = `

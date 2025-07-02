@@ -5,7 +5,6 @@
 
 // Import core game components
 import Game from './core/Game';
-import { CANVAS } from './constants/gameConstants';
 
 // Helper function for device detection
 function detectDevice() {
@@ -153,7 +152,7 @@ function initializeMultiplayer() {
       
       // Create UI if it doesn't exist
       if (!(window as any).multiplayerUI) {
-        (window as any).multiplayerUI = new MultiplayerUI(null); // We don't need manager here
+        (window as any).multiplayerUI = new MultiplayerUI(game.currentGameMode?.multiplayerManager || null);
       }
       
       // Show UI
@@ -181,18 +180,18 @@ function initializeMultiplayer() {
       // Load and show UI
       return import('./ui/MultiplayerUI');
     })
-    .then((MultiplayerUIModule) => {
+    .then((MultiplayerUIModule: any) => {
       const MultiplayerUI = MultiplayerUIModule.default;
       
       // Create UI
-      (window as any).multiplayerUI = new MultiplayerUI(null); // Game mode already has manager
+      (window as any).multiplayerUI = new MultiplayerUI(game.currentGameMode?.multiplayerManager || null);
       
       // Show UI
       (window as any).multiplayerUI.toggle();
       
       console.log("Multiplayer UI initialized");
     })
-    .catch(err => {
+    .catch((err: any) => {
       // Reset button state
       mpButton.textContent = originalText || 'Multiplayer';
       mpButton.style.opacity = '1';

@@ -48,15 +48,17 @@ export function setupPerformanceMonitoring(): void {
       performanceData.memoryUsage = memory.usedJSHeapSize / 1024 / 1024; // MB
     }
 
-    requestAnimationFrame(updatePerformanceStats);
+    if (typeof requestAnimationFrame === 'function') {
+      requestAnimationFrame(updatePerformanceStats);
+    }
   };
 
-  requestAnimationFrame(updatePerformanceStats);
-
-  // Log performance warnings
-  if (console.time && console.timeEnd) {
-    console.log('Performance monitoring enabled');
+  if (typeof requestAnimationFrame === 'function') {
+    requestAnimationFrame(updatePerformanceStats);
   }
+
+  // Log performance status
+  console.log('Performance monitoring enabled');
 }
 
 /**

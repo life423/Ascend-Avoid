@@ -105,7 +105,7 @@ export default class AssetManager {
     const pathToTry = alternativePaths[pathIndex];
     console.log(`Trying to load image: ${pathToTry}`);
     
-    return new Promise((resolve, reject) => {
+    return new Promise((resolve) => {
       const img = new Image();
       let timeoutId: number;
       

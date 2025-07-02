@@ -28,7 +28,7 @@ export default class InputManager {
     private keyMappings: KeyMappings
     private keys: InputState & { restart: boolean; shoot: boolean } // Added shoot
     private touchStart: Point
-    private isTouchDevice: boolean
+    // private _isTouchDevice: boolean = false // Removed unused property
 
     /**
      * Creates a new InputManager
@@ -50,7 +50,7 @@ export default class InputManager {
 
         // Touch state tracking
         this.touchStart = { x: 0, y: 0 }
-        this.isTouchDevice = false
+        // this._isTouchDevice is initialized in property declaration
 
         // Bind methods to maintain context
         this.handleKeyDown = this.handleKeyDown.bind(this)
@@ -101,10 +101,8 @@ export default class InputManager {
      * Detect if the device supports touch
      */
     private detectTouchSupport(): void {
-        this.isTouchDevice =
-            window.matchMedia('(pointer: coarse)').matches ||
-            'ontouchstart' in window ||
-            navigator.maxTouchPoints > 0
+        // Touch device detection removed as it was unused
+        // this._isTouchDevice = window.matchMedia('(pointer: coarse)').matches || 'ontouchstart' in window || navigator.maxTouchPoints > 0
     }
 
     /**

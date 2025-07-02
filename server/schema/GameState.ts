@@ -124,7 +124,7 @@ class GameState extends Schema {
     
     // Get player positions for obstacle placement
     const playerPositions: PlayerPosition[] = [];
-    this.players.forEach((player, sessionId) => {
+    this.players.forEach((player, _sessionId) => {
       if (player.state === GAME_CONSTANTS.PLAYER_STATE.ALIVE) {
         playerPositions.push({ x: player.x, y: player.y });
       }
@@ -145,7 +145,7 @@ class GameState extends Schema {
     // Game is won when only one player remains alive
     if (this.aliveCount === 1 && this.totalPlayers > 1) {
       // Find the last player standing
-      this.players.forEach((player, sessionId) => {
+      this.players.forEach((player, _sessionId) => {
         if (player.state === GAME_CONSTANTS.PLAYER_STATE.ALIVE) {
           this.winnerName = player.name;
           this.gameState = GAME_CONSTANTS.STATE.GAME_OVER;
@@ -212,7 +212,7 @@ class GameState extends Schema {
         }
         
         // Update all players
-        this.players.forEach((player, sessionId) => {
+        this.players.forEach((player, _sessionId) => {
           if (player.state === GAME_CONSTANTS.PLAYER_STATE.ALIVE) {
             player.updateMovement(deltaTime, this.arenaWidth, this.arenaHeight);
             
@@ -230,7 +230,7 @@ class GameState extends Schema {
             if (needsReset) {
               // Get player positions for obstacle placement
               const playerPositions: PlayerPosition[] = [];
-              this.players.forEach((player, sessionId) => {
+              this.players.forEach((player, _sessionId) => {
                 if (player.state === GAME_CONSTANTS.PLAYER_STATE.ALIVE) {
                   playerPositions.push({ x: player.x, y: player.y });
                 }
@@ -292,7 +292,7 @@ class GameState extends Schema {
    * @param obstacle - The obstacle to check
    */
   checkObstacleCollisions(obstacle: ObstacleSchema): void {
-    this.players.forEach((player, sessionId) => {
+    this.players.forEach((player, _sessionId) => {
       // Only check collisions for active players
       if (player.state === GAME_CONSTANTS.PLAYER_STATE.ALIVE) {
         if (obstacle.checkCollision(player)) {
@@ -317,7 +317,7 @@ class GameState extends Schema {
     this.aliveCount = 0;
     
     // Reset players
-    this.players.forEach((player, sessionId) => {
+    this.players.forEach((player, _sessionId) => {
       player.resetPosition(this.arenaWidth, this.arenaHeight);
       player.score = 0;
       player.state = GAME_CONSTANTS.PLAYER_STATE.ALIVE;

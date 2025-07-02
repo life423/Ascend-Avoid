@@ -157,9 +157,9 @@ export default class Player implements GameObject {
     // Calculate scaled winning line position
     const scaledWinningLine = GAME.WINNING_LINE * (this.canvas.height / BASE_CANVAS_HEIGHT);
     
-    // Store previous position for velocity calculation
-    const prevX = this.x;
-    const prevY = this.y;
+    // Store previous position for velocity calculation (currently unused but may be needed for collision detection)
+    // const prevX = this.x;
+    // const prevY = this.y;
     
     // Reset velocity
     this.vx = 0;
@@ -215,7 +215,7 @@ export default class Player implements GameObject {
    * @param ctx - Canvas rendering context
    * @param timestamp - Current animation timestamp
    */
-  render(ctx: CanvasRenderingContext2D, timestamp?: number): void {
+  render(_ctx: CanvasRenderingContext2D, timestamp?: number): void {
     this.draw(timestamp);
   }
   
@@ -223,7 +223,7 @@ export default class Player implements GameObject {
    * Update the player - alias for move to fit GameObject interface
    * @param deltaTime - Time elapsed since last frame
    */
-  update(deltaTime: number): void {
+  update(_deltaTime: number): void {
     this.move();
   }
 }

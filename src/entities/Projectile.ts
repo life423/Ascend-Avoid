@@ -81,7 +81,7 @@ export default class Projectile implements GameObject {
      * @param ctx - Canvas rendering context (optional, uses internal ctx if not provided)
      * @param timestamp - Current animation timestamp (optional)
      */
-    render(ctx?: CanvasRenderingContext2D, timestamp?: number): void {
+    render(ctx?: CanvasRenderingContext2D, _timestamp?: number): void {
         if (!this.active) return;
         
         const context = ctx || this.ctx;

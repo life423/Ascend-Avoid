@@ -7,14 +7,14 @@ export class MultiplayerManager {
     private client: Client | null = null;
     private room: Room | null = null;
     private eventBus: EventBus;
-    private assetManager: AssetManager;
+    // private _assetManager: AssetManager; // Removed unused property
     private isConnecting: boolean = false;
     private reconnectAttempts: number = 0;
     private maxReconnectAttempts: number = 3;
 
-    constructor(eventBus: EventBus, assetManager: AssetManager) {
+    constructor(eventBus: EventBus, _assetManager: AssetManager) {
         this.eventBus = eventBus;
-        this.assetManager = assetManager;
+        // this._assetManager = assetManager; // Removed unused assignment
     }
 
     /**

@@ -1,7 +1,7 @@
 import pkg from 'colyseus';
 const { Room } = pkg;
 import { GameState } from "../schema/GameState.js";
-import { GAME_CONSTANTS, PLAYER_COLORS } from "../constants/serverConstants.js";
+import { GAME_CONSTANTS } from "../constants/serverConstants.js";
 import { Client } from "colyseus";
 import logger from "../utils/logger.js";
 
@@ -129,7 +129,7 @@ class GameRoom extends Room<GameState> {
   /**
    * Handle client leaving the room
    */
-  onLeave(client: Client, consented: boolean): void {
+  onLeave(client: Client, _consented: boolean): void {
     logger.info(`Player ${client.sessionId} left`);
 
     // Remove player from game state

@@ -28,7 +28,7 @@ export default class ObstacleManager {
   private canvas: HTMLCanvasElement;
   private config: ObstacleGameConfig;
   private obstacles: Obstacle[];
-  private baseCanvasHeight: number;
+  // private _baseCanvasHeight: number; // Removed unused property
   
   /**
    * Creates a new ObstacleManager
@@ -38,7 +38,7 @@ export default class ObstacleManager {
     this.canvas = canvas;
     this.config = config;
     this.obstacles = [];
-    this.baseCanvasHeight = canvas.height;
+    // this._baseCanvasHeight = canvas.height; // Removed unused assignment
   }
   
   /**

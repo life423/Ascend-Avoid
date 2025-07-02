@@ -49,7 +49,7 @@ export class RenderSystem extends System {
      * Update the render system (performs rendering)
      * @param deltaTime - Time since last frame in seconds
      */
-    public update(deltaTime: number): void {
+    public update(_deltaTime: number): void {
         this.renderEntities();
     }
     
@@ -58,7 +58,7 @@ export class RenderSystem extends System {
      * @param ctx - Canvas rendering context
      * @param timestamp - Current timestamp for animation
      */
-    public render(ctx: CanvasRenderingContext2D, timestamp?: number): void {
+    public render(_ctx: CanvasRenderingContext2D, _timestamp?: number): void {
         this.renderEntities();
     }
     

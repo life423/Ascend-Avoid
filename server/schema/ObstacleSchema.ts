@@ -44,7 +44,7 @@ class ObstacleSchema extends Schema {
    * @param playerPositions - Array of player positions to avoid when placing obstacle
    * @returns Whether the reset was successful
    */
-  reset(canvasWidth: number, canvasHeight: number, playerPositions: PlayerPosition[] = []): boolean {
+  reset(_canvasWidth: number, canvasHeight: number, playerPositions: PlayerPosition[] = []): boolean {
     // Set starting position off-screen to the left
     this.x = -this.width;
     

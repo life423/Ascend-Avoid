@@ -1,68 +1,73 @@
-import legacy from '@vitejs/plugin-legacy'
-import { resolve } from 'path'
-import { defineConfig } from 'vite'
-import checker from 'vite-plugin-checker'
-import { nodePolyfills } from 'vite-plugin-node-polyfills'
+import legacy from '@vitejs/plugin-legacy';
+import { defineConfig, loadEnv } from 'vite';
+import checker from 'vite-plugin-checker';
+import { nodePolyfills } from 'vite-plugin-node-polyfills';
+import { fileURLToPath } from 'url';
+import { dirname, resolve } from 'path';
 
-export default defineConfig({
+// ←–– add these two lines so __dirname exists in ESM
+const __filename = fileURLToPath(import.meta.url);
+const __dirname  = dirname(__filename);
+
+export default defineConfig(({ mode }) => {
+  const env = loadEnv(mode, process.cwd(), '');
+
+  return {
     root: 'src',
-    publicDir: 'assets',
+    publicDir: '../public',
     plugins: [
-        legacy({
-            targets: ['defaults', 'not IE 11'],
-        }),
-        checker({
-            typescript: true,
-        }),
-        nodePolyfills({
-            // Whether to polyfill `node:` protocol imports.
-            protocolImports: true,
-            // Whether to polyfill specific globals.
-            globals: {
-                Buffer: true, // Explicitly enable Buffer polyfill
-                global: true,
-                process: true,
-            },
-        }),
+      legacy({ targets: ['defaults', 'not IE 11'] }),
+      checker({ typescript: true }),
+      nodePolyfills({
+        protocolImports: true,
+        globals: { Buffer: true, global: true, process: true },
+      }),
     ],
     define: {
-        'process.env': {},
-        global: {},
+      'process.env': {},
+      global: {},
+      // expose only VITE_ vars
+      ...Object.fromEntries(
+        Object.entries(env)
+          .filter(([k]) => k.startsWith('VITE_'))
+          .map(([k, v]) => ([ `import.meta.env.${k}`, JSON.stringify(v) ]))
+      ),
     },
     optimizeDeps: {
-        esbuildOptions: {
-            define: {
-                global: 'globalThis',
-            },
-        },
-        include: ['buffer', 'process'],
+      esbuildOptions: { define: { global: 'globalThis' } },
+      include: ['buffer', 'process'],
     },
     resolve: {
-        alias: {
-            // Updated aliases to match the new structure
-            '@': resolve(__dirname, 'src'),
-            '@core': resolve(__dirname, 'src/core'),
-            '@entities': resolve(__dirname, 'src/entities'),
-            '@managers': resolve(__dirname, 'src/managers'),
-            '@ui': resolve(__dirname, 'src/ui'),
-            '@utils': resolve(__dirname, 'src/utils'),
-            '@constants': resolve(__dirname, 'src/constants'),
-            '@server': resolve(__dirname, 'server'),
-            buffer: 'buffer',
-            process: 'process',
-        },
+      alias: {
+        '@':        resolve(__dirname, 'src'),
+        '@core':    resolve(__dirname, 'src/core'),
+        '@entities':resolve(__dirname, 'src/entities'),
+        '@managers':resolve(__dirname, 'src/managers'),
+        '@ui':      resolve(__dirname, 'src/ui'),
+        '@utils':   resolve(__dirname, 'src/utils'),
+        '@constants':resolve(__dirname, 'src/constants'),
+        '@server':  resolve(__dirname, 'server'),
+        buffer:     'buffer',
+        process:    'process',
+      },
     },
     build: {
-        outDir: '../dist',
-        emptyOutDir: true,
-        sourcemap: true,
-        rollupOptions: {
-            input: {
-                main: resolve(__dirname, 'src/index.html'),
-            },
+      outDir: '../dist',
+      emptyOutDir: true,
+      sourcemap: true,
+      rollupOptions: {
+        input: {
+          main: resolve(__dirname, 'src/index.html'),
         },
+      },
     },
-    server: {
-        open: true,
+    server: { open: true },
+    test: {
+      globals: true,
+      environment: 'jsdom',
+      setupFiles: ['./tests/setup.ts'],
+      include: ['**/*.{test,spec}.{js,ts,tsx}'],
+      exclude: ['**/node_modules/**', '**/dist/**'],
     },
-})
+  };
+});

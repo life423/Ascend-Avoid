@@ -1,3 +1,0 @@
-@echo off
-echo Starting test engine...
-npm run dev -- --open test-engine.html

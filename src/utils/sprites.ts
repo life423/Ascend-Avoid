@@ -18,7 +18,7 @@ interface SpriteSheets {
  */
 export class SpriteManager {
   // Sprite cache storage
-  private frameCache: Record<string, HTMLImageElement> = {};
+  // private frameCache: Record<string, HTMLImageElement> = {};
   private spriteSheets: SpriteSheets = {};
   private currentFrame = 0;
   private lastFrameTime = 0;

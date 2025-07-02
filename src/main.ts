@@ -14,7 +14,6 @@ import { DeviceInfo } from './types';
 // Import utility functions
 import { setupPolyfills } from './utils/polyfills';
 import { setupPerformanceMonitoring } from './utils/performance';
-import { setupErrorHandling } from './utils/errorHandling';
 
 // Global game instance
 let gameInstance: Game | null = null;
@@ -311,7 +310,7 @@ class GameApplication {
    */
   private setupGlobalInterface(): void {
     window.game = {
-      onResize: (widthScale: number, heightScale: number, isDesktop: boolean) => {
+      onResize: (widthScale: number, heightScale: number, _isDesktop: boolean) => {
         // This will be called by the ResponsiveCanvas system
         if (gameInstance && (gameInstance as any).handleResize) {
           try {

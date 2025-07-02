@@ -4,17 +4,7 @@
  * Now with TypeScript support.
  */
 import GameMode from './GameMode';
-import { InputState, ScalingInfo, NetworkPlayer } from '../types';
-
-// Define interfaces for multiplayer-specific components
-interface IMultiplayerManager {
-  connect: () => Promise<boolean>;
-  sendInput: (input: any) => void;
-  disconnect: () => void;
-  isConnected: () => boolean;
-  getRoom: () => any;
-  updatePlayerName: (name: string) => void;
-}
+import { InputState, NetworkPlayer } from '../types';
 
 interface GameState {
   gameState: string;
@@ -27,18 +17,6 @@ interface ArenaStats {
   areaPercentage: number;
   shrinkStart?: number;
   shrinkEnd?: number;
-}
-
-interface UIManager {
-  showNotification: (message: string) => void;
-  showError: (message: string) => void;
-  showGameOver: (score: number, highScore: number, resetCallback: () => void, winnerName?: string) => void;
-  hideGameOver: () => void;
-  updateScore: (score: number) => void;
-}
-
-interface ParticleSystem {
-  clear: () => void;
 }
 
 export default class MultiplayerMode extends GameMode {
@@ -177,10 +155,10 @@ export default class MultiplayerMode extends GameMode {
   /**
    * Update game state for multiplayer mode
    * @param inputState - Current input state
-   * @param deltaTime - Time since last frame in seconds
+   * @param _deltaTime - Time since last frame in seconds
    * @param timestamp - Current timestamp for animation
    */
-  update(inputState: InputState, deltaTime: number, timestamp: number): void {
+  update(inputState: InputState, _deltaTime: number, timestamp: number): void {
     // Skip if game is not in playing state
     if (this.game.gameState !== this.game.config.STATE.PLAYING) {
       return;
@@ -203,7 +181,7 @@ export default class MultiplayerMode extends GameMode {
     }
     
     // Update remote players (animations, interpolation)
-    this.updateRemotePlayers(deltaTime);
+    this.updateRemotePlayers();
     
     // Obstacles are server-authoritative in multiplayer mode
     // They will be updated via network updates
@@ -269,13 +247,10 @@ export default class MultiplayerMode extends GameMode {
   
   /**
    * Update remote players for animation and interpolation
-   * @param deltaTime - Time since last frame in seconds
    */
-  private updateRemotePlayers(deltaTime: number): void {
+  private updateRemotePlayers(): void {
     // Interpolate remote player positions
-    for (const id in this.remotePlayers) {
-      const remotePlayer = this.remotePlayers[id];
-      
+    for (const _id in this.remotePlayers) {
       // Apply any visual updates or interpolation
       // This depends on your specific implementation
     }
@@ -283,9 +258,9 @@ export default class MultiplayerMode extends GameMode {
   
   /**
    * Render multiplayer mode specific elements
-   * @param timestamp - Current timestamp for animation
+   * @param _timestamp - Current timestamp for animation
    */
-  render(timestamp: number): void {
+  render(_timestamp: number): void {
     // Render remote players
     for (const id in this.remotePlayers) {
       const remotePlayer = this.remotePlayers[id];
@@ -293,20 +268,19 @@ export default class MultiplayerMode extends GameMode {
       // Draw remote player - implementation depends on your player visualization
       if (remotePlayer.x !== undefined && remotePlayer.y !== undefined) {
         // Draw remote player at position
-        this.drawRemotePlayer(remotePlayer, timestamp);
+        this.drawRemotePlayer(remotePlayer);
       }
     }
     
     // Render any multiplayer-specific UI elements
-    this.renderMultiplayerUI(timestamp);
+    this.renderMultiplayerUI();
   }
   
   /**
    * Draw a remote player
    * @param playerData - Remote player data
-   * @param timestamp - Current timestamp for animation
    */
-  private drawRemotePlayer(playerData: NetworkPlayer, timestamp: number): void {
+  private drawRemotePlayer(playerData: NetworkPlayer): void {
     if (!this.game.ctx) return;
     
     // Get player color based on index or other property
@@ -356,9 +330,8 @@ export default class MultiplayerMode extends GameMode {
   
   /**
    * Render multiplayer-specific UI elements
-   * @param timestamp - Current timestamp for animation
    */
-  private renderMultiplayerUI(timestamp: number): void {
+  private renderMultiplayerUI(): void {
     if (!this.game.ctx || !this.multiplayerManager) return;
     
     // Draw player count

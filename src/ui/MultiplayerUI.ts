@@ -2,7 +2,7 @@
  * Handles UI elements for multiplayer mode
  * Converted to TypeScript and organized in ui/ directory.
  */
-import { GAME_CONSTANTS, PLAYER_COLORS } from '../constants/gameConstants';
+import { GAME_CONSTANTS } from '../constants/gameConstants';
 
 // Define interfaces for the MultiplayerUI
 interface Player {
@@ -41,7 +41,7 @@ interface MultiplayerManager {
 export default class MultiplayerUI {
   private multiplayerManager: MultiplayerManager;
   private isVisible: boolean;
-  private gameContainer: HTMLElement | null;
+  // private _gameContainer: HTMLElement | null; // Removed unused property
   
   // References to UI elements
   private multiplayerContainer: HTMLElement;
@@ -58,7 +58,7 @@ export default class MultiplayerUI {
   private gameStatusDisplay: HTMLElement;
   private arenaIndicator: HTMLElement;
   private restartButton?: HTMLButtonElement;
-  private players?: Record<string, Player>;
+  // private _players?: Record<string, Player>; // Removed unused property
   
   /**
    * Creates a new MultiplayerUI instance
@@ -67,7 +67,7 @@ export default class MultiplayerUI {
   constructor(multiplayerManager: MultiplayerManager) {
     this.multiplayerManager = multiplayerManager;
     this.isVisible = false;
-    this.gameContainer = document.querySelector('.app-root[data-app="ascend-avoid"]');
+    // this._gameContainer = document.querySelector('.app-root[data-app="ascend-avoid"]'); // Removed unused assignment
     
     // Initialize UI elements (will be set in init)
     this.multiplayerContainer = null!;
@@ -279,11 +279,11 @@ export default class MultiplayerUI {
         this.updateUIFromGameState(state);
       };
       
-      this.multiplayerManager.onPlayerJoin = (data: any) => {
+      this.multiplayerManager.onPlayerJoin = (_data: any) => {
         this.updatePlayerList();
       };
       
-      this.multiplayerManager.onPlayerLeave = (data: any) => {
+      this.multiplayerManager.onPlayerLeave = (_data: any) => {
         this.updatePlayerList();
       };
       
@@ -822,9 +822,9 @@ export default class MultiplayerUI {
    */
   updatePlayerCount(players?: Record<string, Player>, totalPlayers?: number): void {
     // Update players and total count if provided
-    if (players) {
-      this.players = players;
-    }
+    // if (players) {
+    //   this._players = players; // Removed unused assignment
+    // }
     
     if (totalPlayers) {
       this.playerCountDisplay.textContent = `Players: ${totalPlayers}`;
@@ -841,7 +841,7 @@ export default class MultiplayerUI {
    * @param totalPlayers - The total number of players
    * @param aliveCount - The number of alive players
    */
-  updateGameState(gameState: string, players?: Record<string, Player>, totalPlayers?: number, aliveCount?: number): void {
+  updateGameState(gameState: string, _players?: Record<string, Player>, totalPlayers?: number, aliveCount?: number): void {
     // Update player count
     if (totalPlayers !== undefined && aliveCount !== undefined) {
       this.playerCountDisplay.textContent = `Players: ${aliveCount}/${totalPlayers} alive`;

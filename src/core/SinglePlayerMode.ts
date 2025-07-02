@@ -4,8 +4,7 @@
  * Now with TypeScript support and improved collision detection.
  */
 import GameMode from './GameMode';
-import { InputState, PerformanceStats, ScalingInfo } from '../types';
-import Player from '../entities/Player';
+import { InputState } from '../types';
 
 // Define types for components used within this class
 interface Obstacle {
@@ -15,40 +14,7 @@ interface Obstacle {
   height: number;
 }
 
-interface ParticleOptions {
-  x: number;
-  y: number;
-  count: number;
-  minSize: number;
-  maxSize: number;
-  minLife: number;
-  maxLife: number;
-}
 
-interface ObstacleManager {
-  update: (timestamp: number, score: number, scalingInfo: ScalingInfo) => void;
-  checkCollisions: (player: Player, deltaTime?: number) => Obstacle | null;
-  reset: () => void;
-  addObstacle: () => void;
-  getObstacles: () => Obstacle[];
-}
-
-interface ParticleSystem {
-  createCelebration: (options: ParticleOptions) => void;
-  clear: () => void;
-}
-
-interface UIManager {
-  flashScreen: (color: string, duration: number) => void;
-  showGameOver: (score: number, highScore: number, resetCallback: () => void) => void;
-  hideGameOver: () => void;
-  updateScore: (score: number) => void;
-  updateHighScore: (highScore: number) => void;
-}
-
-interface AssetManager {
-  playSound: (soundName: string, volume?: number) => void;
-}
 
 export default class SinglePlayerMode extends GameMode {
   /**
@@ -135,9 +101,9 @@ export default class SinglePlayerMode extends GameMode {
   
   /**
    * Handle collision with obstacle
-   * @param obstacle - The obstacle that was hit
+   * @param _obstacle - The obstacle that was hit
    */
-  private handleCollision(obstacle: Obstacle): void {
+  private handleCollision(_obstacle: Obstacle): void {
     // Play collision sound
     if (this.game.assetManager) {
       this.game.assetManager.playSound('collision', 0.3);
@@ -167,9 +133,9 @@ export default class SinglePlayerMode extends GameMode {
   
   /**
    * Render single player mode specific elements
-   * @param timestamp - Current timestamp for animation
+   * @param _timestamp - Current timestamp for animation
    */
-  render(timestamp: number): void {
+  render(_timestamp: number): void {
     // Single player mode doesn't have any mode-specific rendering
     // All rendering is handled by the main Game.render method
   }

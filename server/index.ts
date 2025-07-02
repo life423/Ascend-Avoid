@@ -40,7 +40,7 @@ const gameServer = new Server({
 // IMPORTANT: Define API routes BEFORE static file serving
 
 // Health check endpoint
-app.get('/health', (req, res) => {
+app.get('/health', (_req, res) => {
   res.status(200).json({ 
     status: 'healthy',
     timestamp: new Date().toISOString(),
@@ -51,7 +51,7 @@ app.get('/health', (req, res) => {
 });
 
 // API routes with /api prefix
-app.get("/api/status", (req, res) => {
+app.get("/api/status", (_req, res) => {
   res.json({
     server: "running",
     environment: process.env.NODE_ENV || 'development',
@@ -91,7 +91,7 @@ if (process.env.NODE_ENV === 'production') {
   });
 } else {
   // Development mode - don't serve static files, let Vite handle it
-  app.get("/", (req, res) => {
+  app.get("/", (_req, res) => {
     res.json({
       message: "Multiplayer game server is running in development mode",
       websocket: `ws://localhost:${config.port}`,
@@ -102,7 +102,7 @@ if (process.env.NODE_ENV === 'production') {
 }
 
 // Error handling middleware
-app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
+app.use((err: any, _req: express.Request, res: express.Response, _next: express.NextFunction) => {
   logger.error('Server error:', err);
   res.status(500).json({ error: 'Internal server error' });
 });
