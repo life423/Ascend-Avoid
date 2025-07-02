@@ -64,7 +64,11 @@ export default defineConfig(({ mode }) => {
     server: { 
       open: true,
       host: '0.0.0.0', // Allow external connections
-      port: 5173
+      port: 5173,
+      allowedHosts: [
+        'localhost',
+        '*.azurecontainerapps.io'
+      ]
     },
     preview: {
       host: '0.0.0.0',
