@@ -820,7 +820,7 @@ export default class MultiplayerUI {
    * @param players - The players object
    * @param totalPlayers - The total number of players
    */
-  updatePlayerCount(players?: Record<string, Player>, totalPlayers?: number): void {
+  updatePlayerCount(_players?: Record<string, Player>, totalPlayers?: number): void {
     // Update players and total count if provided
     // if (players) {
     //   this._players = players; // Removed unused assignment
