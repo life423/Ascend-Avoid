@@ -180,11 +180,16 @@ export default class UIManager {
    * Create the game over overlay elements
    */
   private createGameOverOverlay(): void {
+    // Detect touch device
+    const isTouchDevice = 'ontouchstart' in window || 
+                         navigator.maxTouchPoints > 0 || 
+                         window.matchMedia('(pointer: coarse)').matches;
+
     // Create overlay container
     this.gameOverOverlay = document.createElement('div');
     this.gameOverOverlay.className = 'game-over-overlay';
     
-    // Create content
+    // Create content - conditionally hide keyboard hint on mobile
     this.gameOverOverlay.innerHTML = `
       <div class="game-over-content">
         <h2>Game Over</h2>
@@ -194,11 +199,11 @@ export default class UIManager {
         </div>
         <p class="multiplayer-result"></p>
         <button class="game-over-restart">Play Again</button>
-        <p class="game-over-hint">Press 'R' to restart</p>
+        ${!isTouchDevice ? '<p class="game-over-hint">Press \'R\' to restart</p>' : ''}
       </div>
     `;
     
-    // Add styles
+    // Add styles with mobile-specific fixes
     const style = document.createElement('style');
     style.textContent = `
       .game-over-overlay {
@@ -206,12 +211,13 @@ export default class UIManager {
         top: 0;
         left: 0;
         width: 100%;
-        height: 100%;
+        height: ${isTouchDevice ? '100dvh' : '100vh'};
         background: rgba(0, 0, 0, 0.7);
         display: none;
         justify-content: center;
         align-items: center;
         z-index: 1000;
+        ${isTouchDevice ? 'padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);' : ''}
       }
       
       .game-over-content {
@@ -224,6 +230,7 @@ export default class UIManager {
         box-shadow: 0 0 30px var(--primary-glow);
         max-width: 90%;
         width: 400px;
+        ${isTouchDevice ? 'max-height: 80dvh; overflow-y: auto;' : ''}
       }
       
       .game-over-content h2 {
@@ -251,16 +258,17 @@ export default class UIManager {
       }
       
       .game-over-restart {
-        background: var(--primary-color);
-        color: #000;
+        background: var(--accent-primary, #00bcd4);
+        color: var(--text-dark, #000);
         border: none;
-        padding: 12px 24px;
-        font-size: 18px;
+        padding: ${isTouchDevice ? '16px 32px' : '12px 24px'};
+        font-size: ${isTouchDevice ? '20px' : '18px'};
         border-radius: 4px;
         cursor: pointer;
         margin: 20px 0;
         font-weight: bold;
         transition: all 0.2s ease;
+        ${isTouchDevice ? 'min-height: 50px; touch-action: manipulation;' : ''}
       }
       
       .game-over-restart:hover {

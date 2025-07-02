@@ -574,22 +574,72 @@ body.modal-open {
         display: none;
     }
     
+    /* Mobile-specific layout adjustments */
+    .app-root[data-app="ascend-avoid"] {
+        height: 100vh;
+        height: 100dvh; /* Use dynamic viewport height when available */
+    }
+    
+    .app-header {
+        flex: 0 0 auto;
+        padding: var(--space-sm);
+        min-height: 80px; /* Fixed minimum height */
+    }
+    
     .app-header h1 {
         font-size: 1.5rem;
-        padding: var(--space-sm);
+        margin: 0;
     }
     
     .score-panel[data-scores="main"] {
-        margin: var(--space-xs) var(--space-sm);
+        margin: var(--space-xs) var(--space-sm) 0;
         gap: var(--space-md);
+        padding: var(--space-xs) 0;
+    }
+    
+    .game-main[data-section="main"] {
+        flex: 1;
+        min-height: 0; /* Allow flex shrinking */
+        padding: var(--space-sm);
+        display: flex;
+        align-items: center;
+        justify-content: center;
     }
     
     .game-area[data-section="game"] {
-        padding: var(--space-sm);
+        width: 100%;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        padding: 0;
     }
     
     .canvas-viewport[data-viewport="main"] {
+        flex: 1;
+        width: 100%;
+        max-width: 100%;
+        max-height: 100%;
         border: 2px solid var(--accent-primary);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+    
+    .game-canvas[data-canvas="primary"] {
+        max-width: 100%;
+        max-height: 100%;
+        width: auto;
+        height: auto;
+    }
+    
+    .control-panel[data-section="controls"] {
+        flex: 0 0 auto;
+     
+        min-height: 140px;
+        position: relative;
+        z-index: 1000;
     }
 }
 

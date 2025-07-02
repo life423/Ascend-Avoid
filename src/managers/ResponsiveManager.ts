@@ -200,41 +200,47 @@ export default class ResponsiveManager {
     resizeCanvas(): void {
         if (!this.canvas) return
 
-        // Get parent container dimensions
-        const parent = this.canvas.parentElement
-        if (!parent) return
+        // Get the canvas viewport container
+        const viewport = this.canvas.closest('.canvas-viewport[data-viewport="main"]') as HTMLElement
+        if (!viewport) {
+            console.warn('Canvas viewport container not found')
+            return
+        }
 
         // Calculate available space based on device type
         let availableWidth: number
         let availableHeight: number
 
         if (this.isDesktop) {
-            // Desktop: Use much more aggressive sizing, bypass parent constraints
-            const margin = 60 // Smaller margin for more canvas space
-
-            // Use window dimensions directly for desktop to get maximum size
-            // The grid layout will handle the actual placement
-            availableWidth = Math.min(
-                window.innerWidth - margin - 320,
-                CANVAS.MAX_DESKTOP_WIDTH
-            ) // Reserve 320px for sidebar
-            availableHeight = window.innerHeight - 200 // Account for header space
-
-            // Ensure we get a substantial minimum size on desktop
-            availableWidth = Math.max(availableWidth, 800) // Minimum 800px wide
-            availableHeight = Math.max(availableHeight, 600) // Minimum 600px tall
+            // Desktop: Use the viewport container dimensions directly
+            const viewportRect = viewport.getBoundingClientRect()
+            availableWidth = Math.max(viewportRect.width - 20, 600) // 10px margin each side, min 600px
+            availableHeight = Math.max(viewportRect.height - 20, 400) // 10px margin each side, min 400px
 
             console.log(
-                `Desktop canvas sizing: ${availableWidth}x${availableHeight} available`
+                `Desktop canvas sizing: ${availableWidth}x${availableHeight} available from viewport`
             )
         } else {
-            // Mobile: Use most of viewport with smaller margins
-            const margin = 20
-            availableWidth = Math.min(
-                window.innerWidth - margin,
-                CANVAS.MAX_MOBILE_WIDTH
+            // Mobile: Calculate based on actual layout structure
+            const header = document.querySelector('.app-header') as HTMLElement | null
+            const controlPanel = document.querySelector('.control-panel[data-section="controls"]') as HTMLElement | null
+            
+            // Get actual heights of fixed elements
+            const headerHeight = header ? header.offsetHeight : 80
+            const controlsHeight = controlPanel ? controlPanel.offsetHeight : 140
+            const margin = 20 // Total margin (10px each side)
+            
+            // Calculate available space more accurately
+            const totalReservedHeight = headerHeight + controlsHeight + margin
+            availableHeight = Math.max(window.innerHeight - totalReservedHeight, 250) // Minimum 250px height
+            availableWidth = Math.max(window.innerWidth - margin, 280) // Minimum 280px width
+            
+            // Apply mobile-specific limits
+            availableWidth = Math.min(availableWidth, CANVAS.MAX_MOBILE_WIDTH)
+            
+            console.log(
+                `Mobile canvas sizing: ${availableWidth}x${availableHeight} available (header: ${headerHeight}px, controls: ${controlsHeight}px)`
             )
-            availableHeight = window.innerHeight * 0.75 // Leave space for controls
         }
 
         // Calculate scaling factors to fit within available space
@@ -249,7 +255,7 @@ export default class ResponsiveManager {
         const canvasHeight = Math.floor(this.baseCanvasHeight * scale)
 
         // Ensure minimum playable size (higher minimums for desktop)
-        const minHeight = this.isDesktop ? 500 : 300
+        const minHeight = this.isDesktop ? 400 : 250
         const minWidth = Math.floor(
             (minHeight / this.baseCanvasHeight) * this.baseCanvasWidth
         )

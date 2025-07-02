@@ -33,76 +33,78 @@
         
         <!-- Orientation change overlay -->
         <div class="orientation-overlay">
-            <img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI4MCIgaGVpZ2h0PSI4MCIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJub25lIiBzdHJva2U9IiMwMGJjZDQiIHN0cm9rZS13aWR0aD0iMiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIj48cGF0aCBkPSJNMjEgMTJhOS4wMSA5LjAxIDAgMCAxLTkgOSIvPjxwYXRoIGQ9Ik0zIDEyYTkuMDEgOS4wMSAwIDAgMCA5IDkiLz48cGF0aCBkPSJNMjEgMTJjMC00Ljk3LTQuMDMtOS05LTkiLz48cGF0aCBkPSJNMyAxMmMwLTQuOTcgNC4wMy05IDktOSIvPjxwYXRoIGQ9Ike1UiAyMnYtNGgtNHY0Ii8+PHBhdGggZD0iTTEyIDJ2NGg0VjIiLz48L3N2Zz4=" alt="Rotate device">
+            <img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI4MCIgaGVpZ2h0PSI4MCIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJub25lIiBzdHJva2U9IiMwMGJjZDQiIHN0cm9rZS13aWR0aD0iMiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIj48cGF0aCBkPSJNMjEgMTJhOS4wMSA5LjAxIDAgMCAxLTkgOSIvPjxwYXRoIGQ9Ik0zIDEyYTkuMDEgOS4wMSAwIDAgMCA5IDkiLz48cGF0aCBkPSJNMjEgMTJjMC00Ljk3LTQuMDMtOS05LTkiLz48cGF0aCBkPSJNMyAxMmMwLTQuOTcgNC4wMy05IDktOSIvPjxwYXRoIGQ9Ige1UiAyMnYtNGgtNHY0Ii8+PHBhdGggZD0iTTEyIDJ2NGg0VjIiLz48L3N2Zz4=" alt="Rotate device">
             <h3>Please rotate your device</h3>
             <p>For the best gaming experience, please use landscape orientation.</p>
         </div>
 
-        <!-- Header section - stays at top in natural flow -->
-        <header class="app-header" data-section="header">
-            <h1>Ascend Avoid</h1>
-            
-            <!-- Score display -->
-            <div class="score-panel" data-scores="main">
-                <h4>High Score: <span class="score-value" data-score="high">0</span></h4>
-                <h4>Score: <span class="score-value" data-score="current">0</span></h4>
-            </div>
-        </header>
-
-        <!-- Main game section - takes remaining height and centers only game content -->
-        <main class="game-main" data-section="main">
-            <!-- Game layout container with semantic ID -->
-            <div class="game-area" data-section="game">
-                <!-- Canvas viewport wrapper for proper centering -->
-                <div class="canvas-viewport" data-viewport="main">
-                    <canvas
-                        class="game-canvas" data-canvas="primary"
-                        aria-label="Cross the Box game"
-                        role="img"
-                    ></canvas>
-                </div>
+        <!-- Root app container -->
+        <div class="app-root" data-app="ascend-avoid">
+            <!-- Header section - stays at top in natural flow -->
+            <header class="app-header" data-section="header">
+                <h1>Ascend Avoid</h1>
                 
-                <!-- Desktop: Sidebar container for instructions -->
-                <div class="info-panel desktop-only" data-panel="info">
-                    <div class="panel-content" data-content="instructions">
-                        <h3>How to Play:</h3>
-                        <p>
-                            Move the white block to the top without hitting the blue
-                            blocks.
-                        </p>
-                        <ul>
-                            <li>Use arrow keys or WASD to move</li>
-                            <li>Press 'R' to restart the game</li>
-                        </ul>
-                        <p class="note">
-                            Game speed increases as you score more points!
-                        </p>
-                        <p>
-                            Try to beat your high score and challenge your friends in
-                            multiplayer mode!
-                        </p>
+                <!-- Score display -->
+                <div class="score-panel" data-scores="main">
+                    <h4>High Score: <span class="score-value" data-score="high">0</span></h4>
+                    <h4>Score: <span class="score-value" data-score="current">0</span></h4>
+                </div>
+            </header>
+
+            <!-- Main game section - takes remaining height and centers only game content -->
+            <main class="game-main" data-section="main">
+                <!-- Game layout container with semantic ID -->
+                <div class="game-area" data-section="game">
+                    <!-- Canvas viewport wrapper for proper centering -->
+                    <div class="canvas-viewport" data-viewport="main">
+                        <canvas
+                            class="game-canvas" data-canvas="primary"
+                            aria-label="Cross the Box game"
+                            role="img"
+                        ></canvas>
                     </div>
-                    <div class="desktop-nav-buttons">
-                        <button
-                            class="nav-button btn-action"
-                            data-action="guide-desktop"
-                            aria-label="How to play"
-                        >
-                            Guide
-                        </button>
-                        <button
-                            class="nav-button btn-action"
-                            data-action="multiplayer-desktop"
-                            aria-label="Multiplayer mode"
-                        >
-                            Multiplayer
-                        </button>
+                    
+                    <!-- Desktop: Sidebar container for instructions -->
+                    <div class="info-panel desktop-only" data-panel="info">
+                        <div class="panel-content" data-content="instructions">
+                            <h3>How to Play:</h3>
+                            <p>
+                                Move the white block to the top without hitting the blue
+                                blocks.
+                            </p>
+                            <ul>
+                                <li>Use arrow keys or WASD to move</li>
+                                <li>Press 'R' to restart the game</li>
+                            </ul>
+                            <p class="note">
+                                Game speed increases as you score more points!
+                            </p>
+                            <p>
+                                Try to beat your high score and challenge your friends in
+                                multiplayer mode!
+                            </p>
+                        </div>
+                        <div class="desktop-nav-buttons">
+                            <button
+                                class="nav-button btn-action"
+                                data-action="guide-desktop"
+                                aria-label="How to play"
+                            >
+                                Guide
+                            </button>
+                            <button
+                                class="nav-button btn-action"
+                                data-action="multiplayer-desktop"
+                                aria-label="Multiplayer mode"
+                            >
+                                Multiplayer
+                            </button>
+                        </div>
                     </div>
                 </div>
-            </div>
-        </main>
+            </main>
 
-        <div class="control-panel" data-section="controls">
+            <div class="control-panel" data-section="controls">
             <div class="touch-controller" data-controller="main">
                 <!-- Touch controls will be inserted here by JavaScript -->
             </div>
@@ -168,6 +170,7 @@
                     </div>
                 </div>
             </div>
+        </div>
         </div>
 
         <!-- Game error handling -->
