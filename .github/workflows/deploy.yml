@@ -50,10 +50,13 @@ jobs:
           --name ${{ env.AZURE_CONTAINER_APP }} \
           --resource-group ${{ env.AZURE_RESOURCE_GROUP }} \
           --image ${{ env.IMAGE_NAME }}:latest \
-          --set-env-vars "NODE_ENV=production" "PORT=3000" \
-          --ingress external \
-          --target-port 5173 \
-          --transport http
+          --set-env-vars "NODE_ENV=production" "PORT=3000"
+        
+        # Update ingress configuration separately
+        az containerapp ingress update \
+          --name ${{ env.AZURE_CONTAINER_APP }} \
+          --resource-group ${{ env.AZURE_RESOURCE_GROUP }} \
+          --target-port 5173
     
     - name: Verify deployment
       run: |
