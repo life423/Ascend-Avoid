@@ -70,7 +70,12 @@ if (process.env.NODE_ENV !== 'production') {
 
 // IMPORTANT: Serve static files AFTER all API routes
 if (process.env.NODE_ENV === 'production') {
-  // In production, serve the Vite dev server content via proxy
+  // In production, serve static files from the src directory
+  // Since we're running in dev mode in production, serve the source files
+  const staticPath = path.join(__dirname, '..', 'src');
+  app.use(express.static(staticPath));
+  
+  // Serve index.html for all non-API routes (SPA routing)
   app.get('*', (req, res, next) => {
     // Skip API and WebSocket routes
     if (req.path.startsWith('/api') || 
@@ -80,9 +85,9 @@ if (process.env.NODE_ENV === 'production') {
       return next();
     }
     
-    // Proxy to Vite dev server running on port 5173
-    const viteUrl = `http://localhost:5173${req.path}`;
-    res.redirect(302, viteUrl);
+    // Serve index.html for SPA routing
+    const indexPath = path.join(__dirname, '..', 'src', 'index.html');
+    res.sendFile(indexPath);
   });
 } else {
   // Development mode - don't serve static files, let Vite handle it
