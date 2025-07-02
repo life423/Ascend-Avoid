@@ -67,7 +67,8 @@ export default defineConfig(({ mode }) => {
       port: 5173,
       allowedHosts: [
         'localhost',
-        '*.azurecontainerapps.io'
+        '*.azurecontainerapps.io',
+        'ascend.drewclark.io',
       ]
     },
     preview: {
