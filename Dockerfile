@@ -14,11 +14,14 @@ RUN cd server && npm ci
 COPY . .
 
 # Build client and server
-RUN npm run dev
+RUN npm run build
 
 # Production stage
 FROM node:22-alpine
 WORKDIR /app
+
+# Install wget for health check
+RUN apk add --no-cache wget
 
 # Copy only production dependencies
 COPY server/package*.json ./server/
