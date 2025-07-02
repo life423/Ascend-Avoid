@@ -65,12 +65,8 @@ export default defineConfig(({ mode }) => {
       open: true,
       host: '0.0.0.0', // Allow external connections
       port: 5173,
-      allowedHosts: [
-        'localhost',
-        '*.azurecontainerapps.io',
-        'ascend.drewclark.io',
-        'ascend-avoid.livelyisland-db4ad2db.eastus.azurecontainerapps.io,'
-      ]
+      allowedHosts: ['*azurecontainerapps.io',
+        'ascend.drewclark.io'],
     },
     preview: {
       host: '0.0.0.0',
