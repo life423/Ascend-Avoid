@@ -6,7 +6,7 @@ import { System as SystemInterface } from '../types';
 
 export abstract class System implements SystemInterface {
   // Whether the system is active
-  protected active: boolean;
+  public active: boolean;
   
   // System priority (lower numbers run first)
   protected priority: number;
